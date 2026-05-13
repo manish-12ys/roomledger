@@ -1,0 +1,36 @@
+name: RoomLedger CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.19.0' # Or the latest stable depending on your needs
+        channel: 'stable'
+
+    - name: Install dependencies
+      run: flutter pub get
+
+    - name: Verify formatting
+      run: dart format --output=none --set-exit-if-changed .
+
+    - name: Analyze project source
+      run: flutter analyze
+
+    - name: Run unit tests
+      run: flutter test
+
+    # Note: Full integration tests on GitHub runners can be flaky.
+    # To run integration tests on an emulator, consider using actions like reactivecircus/android-emulator-runner
+    # Or Firebase Test Lab.
