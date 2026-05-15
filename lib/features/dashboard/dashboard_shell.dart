@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
 import '../analytics/analytics_screen.dart';
 import '../debts/debts_screen.dart';
+import '../expenses/expenses_providers.dart';
 import '../expenses/expenses_screen.dart';
 import '../friends/friends_providers.dart';
 import '../friends/friends_screen.dart';
@@ -72,6 +73,10 @@ class _DashboardShellState extends State<DashboardShell>
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: 0.6),
       builder: (ctx) => _CreateNewSheet(
+        onSharedExpense: () {
+          Navigator.pop(ctx);
+          _openAddSharedExpenseSheet();
+        },
         onPersonalExpense: () {
           Navigator.pop(ctx);
           Navigator.push(
@@ -95,12 +100,30 @@ class _DashboardShellState extends State<DashboardShell>
     );
   }
 
+  Future<void> _openAddSharedExpenseSheet() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Consumer(
+        builder: (context, ref, _) => AddSharedExpenseSheet(
+          onCreated: () {
+            ref.invalidate(expensesListProvider);
+            // Optionally switch to shared ledger tab
+            setState(() => _selectedIndex = 1);
+          },
+        ),
+      ),
+    );
+  }
+
   Future<void> _openAddFriendSheet() async {
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => _AddFriendSheetInline(
+      builder: (ctx) => AddFriendSheet(
         onCreated: () {
           // Navigate to friends tab so user sees the new friend
           setState(() => _selectedIndex = 4);
@@ -339,11 +362,13 @@ class _AddFabState extends State<_AddFab>
 // ─── Create New Sheet ─────────────────────────────────────────────────────────
 class _CreateNewSheet extends StatelessWidget {
   const _CreateNewSheet({
+    required this.onSharedExpense,
     required this.onPersonalExpense,
     required this.onAddFriend,
     required this.onAnalytics,
   });
 
+  final VoidCallback onSharedExpense;
   final VoidCallback onPersonalExpense;
   final VoidCallback onAddFriend;
   final VoidCallback onAnalytics;
@@ -405,14 +430,29 @@ class _CreateNewSheet extends StatelessWidget {
               ),
               const SizedBox(height: 28),
 
-              // Top tile — Personal Expense (full width)
-              _ActionTile(
-                icon: Icons.receipt_long_rounded,
-                label: 'Personal Expense',
-                sublabel: 'Track spending for yourself',
-                color: AppTheme.warning,
-                onTap: onPersonalExpense,
-                fullWidth: true,
+              // Top row — Shared + Personal
+              Row(
+                children: [
+                  Expanded(
+                    child: _ActionTile(
+                      icon: Icons.receipt_long_rounded,
+                      label: 'Shared\nLedger',
+                      sublabel: 'Split with roommates',
+                      color: AppTheme.secondary,
+                      onTap: onSharedExpense,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _ActionTile(
+                      icon: Icons.receipt_rounded,
+                      label: 'Personal\nExpense',
+                      sublabel: 'Track for self',
+                      color: AppTheme.warning,
+                      onTap: onPersonalExpense,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
 
@@ -455,7 +495,6 @@ class _ActionTile extends StatefulWidget {
     required this.sublabel,
     required this.color,
     required this.onTap,
-    this.fullWidth = false,
   });
 
   final IconData icon;
@@ -463,7 +502,6 @@ class _ActionTile extends StatefulWidget {
   final String sublabel;
   final Color color;
   final VoidCallback onTap;
-  final bool fullWidth;
 
   @override
   State<_ActionTile> createState() => _ActionTileState();
@@ -511,74 +549,38 @@ class _ActionTileState extends State<_ActionTile>
             border: Border.all(
                 color: widget.color.withValues(alpha: 0.18), width: 1),
           ),
-          child: widget.fullWidth
-              ? Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: widget.color.withValues(alpha: 0.14),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Icon(widget.icon, color: widget.color, size: 24),
-                    ),
-                    const SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.label,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            color: AppTheme.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          widget.sublabel,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: AppTheme.muted,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                )
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: widget.color.withValues(alpha: 0.14),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Icon(widget.icon, color: widget.color, size: 22),
-                    ),
-                    const SizedBox(height: 14),
-                    Text(
-                      widget.label,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                        color: AppTheme.onSurface,
-                        height: 1.25,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      widget.sublabel,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: AppTheme.muted,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: widget.color.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(14),
                 ),
+                child: Icon(widget.icon, color: widget.color, size: 22),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                widget.label,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.onSurface,
+                  height: 1.25,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                widget.sublabel,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: AppTheme.muted,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -603,17 +605,15 @@ class _SheetHandle extends StatelessWidget {
 }
 
 // ─── Inline Add Friend Sheet (used from Create New) ───────────────────────────
-class _AddFriendSheetInline extends ConsumerStatefulWidget {
-  const _AddFriendSheetInline({required this.onCreated});
+class AddFriendSheet extends ConsumerStatefulWidget {
+  const AddFriendSheet({super.key, required this.onCreated});
   final VoidCallback onCreated;
 
   @override
-  ConsumerState<_AddFriendSheetInline> createState() =>
-      _AddFriendSheetInlineState();
+  ConsumerState<AddFriendSheet> createState() => _AddFriendSheetState();
 }
 
-class _AddFriendSheetInlineState
-    extends ConsumerState<_AddFriendSheetInline> {
+class _AddFriendSheetState extends ConsumerState<AddFriendSheet> {
   final _controller = TextEditingController();
   bool _submitting = false;
 

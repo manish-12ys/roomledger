@@ -6,6 +6,7 @@ import '../../core/widgets/app_components.dart';
 import '../../core/widgets/app_states.dart';
 import '../debts/debt_detail_screen.dart';
 import '../debts/domain/debts_models.dart';
+import '../dashboard/dashboard_shell.dart';
 import 'domain/expense_models.dart';
 import 'expenses_providers.dart';
 
@@ -30,6 +31,14 @@ class ExpensesScreen extends ConsumerWidget {
         title: const Text('Shared Ledger'),
         elevation: 0,
         centerTitle: false,
+        actions: [
+          IconButton(
+            onPressed: () => _openAddFriendSheet(context, ref),
+            icon: const Icon(Icons.person_add_outlined, size: 22, color: AppTheme.onSurfaceVariant),
+            tooltip: 'Add Roommate',
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: expensesAsync.when(
         loading: () => const AppListLoadingSkeleton(itemCount: 5),
@@ -65,6 +74,19 @@ class ExpensesScreen extends ConsumerWidget {
     );
   }
 
+  Future<void> _openAddFriendSheet(BuildContext context, WidgetRef ref) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => AddFriendSheet(
+        onCreated: () {
+          ref.invalidate(friendOptionsProvider);
+        },
+      ),
+    );
+  }
+
   Future<void> _openAddExpenseSheet(BuildContext context, WidgetRef ref) async {
     await showModalBottomSheet<void>(
       context: context,
@@ -72,7 +94,7 @@ class ExpensesScreen extends ConsumerWidget {
       useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) {
-        return _AddSharedExpenseSheet(
+        return AddSharedExpenseSheet(
           onCreated: () {
             ref.invalidate(expensesListProvider);
           },
@@ -330,30 +352,45 @@ class _MetricItem extends StatelessWidget {
   }
 }
 
-class _EmptyState extends StatelessWidget {
+class _EmptyState extends ConsumerWidget {
   const _EmptyState();
   @override
-  Widget build(BuildContext context) {
-    return const AppStatusView(
+  Widget build(BuildContext context, WidgetRef ref) {
+    return AppStatusView(
       icon: Icons.receipt_long_outlined,
       title: 'Shared ledger empty',
       message: 'Add shared expenses to track splits with roommates.',
+      actionLabel: 'Add Roommate',
+      onAction: () {
+        // Find the ExpensesScreen state and call _openAddFriendSheet
+        // Or just implement it here
+        showModalBottomSheet<void>(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (ctx) => AddFriendSheet(
+            onCreated: () {
+              ref.invalidate(friendOptionsProvider);
+            },
+          ),
+        );
+      },
     );
   }
 }
 
 // ─── Add Shared Expense Sheet ────────────────────────────────────────────────
 
-class _AddSharedExpenseSheet extends ConsumerStatefulWidget {
-  const _AddSharedExpenseSheet({required this.onCreated});
+class AddSharedExpenseSheet extends ConsumerStatefulWidget {
+  const AddSharedExpenseSheet({super.key, required this.onCreated});
 
   final VoidCallback onCreated;
 
   @override
-  ConsumerState<_AddSharedExpenseSheet> createState() => _AddSharedExpenseSheetState();
+  ConsumerState<AddSharedExpenseSheet> createState() => _AddSharedExpenseSheetState();
 }
 
-class _AddSharedExpenseSheetState extends ConsumerState<_AddSharedExpenseSheet> {
+class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
   final _formKey = GlobalKey<FormState>();
   final _noteController = TextEditingController();
   final _amountController = TextEditingController();

@@ -7,6 +7,8 @@ import '../../core/widgets/app_states.dart';
 import '../analytics/analytics_screen.dart';
 import '../backup_restore/backup_restore_screen.dart';
 import '../cash_management/cash_management_screen.dart';
+import '../expenses/expenses_providers.dart';
+import '../expenses/expenses_screen.dart';
 import '../personal_expenses/personal_expenses_screen.dart';
 import 'dashboard_providers.dart';
 import 'domain/dashboard_models.dart';
@@ -43,13 +45,28 @@ class DashboardScreen extends ConsumerWidget {
   }
 }
 
-class _DashboardContent extends StatelessWidget {
+class _DashboardContent extends ConsumerWidget {
   const _DashboardContent({required this.overview});
 
   final DashboardOverview overview;
 
+  Future<void> _openAddSharedExpenseSheet(BuildContext context, WidgetRef ref) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => AddSharedExpenseSheet(
+        onCreated: () {
+          ref.invalidate(expensesListProvider);
+          ref.invalidate(dashboardOverviewProvider);
+        },
+      ),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return CustomScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       slivers: [
@@ -74,7 +91,10 @@ class _DashboardContent extends StatelessWidget {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
-            child: _PremiumHero(overview: overview),
+            child: _PremiumHero(
+              overview: overview,
+              onAdd: () => _openAddSharedExpenseSheet(context, ref),
+            ),
           ),
         ),
 
@@ -88,10 +108,10 @@ class _DashboardContent extends StatelessWidget {
             child: Row(
               children: [
                 _AccessPill(
-                  label: 'Analytics',
-                  icon: Icons.insights_rounded,
-                  color: AppTheme.warning,
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AnalyticsScreen())),
+                  label: 'Shared',
+                  icon: Icons.receipt_long_rounded,
+                  color: AppTheme.secondary,
+                  onTap: () => _openAddSharedExpenseSheet(context, ref),
                 ),
                 const SizedBox(width: 10),
                 _AccessPill(
@@ -102,9 +122,16 @@ class _DashboardContent extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 _AccessPill(
+                  label: 'Analytics',
+                  icon: Icons.insights_rounded,
+                  color: AppTheme.warning,
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AnalyticsScreen())),
+                ),
+                const SizedBox(width: 10),
+                _AccessPill(
                   label: 'Vault',
                   icon: Icons.account_balance_wallet_rounded,
-                  color: AppTheme.secondary,
+                  color: AppTheme.info,
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CashManagementScreen())),
                 ),
               ],
@@ -165,8 +192,9 @@ class _DashboardContent extends StatelessWidget {
 }
 
 class _PremiumHero extends StatelessWidget {
-  const _PremiumHero({required this.overview});
+  const _PremiumHero({required this.overview, required this.onAdd});
   final DashboardOverview overview;
+  final VoidCallback onAdd;
 
   @override
   Widget build(BuildContext context) {
@@ -183,7 +211,19 @@ class _PremiumHero extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Total Shared Debt', style: TextStyle(color: AppTheme.muted, fontSize: 13, fontWeight: FontWeight.w700)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Total Shared Debt', style: TextStyle(color: AppTheme.muted, fontSize: 13, fontWeight: FontWeight.w700)),
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      onPressed: onAdd,
+                      icon: const Icon(Icons.add_circle_outline, color: AppTheme.secondary, size: 20),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 12),
                 Text('₹${overview.totalPending}', 
                   style: const TextStyle(fontSize: 34, fontWeight: FontWeight.w900, color: AppTheme.onSurface)),

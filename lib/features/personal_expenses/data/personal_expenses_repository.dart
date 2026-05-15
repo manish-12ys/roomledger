@@ -57,7 +57,7 @@ class PersonalExpensesRepository {
           (row) => PersonalExpense(
             id: row['id'] as int,
             description: row['description'] as String,
-            amount: row['amount'] as int,
+            amount: (row['amount'] as num?)?.toInt() ?? 0,
             category: ExpenseCategory.fromString(row['category'] as String),
             createdAt: DateTime.parse(row['created_at'] as String),
           ),

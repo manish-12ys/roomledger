@@ -44,8 +44,8 @@ class ExpensesRepository {
             friendId: row['friend_id'] as int,
             friendName: row['friend_name'] as String,
             note: row['note'] as String,
-            totalAmount: (row['total_amount'] as num).toInt(),
-            repaidAmount: (row['repaid_amount'] as num).toInt(),
+            totalAmount: (row['total_amount'] as num?)?.toInt() ?? 0,
+            repaidAmount: (row['repaid_amount'] as num?)?.toInt() ?? 0,
             createdAt: DateTime.parse(row['created_at'] as String),
           ),
         )

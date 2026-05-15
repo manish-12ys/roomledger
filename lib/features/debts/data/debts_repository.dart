@@ -33,8 +33,8 @@ class DebtsRepository {
             friendId: row['friend_id'] as int,
             friendName: row['friend_name'] as String,
             note: row['note'] as String,
-            totalAmount: (row['total_amount'] as num).toInt(),
-            repaidAmount: (row['repaid_amount'] as num).toInt(),
+            totalAmount: (row['total_amount'] as num?)?.toInt() ?? 0,
+            repaidAmount: (row['repaid_amount'] as num?)?.toInt() ?? 0,
             createdAt: DateTime.parse(row['created_at'] as String),
           ),
         )
@@ -80,7 +80,7 @@ class DebtsRepository {
           (row) => SettlementRecord(
             id: row['id'] as int,
             debtId: row['debt_id'] as int,
-            amount: row['amount'] as int,
+            amount: (row['amount'] as num?)?.toInt() ?? 0,
             note: row['note'] as String,
             createdAt: DateTime.parse(row['created_at'] as String),
           ),
@@ -115,14 +115,14 @@ class DebtsRepository {
     final debtResult = await db.query('debts', where: 'id = ?', whereArgs: [debtId]);
     if (debtResult.isEmpty) return 0;
 
-    final totalAmount = debtResult.first['total_amount'] as int;
+    final totalAmount = (debtResult.first['total_amount'] as num?)?.toInt() ?? 0;
 
     final settlementsResult = await db.rawQuery(
       'SELECT COALESCE(SUM(amount), 0) as total_settled FROM settlements WHERE debt_id = ?',
       [debtId],
     );
 
-    final repaidAmount = (settlementsResult.first['total_settled'] as num).toInt();
+    final repaidAmount = (settlementsResult.first['total_settled'] as num?)?.toInt() ?? 0;
 
     return totalAmount - repaidAmount;
   }
