@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/theme/app_theme.dart';
+import '../../core/widgets/app_components.dart';
 import '../../core/widgets/app_states.dart';
 import 'domain/personal_expense_models.dart';
 import 'personal_expenses_providers.dart';
@@ -13,35 +15,102 @@ class PersonalExpensesScreen extends ConsumerWidget {
     final summaryAsync = ref.watch(personalExpensesSummaryProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Personal Expenses')),
+      appBar: AppBar(
+        title: const Text('Personal Tracker'),
+        elevation: 0,
+        centerTitle: false,
+      ),
       body: summaryAsync.when(
         loading: () => const AppListLoadingSkeleton(itemCount: 5),
-        error: (error, stackTrace) => _ErrorState(
-          message: 'Could not load expenses.',
-          details: error.toString(),
-          onRetry: () => ref.invalidate(personalExpensesSummaryProvider),
+        error: (error, stackTrace) => AppStatusView(
+          icon: Icons.personal_video_outlined,
+          title: 'Tracker Unavailable',
+          message: 'Unable to render your personal spending log.',
+          actionLabel: 'Retry',
+          onAction: () => ref.invalidate(personalExpensesSummaryProvider),
         ),
         data: (summary) => RefreshIndicator(
+          color: AppTheme.secondary,
+          backgroundColor: AppTheme.surfaceElevated,
           onRefresh: () async {
             ref.invalidate(personalExpensesSummaryProvider);
             ref.invalidate(personalExpensesListProvider);
+            await ref.read(personalExpensesSummaryProvider.future);
           },
-          child: ListView(
-            children: [
-              _SummaryCard(summary: summary),
-              const SizedBox(height: 12),
-              _CategoryBreakdownCard(summary: summary),
-              const SizedBox(height: 12),
-              _ExpensesList(summary: summary, ref: ref),
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              // Hero Section
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                  child: _HeroSection(summary: summary),
+                ),
+              ),
+
+              // Category Breakdown
+              if (summary.totalSpending > 0) ...[
+                SliverToBoxAdapter(
+                  child: _SectionHeader(title: 'CATEGORY BREAKDOWN'),
+                ),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  sliver: SliverToBoxAdapter(
+                    child: _CategoryBreakdownCard(summary: summary),
+                  ),
+                ),
+              ],
+
+              // Activity List
+              SliverToBoxAdapter(
+                child: _SectionHeader(title: 'RECENT TRACKED ITEMS'),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 120),
+                sliver: summary.expenses.isEmpty
+                    ? const SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.only(top: 40),
+                          child: AppStatusView(
+                            icon: Icons.receipt_long_outlined,
+                            title: 'No items saved',
+                            message: 'Personal tracking inputs will reflect directly below.',
+                            scrollable: false,
+                          ),
+                        ),
+                      )
+                    : SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final expense = summary.expenses[index];
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: _ExpenseItemCard(
+                                expense: expense,
+                                onDelete: () => _showDeleteConfirmation(context, ref, expense),
+                              ),
+                            );
+                          },
+                          childCount: summary.expenses.length,
+                        ),
+                      ),
+              ),
             ],
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _openAddExpenseSheet(context, ref),
-        icon: const Icon(Icons.add),
-        label: const Text('Add Expense'),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: SizedBox(
+          width: double.infinity,
+          child: NeumorphicButton(
+            onPressed: () => _openAddExpenseSheet(context, ref),
+            icon: Icons.add_circle_outline,
+            label: 'Track Personal Item',
+          ),
+        ),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
@@ -50,6 +119,7 @@ class PersonalExpensesScreen extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
+      backgroundColor: Colors.transparent,
       builder: (context) {
         return _AddExpenseSheet(
           onCreated: () {
@@ -60,46 +130,149 @@ class PersonalExpensesScreen extends ConsumerWidget {
       },
     );
   }
+
+  Future<void> _showDeleteConfirmation(BuildContext context, WidgetRef ref, PersonalExpense expense) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surfaceContainer,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
+        title: const Text('Delete tracked item?', style: TextStyle(fontWeight: FontWeight.w800)),
+        content: Text('Remove "${expense.description}" from your personal log?',
+            style: TextStyle(color: AppTheme.onSurfaceVariant, fontSize: 14)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel', style: TextStyle(color: AppTheme.onSurfaceVariant)),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.error),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      final repository = await ref.read(personalExpensesRepositoryProvider.future);
+      await repository.deleteExpense(id: expense.id);
+      ref.invalidate(personalExpensesSummaryProvider);
+      ref.invalidate(personalExpensesListProvider);
+    }
+  }
 }
 
-class _SummaryCard extends StatelessWidget {
-  const _SummaryCard({required this.summary});
+class _HeroSection extends StatelessWidget {
+  const _HeroSection({required this.summary});
 
   final PersonalExpenseSummary summary;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    // Dummy progress - maybe vs a budget if we had one?
+    // For now, let's use a constant or a calculation of recent vs total.
+    const progress = 0.85;
 
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Total Personal Spending',
-                style: Theme.of(context).textTheme.labelMedium,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '₹${summary.totalSpending}',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: colorScheme.primary,
+    return GlassCard(
+      padding: const EdgeInsets.all(24),
+      accentColor: AppTheme.accent,
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'TOTAL PERSONAL SPENDING',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: AppTheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.2,
+                      ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                '${summary.expenses.length} expense${summary.expenses.length != 1 ? 's' : ''}',
-                style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12),
-              ),
-            ],
+                const SizedBox(height: 12),
+                Text(
+                  '₹${summary.totalSpending}',
+                  style: const TextStyle(
+                    fontSize: 34,
+                    fontWeight: FontWeight.w900,
+                    color: AppTheme.accent,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppTheme.accent.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: AppTheme.accent.withValues(alpha: 0.2)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.receipt_long_outlined, size: 12, color: AppTheme.accent),
+                          const SizedBox(width: 6),
+                          Text(
+                            '${summary.expenses.length} items',
+                            style: const TextStyle(color: AppTheme.accent, fontSize: 10, fontWeight: FontWeight.w700),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Text('• Shared Vault Private', style: TextStyle(color: AppTheme.muted, fontSize: 10)),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
+          ProgressRing(
+            progress: progress,
+            size: 80,
+            strokeWidth: 6,
+            activeColor: AppTheme.accent,
+            child: Text(
+              '85%',
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: AppTheme.accent),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+      child: Row(
+        children: [
+          Container(
+            width: 4,
+            height: 16,
+            decoration: BoxDecoration(
+              color: AppTheme.accent.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            title,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: AppTheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.0,
+                ),
+          ),
+        ],
       ),
     );
   }
@@ -112,248 +285,107 @@ class _CategoryBreakdownCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    if (summary.totalSpending == 0) {
-      return const SizedBox.shrink();
-    }
-
     final sortedCategories = summary.categoryBreakdown.entries
         .where((e) => e.value > 0)
         .toList()
         ..sort((a, b) => b.value.compareTo(a.value));
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Category Breakdown',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 12),
-              ...sortedCategories.map((entry) {
-                final category = entry.key;
-                final amount = entry.value;
-                final percentage = summary.getCategoryPercentage(category);
-
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            '${category.emoji} ${category.label}',
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                          Text(
-                            '₹$amount (${percentage.toStringAsFixed(1)}%)',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: colorScheme.primary,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: percentage / 100,
-                          minHeight: 6,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ExpensesList extends ConsumerWidget {
-  const _ExpensesList({
-    required this.summary,
-    required this.ref,
-  });
-
-  final PersonalExpenseSummary summary;
-  final WidgetRef ref;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    if (summary.expenses.isEmpty) {
-      return const AppStatusView(
-        icon: Icons.receipt_long_outlined,
-        title: 'No personal expenses yet',
-        message: 'Add your first personal expense to start tracking spending.',
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+    return GlassCard(
+      padding: const EdgeInsets.all(20),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Recent Expenses',
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 12),
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: summary.expenses.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 8),
-            itemBuilder: (context, index) {
-              final expense = summary.expenses[index];
-              return _ExpenseItem(
-                expense: expense,
-                onDelete: () => _showDeleteConfirmation(context, ref, expense),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
+        children: sortedCategories.map((entry) {
+          final category = entry.key;
+          final amount = entry.value;
+          final percentage = summary.getCategoryPercentage(category);
 
-  Future<void> _showDeleteConfirmation(
-    BuildContext context,
-    WidgetRef ref,
-    PersonalExpense expense,
-  ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Expense?'),
-        content: Text('Remove ${expense.description}?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              'Delete',
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && context.mounted) {
-      try {
-        final repository = await ref.read(personalExpensesRepositoryProvider.future);
-        await repository.deleteExpense(id: expense.id);
-
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Expense deleted'),
-              duration: Duration(seconds: 2),
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(color: AppTheme.surfaceElevated, shape: BoxShape.circle),
+                          child: Text(category.emoji, style: const TextStyle(fontSize: 14)),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(category.label, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                      ],
+                    ),
+                    Text(
+                      '₹$amount',
+                      style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: AppTheme.accent),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: (percentage / 100).clamp(0.0, 1.0),
+                    minHeight: 6,
+                    backgroundColor: AppTheme.surfaceElevated,
+                    valueColor: const AlwaysStoppedAnimation(AppTheme.accent),
+                  ),
+                ),
+              ],
             ),
           );
-
-          ref.invalidate(personalExpensesSummaryProvider);
-          ref.invalidate(personalExpensesListProvider);
-        }
-      } catch (e) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error: $e'),
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-          );
-        }
-      }
-    }
+        }).toList(),
+      ),
+    );
   }
 }
 
-class _ExpenseItem extends StatelessWidget {
-  const _ExpenseItem({
-    required this.expense,
-    required this.onDelete,
-  });
+class _ExpenseItemCard extends StatelessWidget {
+  const _ExpenseItemCard({required this.expense, required this.onDelete});
 
   final PersonalExpense expense;
   final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        border: Border.all(color: colorScheme.outlineVariant),
-        borderRadius: BorderRadius.circular(8),
-      ),
+    return GlassCard(
+      padding: const EdgeInsets.all(14),
+      accentColor: AppTheme.accent,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppTheme.accent.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Text(expense.category.emoji, style: const TextStyle(fontSize: 18)),
+          ),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Text(
-                      expense.category.emoji,
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        expense.description,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
+                Text(expense.description, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
                 const SizedBox(height: 4),
                 Text(
-                  '${expense.category.label} · ${_formatDate(expense.createdAt)}',
-                  style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12),
+                  '${expense.category.label} • ${_formatDate(expense.createdAt)}',
+                  style: TextStyle(color: AppTheme.onSurfaceVariant, fontSize: 11),
                 ),
               ],
             ),
           ),
-          PopupMenuButton(
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                onTap: onDelete,
-                child: Text(
-                  'Delete',
-                  style: TextStyle(color: colorScheme.error),
-                ),
-              ),
-            ],
-            child: Text(
-              '₹${expense.amount}',
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
-                color: colorScheme.primary,
-              ),
-            ),
+          Text(
+            '₹${expense.amount}',
+            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: AppTheme.accent),
+          ),
+          const SizedBox(width: 8),
+          IconButton(
+            onPressed: onDelete,
+            icon: const Icon(Icons.delete_outline, size: 18, color: AppTheme.muted),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
           ),
         ],
       ),
@@ -374,7 +406,6 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet> {
   final _formKey = GlobalKey<FormState>();
   final _descriptionController = TextEditingController();
   final _amountController = TextEditingController();
-
   late ExpenseCategory _selectedCategory;
   bool _submitting = false;
 
@@ -395,98 +426,47 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet> {
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(16, 20, 16, 16 + bottomInset),
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            child: Column(
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceContainer,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppTheme.radiusLarge)),
+        border: Border.all(color: Colors.white10),
+      ),
+      padding: EdgeInsets.fromLTRB(24, 20, 24, 24 + bottomInset),
+      child: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Add Personal Expense',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+              Center(
+                child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
               ),
-              const SizedBox(height: 16),
-              Text(
-                'Category',
-                style: Theme.of(context).textTheme.labelMedium,
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: ExpenseCategory.values
-                    .map(
-                      (category) => FilterChip(
-                        label: Text('${category.emoji} ${category.label}'),
-                        selected: _selectedCategory == category,
-                        onSelected: _submitting
-                            ? null
-                            : (selected) {
-                                setState(() {
-                                  _selectedCategory = category;
-                                });
-                              },
-                      ),
-                    )
-                    .toList(),
-              ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
+              const Text('Track Personal Item', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 20),
               TextFormField(
                 controller: _descriptionController,
-                enabled: !_submitting,
-                decoration: const InputDecoration(
-                  labelText: 'Description',
-                  hintText: 'e.g., Lunch at cafe',
-                ),
-                textInputAction: TextInputAction.next,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Enter a description';
-                  }
-                  return null;
-                },
+                decoration: const InputDecoration(labelText: 'Description', filled: true),
+                validator: (v) => v!.isEmpty ? 'Provide description' : null,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               TextFormField(
                 controller: _amountController,
-                enabled: !_submitting,
-                decoration: const InputDecoration(
-                  labelText: 'Amount (₹)',
-                  prefixText: '₹ ',
-                ),
+                decoration: const InputDecoration(labelText: 'Amount (₹)', filled: true),
                 keyboardType: TextInputType.number,
-                textInputAction: TextInputAction.done,
-                onFieldSubmitted: (_) => _submit(),
-                validator: (value) {
-                  final amount = int.tryParse(value?.trim() ?? '');
-                  if (amount == null || amount <= 0) {
-                    return 'Enter a valid amount';
-                  }
-                  return null;
-                },
+                validator: (v) => int.tryParse(v!) == null ? 'Enter amount' : null,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 28),
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _submitting ? null : _submit,
-                  child: _submitting
-                      ? const SizedBox(
-                          height: 18,
-                          width: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Save Expense'),
+                child: NeumorphicButton(
+                  onPressed: _submit,
+                  label: _submitting ? 'Saving...' : 'Save Record',
                 ),
               ),
             ],
-            ),
           ),
         ),
       ),
@@ -495,9 +475,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-
     setState(() => _submitting = true);
-
     try {
       final repository = await ref.read(personalExpensesRepositoryProvider.future);
       await repository.addExpense(
@@ -505,69 +483,20 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet> {
         amount: int.parse(_amountController.text.trim()),
         category: _selectedCategory,
       );
-
       if (mounted) {
         Navigator.pop(context);
         widget.onCreated();
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Expense added'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
       }
     } finally {
-      if (mounted) {
-        setState(() => _submitting = false);
-      }
+      if (mounted) setState(() => _submitting = false);
     }
-  }
-}
-
-class _ErrorState extends StatelessWidget {
-  const _ErrorState({
-    required this.message,
-    required this.details,
-    required this.onRetry,
-  });
-
-  final String message;
-  final String details;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return AppStatusView(
-      icon: Icons.error_outline,
-      title: message,
-      message: details,
-      actionLabel: 'Retry',
-      onAction: onRetry,
-    );
   }
 }
 
 String _formatDate(DateTime date) {
   final now = DateTime.now();
   final difference = now.difference(date);
-
-  if (difference.inDays == 0) {
-    return 'today';
-  } else if (difference.inDays == 1) {
-    return 'yesterday';
-  } else if (difference.inDays < 7) {
-    return '${difference.inDays} days ago';
-  } else {
-    return '${date.day}/${date.month}/${date.year}';
-  }
+  if (difference.inDays == 0) return 'Today';
+  if (difference.inDays == 1) return 'Yesterday';
+  return '${date.day}/${date.month}/${date.year}';
 }

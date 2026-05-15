@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/theme/app_theme.dart';
+import '../../core/widgets/app_components.dart';
 import '../dashboard/dashboard_providers.dart';
 import 'debts_providers.dart';
 import 'domain/debts_models.dart';
@@ -27,55 +29,41 @@ class DebtDetailScreen extends ConsumerWidget {
           onRetry: () => ref.invalidate(settlementsForDebtProvider(debt.debtId)),
         ),
         data: (settlements) => SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _DebtSummaryCard(debt: debt),
+                _PremiumSummaryCard(debt: debt),
+                const SizedBox(height: 20),
+                _AnimatedProgressSection(debt: debt),
                 const SizedBox(height: 24),
-                _ProgressBar(debt: debt),
-                const SizedBox(height: 24),
-                Text(
-                  'Settlement History',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
-                ),
+                _SectionLabel(label: 'SETTLEMENT TIMELINE'),
                 const SizedBox(height: 12),
                 if (settlements.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 24),
-                    child: Center(
-                      child: Text(
-                        'No payments recorded yet',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            ),
-                      ),
-                    ),
-                  )
+                  _EmptyTimeline()
                 else
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: settlements.length,
-                    separatorBuilder: (context, index) => const SizedBox(height: 8),
-                    itemBuilder: (context, index) {
-                      final settlement = settlements[index];
-                      return _SettlementTile(settlement: settlement);
-                    },
-                  ),
+                  _SettlementTimeline(settlements: settlements),
               ],
             ),
           ),
         ),
       ),
       floatingActionButton: !debt.isFullySettled
-          ? FloatingActionButton.extended(
-              onPressed: () => _openRecordSettlementSheet(context, ref),
-              icon: const Icon(Icons.add),
-              label: const Text('Record Payment'),
+          ? Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: SizedBox(
+                width: double.infinity,
+                child: NeumorphicButton(
+                  onPressed: () => _openRecordSettlementSheet(context, ref),
+                  icon: Icons.add,
+                  label: 'Record Payment',
+                ),
+              ),
             )
           : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
@@ -98,79 +86,118 @@ class DebtDetailScreen extends ConsumerWidget {
   }
 }
 
-class _DebtSummaryCard extends StatelessWidget {
-  const _DebtSummaryCard({required this.debt});
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 4,
+          height: 16,
+          decoration: BoxDecoration(
+            color: AppTheme.secondary.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: AppTheme.onSurfaceVariant,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.0,
+              ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PremiumSummaryCard extends StatelessWidget {
+  const _PremiumSummaryCard({required this.debt});
 
   final PendingDebtRecord debt;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  backgroundColor: colorScheme.primary.withValues(alpha: 0.10),
-                  radius: 24,
+    return GlassCard(
+      accentColor: debt.isOverdue ? AppTheme.error : AppTheme.secondary,
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: AppTheme.secondary.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: AppTheme.secondary.withValues(alpha: 0.25),
+                    width: 2,
+                  ),
+                ),
+                child: Center(
                   child: Text(
-                    debt.friendName.substring(0, 1),
-                    style: TextStyle(
-                      color: colorScheme.primary,
+                    debt.friendName.substring(0, 1).toUpperCase(),
+                    style: const TextStyle(
+                      color: AppTheme.secondary,
                       fontWeight: FontWeight.w800,
-                      fontSize: 20,
+                      fontSize: 22,
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        debt.friendName,
-                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        debt.note,
-                        style: TextStyle(
-                          color: colorScheme.onSurfaceVariant,
-                          fontSize: 13,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Created ${_formatDate(debt.createdAt)}',
-                        style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 11),
-                      ),
-                    ],
-                  ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      debt.friendName,
+                      style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      debt.note,
+                      style: TextStyle(color: AppTheme.onSurfaceVariant, fontSize: 13),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Created ${_formatDate(debt.createdAt)}',
+                      style: TextStyle(color: AppTheme.muted, fontSize: 11),
+                    ),
+                  ],
                 ),
-              ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceElevated.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
             ),
-            const SizedBox(height: 16),
-            Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Total Debt',
-                      style: Theme.of(context).textTheme.labelMedium,
-                    ),
-                    const SizedBox(height: 4),
+                    Text('Total Debt', style: TextStyle(color: AppTheme.muted, fontSize: 10, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 3),
                     Text(
                       _formatCurrency(debt.totalAmount),
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
                     ),
                   ],
                 ),
@@ -179,162 +206,298 @@ class _DebtSummaryCard extends StatelessWidget {
                   children: [
                     Text(
                       'Remaining',
-                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            color: debt.isOverdue ? colorScheme.error : null,
-                          ),
+                      style: TextStyle(
+                        color: debt.isOverdue ? AppTheme.error : AppTheme.muted,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 3),
                     Text(
                       _formatCurrency(debt.remainingAmount),
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w800,
                         color: debt.remainingAmount == 0
-                            ? colorScheme.primary
+                            ? AppTheme.success
                             : debt.isOverdue
-                                ? colorScheme.error
-                                : null,
+                                ? AppTheme.error
+                                : AppTheme.secondary,
                       ),
                     ),
                   ],
                 ),
               ],
             ),
-            if (debt.isOverdue) ...[
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: colorScheme.error.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.warning_amber_outlined, color: colorScheme.error, size: 18),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Overdue by ${DateTime.now().difference(debt.createdAt).inDays} days',
-                        style: TextStyle(color: colorScheme.error, fontSize: 12),
-                      ),
-                    ),
-                  ],
-                ),
+          ),
+          if (debt.isOverdue) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppTheme.error.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppTheme.error.withValues(alpha: 0.15)),
               ),
-            ],
+              child: Row(
+                children: [
+                  Icon(Icons.warning_amber_rounded, color: AppTheme.error, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Overdue by ${DateTime.now().difference(debt.createdAt).inDays} days',
+                      style: TextStyle(color: AppTheme.error, fontSize: 12, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
-        ),
+        ],
       ),
     );
   }
 }
 
-class _ProgressBar extends StatelessWidget {
-  const _ProgressBar({required this.debt});
+class _AnimatedProgressSection extends StatelessWidget {
+  const _AnimatedProgressSection({required this.debt});
 
   final PendingDebtRecord debt;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final progress = debt.totalAmount > 0 ? debt.repaidAmount / debt.totalAmount : 0.0;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Payment Progress',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-            ),
-            Text(
-              '${(progress * 100).toStringAsFixed(0)}%',
-              style: TextStyle(
-                color: colorScheme.primary,
-                fontWeight: FontWeight.w700,
+    return GlassCard(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Payment Progress',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+              ),
+              TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0.0, end: progress * 100),
+                duration: AppTheme.animSlow,
+                curve: AppTheme.animCurve,
+                builder: (context, value, _) {
+                  return Text(
+                    '${value.toStringAsFixed(0)}%',
+                    style: const TextStyle(
+                      color: AppTheme.secondary,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Circular progress ring centered
+          Center(
+            child: ProgressRing(
+              progress: progress,
+              size: 100,
+              strokeWidth: 8,
+              activeColor: debt.remainingAmount == 0 ? AppTheme.success : AppTheme.secondary,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _formatCurrency(debt.repaidAmount),
+                    style: const TextStyle(
+                      color: AppTheme.secondary,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                    ),
+                  ),
+                  Text(
+                    'paid',
+                    style: TextStyle(color: AppTheme.muted, fontSize: 10),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
-            value: progress,
-            minHeight: 8,
+          ),
+          const SizedBox(height: 16),
+          // Milestone markers
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _Milestone(label: '0%', isReached: true),
+              _Milestone(label: '25%', isReached: progress >= 0.25),
+              _Milestone(label: '50%', isReached: progress >= 0.50),
+              _Milestone(label: '75%', isReached: progress >= 0.75),
+              _Milestone(label: '100%', isReached: progress >= 1.0),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Paid: ${_formatCurrency(debt.repaidAmount)}',
+                style: const TextStyle(color: AppTheme.secondary, fontSize: 11, fontWeight: FontWeight.w600),
+              ),
+              Text(
+                'Pending: ${_formatCurrency(debt.remainingAmount)}',
+                style: TextStyle(
+                  color: debt.remainingAmount == 0 ? AppTheme.success : AppTheme.onSurfaceVariant,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Milestone extends StatelessWidget {
+  const _Milestone({required this.label, required this.isReached});
+
+  final String label;
+  final bool isReached;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(
+            color: isReached ? AppTheme.secondary : AppTheme.surfaceElevated,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: isReached ? AppTheme.secondary : AppTheme.muted,
+              width: 2,
+            ),
           ),
         ),
-        const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Paid: ${_formatCurrency(debt.repaidAmount)}',
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: colorScheme.primary,
-                  ),
-            ),
-            Text(
-              'Pending: ${_formatCurrency(debt.remainingAmount)}',
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: debt.remainingAmount == 0 ? colorScheme.primary : colorScheme.error,
-                  ),
-            ),
-          ],
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            color: isReached ? AppTheme.secondary : AppTheme.muted,
+            fontSize: 9,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ],
     );
   }
 }
 
-class _SettlementTile extends StatelessWidget {
-  const _SettlementTile({required this.settlement});
-
-  final SettlementRecord settlement;
-
+class _EmptyTimeline extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        border: Border.all(color: colorScheme.outlineVariant),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return GlassCard(
+      padding: const EdgeInsets.all(24),
+      child: Column(
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  settlement.note,
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _formatDate(settlement.createdAt),
-                  style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12),
-                ),
-              ],
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: AppTheme.secondary.withValues(alpha: 0.08),
+              shape: BoxShape.circle,
             ),
+            child: const Icon(Icons.history, size: 24, color: AppTheme.secondary),
           ),
+          const SizedBox(height: 12),
           Text(
-            _formatCurrency(settlement.amount),
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 14,
-              color: colorScheme.primary,
-            ),
+            'No payments recorded yet',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppTheme.onSurfaceVariant,
+                ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _SettlementTimeline extends StatelessWidget {
+  const _SettlementTimeline({required this.settlements});
+
+  final List<SettlementRecord> settlements;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: List.generate(settlements.length, (index) {
+        final settlement = settlements[index];
+        final isFirst = index == 0;
+        final isLast = index == settlements.length - 1;
+
+        return IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TimelineDot(
+                isFirst: isFirst,
+                isLast: isLast,
+                color: AppTheme.secondary,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: GlassCard(
+                    padding: const EdgeInsets.all(14),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                settlement.note,
+                                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _formatDate(settlement.createdAt),
+                                style: TextStyle(color: AppTheme.muted, fontSize: 11),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppTheme.secondary.withValues(alpha: 0.10),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Text(
+                            _formatCurrency(settlement.amount),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 13,
+                              color: AppTheme.secondary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }),
     );
   }
 }
@@ -369,7 +532,6 @@ class _RecordSettlementSheetState extends ConsumerState<_RecordSettlementSheet> 
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-    final colorScheme = Theme.of(context).colorScheme;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(16, 20, 16, 16 + bottomInset),
@@ -386,15 +548,15 @@ class _RecordSettlementSheetState extends ConsumerState<_RecordSettlementSheet> 
               ),
               const SizedBox(height: 6),
               Text(
-                '${widget.debt.friendName} · ${widget.debt.note}',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+                '${widget.debt.friendName} \u00b7 ${widget.debt.note}',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.onSurfaceVariant),
               ),
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainer,
-                  borderRadius: BorderRadius.circular(8),
+                  color: AppTheme.surfaceElevated.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -402,14 +564,14 @@ class _RecordSettlementSheetState extends ConsumerState<_RecordSettlementSheet> 
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Remaining to pay', style: Theme.of(context).textTheme.labelMedium),
+                        Text('Remaining to pay', style: TextStyle(color: AppTheme.muted, fontSize: 10, fontWeight: FontWeight.w600)),
                         const SizedBox(height: 4),
                         Text(
                           _formatCurrency(widget.debt.remainingAmount),
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
-                            color: colorScheme.primary,
+                            color: AppTheme.secondary,
                           ),
                         ),
                       ],
@@ -417,7 +579,7 @@ class _RecordSettlementSheetState extends ConsumerState<_RecordSettlementSheet> 
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text('Total debt', style: Theme.of(context).textTheme.labelMedium),
+                        Text('Total debt', style: TextStyle(color: AppTheme.muted, fontSize: 10, fontWeight: FontWeight.w600)),
                         const SizedBox(height: 4),
                         Text(
                           _formatCurrency(widget.debt.totalAmount),
@@ -432,10 +594,10 @@ class _RecordSettlementSheetState extends ConsumerState<_RecordSettlementSheet> 
               TextFormField(
                 controller: _amountController,
                 enabled: !_submitting,
-                decoration: InputDecoration(
-                  labelText: 'Payment Amount (₹)',
+                decoration: const InputDecoration(
+                  labelText: 'Payment Amount (\u20b9)',
                   hintText: 'Enter amount to pay',
-                  prefixText: '₹ ',
+                  prefixText: '\u20b9 ',
                 ),
                 keyboardType: TextInputType.number,
                 validator: (value) {
@@ -447,7 +609,7 @@ class _RecordSettlementSheetState extends ConsumerState<_RecordSettlementSheet> 
                     return 'Enter a valid amount';
                   }
                   if (amount > widget.debt.remainingAmount) {
-                    return 'Cannot exceed remaining amount (₹${widget.debt.remainingAmount})';
+                    return 'Cannot exceed remaining amount (\u20b9${widget.debt.remainingAmount})';
                   }
                   return null;
                 },
@@ -456,7 +618,7 @@ class _RecordSettlementSheetState extends ConsumerState<_RecordSettlementSheet> 
               TextFormField(
                 controller: _noteController,
                 enabled: !_submitting,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Payment Note (Optional)',
                   hintText: 'e.g., Partial payment in cash',
                 ),
@@ -505,7 +667,7 @@ class _RecordSettlementSheetState extends ConsumerState<_RecordSettlementSheet> 
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Payment of ₹$amount recorded'),
+            content: Text('Payment of \u20b9$amount recorded'),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -515,7 +677,7 @@ class _RecordSettlementSheetState extends ConsumerState<_RecordSettlementSheet> 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error recording payment: $e'),
-            backgroundColor: Theme.of(context).colorScheme.error,
+            backgroundColor: AppTheme.error,
           ),
         );
       }
@@ -547,7 +709,7 @@ class _ErrorState extends StatelessWidget {
           Icon(
             Icons.error_outline,
             size: 48,
-            color: Theme.of(context).colorScheme.error.withValues(alpha: 0.7),
+            color: AppTheme.error.withValues(alpha: 0.7),
           ),
           const SizedBox(height: 16),
           Text(
@@ -576,7 +738,7 @@ class _ErrorState extends StatelessWidget {
 }
 
 String _formatCurrency(int amount) {
-  return '₹${amount.toStringAsFixed(0)}';
+  return '\u20b9${amount.toStringAsFixed(0)}';
 }
 
 String _formatDate(DateTime date) {

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/theme/app_theme.dart';
+import '../../core/widgets/app_components.dart';
 import '../../core/widgets/app_states.dart';
 import 'cash_providers.dart';
 import 'domain/cash_models.dart';
@@ -92,8 +94,8 @@ class _CashContent extends ConsumerWidget {
                 icon: const Icon(Icons.add),
                 label: const Text('Cash In'),
                 style: FilledButton.styleFrom(
-                  backgroundColor: Colors.green.shade700,
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppTheme.success,
+                  foregroundColor: AppTheme.background,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
               ),
@@ -105,8 +107,8 @@ class _CashContent extends ConsumerWidget {
                 icon: const Icon(Icons.remove),
                 label: const Text('Cash Out'),
                 style: FilledButton.styleFrom(
-                  backgroundColor: Colors.red.shade700,
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppTheme.error,
+                  foregroundColor: AppTheme.background,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
               ),
@@ -114,9 +116,10 @@ class _CashContent extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 20),
-        Card(
+        GlassCard(
+          padding: EdgeInsets.zero,
           child: ListTile(
-            leading: const Icon(Icons.shield_outlined),
+            leading: const Icon(Icons.shield_outlined, color: AppTheme.secondary),
             title: const Text('Emergency Reserve'),
             subtitle: Text('₹${overview.emergencyReserve}'),
             trailing: TextButton(
@@ -158,15 +161,16 @@ class _BalanceCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: isLow ? Colors.red.shade900 : colorScheme.primaryContainer,
+        color: isLow ? AppTheme.error.withValues(alpha: 0.2) : colorScheme.primaryContainer.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: isLow ? AppTheme.error.withValues(alpha: 0.5) : colorScheme.primary.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
           Text(
             'Current Balance',
             style: TextStyle(
-              color: isLow ? Colors.red.shade100 : colorScheme.onPrimaryContainer.withValues(alpha: 0.7),
+              color: isLow ? AppTheme.error : colorScheme.onPrimaryContainer.withValues(alpha: 0.7),
             ),
           ),
           const SizedBox(height: 8),
@@ -175,7 +179,7 @@ class _BalanceCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 36,
               fontWeight: FontWeight.bold,
-              color: isLow ? Colors.white : colorScheme.onPrimaryContainer,
+              color: isLow ? AppTheme.background : colorScheme.onPrimaryContainer,
             ),
           ),
           const SizedBox(height: 16),
@@ -185,13 +189,13 @@ class _BalanceCard extends StatelessWidget {
               Icon(
                 Icons.calendar_month,
                 size: 16,
-                color: isLow ? Colors.red.shade100 : colorScheme.onPrimaryContainer.withValues(alpha: 0.7),
+                color: isLow ? AppTheme.error : colorScheme.onPrimaryContainer.withValues(alpha: 0.7),
               ),
               const SizedBox(width: 8),
               Text(
                 'Spent this month: ₹${overview.monthlyUsage}',
                 style: TextStyle(
-                  color: isLow ? Colors.red.shade100 : colorScheme.onPrimaryContainer.withValues(alpha: 0.7),
+                  color: isLow ? AppTheme.error : colorScheme.onPrimaryContainer.withValues(alpha: 0.7),
                 ),
               ),
             ],
@@ -212,14 +216,16 @@ class _TransactionTile extends ConsumerWidget {
     final isOut = tx.type == 'OUT';
     final formatter = DateFormat('MMM d, yyyy');
 
-    return Card(
+    return GlassCard(
       margin: const EdgeInsets.only(bottom: 8),
+      padding: EdgeInsets.zero,
+      accentColor: isOut ? AppTheme.error : AppTheme.success,
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: isOut ? Colors.red.shade100 : Colors.green.shade100,
+          backgroundColor: isOut ? AppTheme.error.withValues(alpha: 0.2) : AppTheme.success.withValues(alpha: 0.2),
           child: Icon(
             isOut ? Icons.arrow_upward : Icons.arrow_downward,
-            color: isOut ? Colors.red.shade700 : Colors.green.shade700,
+            color: isOut ? AppTheme.error : AppTheme.success,
           ),
         ),
         title: Text(tx.note, style: const TextStyle(fontWeight: FontWeight.w600)),
@@ -228,7 +234,7 @@ class _TransactionTile extends ConsumerWidget {
           '${isOut ? '-' : '+'}₹${tx.amount}',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: isOut ? Colors.red.shade700 : Colors.green.shade700,
+            color: isOut ? AppTheme.error : AppTheme.success,
             fontSize: 16,
           ),
         ),
@@ -245,6 +251,7 @@ class _TransactionTile extends ConsumerWidget {
                     ref.read(cashControllerProvider.notifier).deleteTransaction(tx.id);
                     Navigator.pop(ctx);
                   },
+                  style: FilledButton.styleFrom(backgroundColor: AppTheme.error),
                   child: const Text('Delete'),
                 ),
               ],
@@ -340,7 +347,8 @@ class _TransactionFormState extends ConsumerState<_TransactionForm> {
                 child: FilledButton(
                   onPressed: _submit,
                   style: FilledButton.styleFrom(
-                    backgroundColor: isOut ? Colors.red.shade700 : Colors.green.shade700,
+                    backgroundColor: isOut ? AppTheme.error : AppTheme.success,
+                    foregroundColor: AppTheme.background,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: Text(isOut ? 'Record Expense' : 'Add Cash'),

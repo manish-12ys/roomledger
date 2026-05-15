@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/theme/app_theme.dart';
+import '../../core/widgets/app_components.dart';
 import '../../core/widgets/app_states.dart';
 import 'debts_providers.dart';
 import 'domain/grouped_debt_record.dart';
@@ -14,137 +16,268 @@ class DebtsScreen extends ConsumerWidget {
     final debtsAsync = ref.watch(groupedDebtsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Pending Debts')),
+      backgroundColor: AppTheme.background,
       body: debtsAsync.when(
         loading: () => const AppListLoadingSkeleton(itemCount: 4),
-        error: (error, stackTrace) => _ErrorState(
-          message: 'Could not load debts.',
-          details: error.toString(),
-          onRetry: () => ref.invalidate(groupedDebtsProvider),
+        error: (error, stackTrace) => AppStatusView(
+          icon: Icons.error_outline,
+          title: 'Ledger Error',
+          message: error.toString(),
+          actionLabel: 'Retry',
+          onAction: () => ref.invalidate(groupedDebtsProvider),
         ),
         data: (debts) => RefreshIndicator(
+          color: AppTheme.secondary,
+          backgroundColor: AppTheme.surfaceElevated,
           onRefresh: () async {
             ref.invalidate(groupedDebtsProvider);
             await ref.read(groupedDebtsProvider.future);
           },
-          child: debts.isEmpty
-              ? const _EmptyState()
-              : ListView.separated(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
-                  itemCount: debts.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final groupedDebt = debts[index];
-                    return _GroupedDebtCard(
-                      groupedDebt: groupedDebt,
-                    );
-                  },
-                ),
+          child: debts.isEmpty ? const _EmptyState() : _DebtsContent(debts: debts),
         ),
       ),
     );
   }
 }
 
-class _GroupedDebtCard extends StatelessWidget {
-  const _GroupedDebtCard({
-    required this.groupedDebt,
-  });
+class _DebtsContent extends StatelessWidget {
+  const _DebtsContent({required this.debts});
 
-  final GroupedDebtRecord groupedDebt;
+  final List<GroupedDebtRecord> debts;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final isOverdue = groupedDebt.isOverdue;
+    final totalPending = debts.fold<int>(0, (s, d) => s + d.remainingAmount);
+    final totalRepaid = debts.fold<int>(0, (s, d) => s + d.repaidAmount);
+    final totalAmount = debts.fold<int>(0, (s, d) => s + d.totalAmount);
+    final overallProgress = totalAmount > 0 ? totalRepaid / totalAmount : 0.0;
 
-    return Card(
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => FriendDebtsScreen(groupedDebt: groupedDebt),
+    return CustomScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      slivers: [
+        // Premium Title
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 60, 20, 24),
+            child: const Text(
+              'Pending Debts',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+                letterSpacing: -0.5,
+              ),
             ),
-          );
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+          ),
+        ),
+
+        // Hero Summary
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 28),
+            child: GlassCard(
+              padding: const EdgeInsets.all(24),
+              child: Row(
                 children: [
-                  CircleAvatar(
-                    backgroundColor: isOverdue 
-                        ? colorScheme.error.withValues(alpha: 0.10) 
-                        : colorScheme.primary.withValues(alpha: 0.10),
-                    child: Text(
-                      groupedDebt.friendName.substring(0, 1),
-                      style: TextStyle(
-                        color: isOverdue ? colorScheme.error : colorScheme.primary,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          groupedDebt.friendName,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                        const Text(
+                          'Total Pending',
+                          style: TextStyle(color: AppTheme.muted, fontSize: 13, fontWeight: FontWeight.w600),
                         ),
+                        const SizedBox(height: 12),
                         Text(
-                          '${groupedDebt.debts.length} pending items',
-                          style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 13),
+                          '₹$totalPending',
+                          style: const TextStyle(
+                            fontSize: 34,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            _HeroIndicator(label: 'Debtors', value: '${debts.length}', color: AppTheme.secondary),
+                            const SizedBox(width: 16),
+                            _HeroIndicator(label: 'Overdue', value: '${debts.where((d) => d.isOverdue).length}', color: const Color(0xFFFF5252)),
+                          ],
                         ),
                       ],
                     ),
                   ),
-                  const Icon(Icons.chevron_right, size: 20),
+                  ProgressRing(
+                    progress: overallProgress,
+                    size: 84,
+                    strokeWidth: 7,
+                    child: Text(
+                      '${(overallProgress * 100).toInt()}%',
+                      style: const TextStyle(color: AppTheme.secondary, fontWeight: FontWeight.w900, fontSize: 16),
+                    ),
+                  ),
                 ],
               ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  _SummaryItem(
-                    label: 'Total',
-                    value: _formatCurrency(groupedDebt.totalAmount),
+            ),
+          ),
+        ),
+
+        // Section Header
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+            child: Row(
+              children: [
+                Container(
+                  width: 3,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    color: AppTheme.muted.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(2),
                   ),
-                  _SummaryItem(
-                    label: 'Paid',
-                    value: _formatCurrency(groupedDebt.repaidAmount),
-                    color: colorScheme.primary,
+                ),
+                const SizedBox(width: 10),
+                const Text(
+                  'BY ROOMMATE',
+                  style: TextStyle(
+                    color: AppTheme.muted,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.2,
                   ),
-                  _SummaryItem(
-                    label: 'Remaining',
-                    value: _formatCurrency(groupedDebt.remainingAmount),
-                    color: isOverdue ? colorScheme.error : null,
-                    isBold: true,
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // Debt Cards
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) => Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: _RoommateDebtCard(record: debts[index]),
+              ),
+              childCount: debts.length,
+            ),
+          ),
+        ),
+        const SliverPadding(padding: EdgeInsets.only(bottom: 120)),
+      ],
+    );
+  }
+}
+
+class _HeroIndicator extends StatelessWidget {
+  const _HeroIndicator({required this.label, required this.value, required this.color});
+
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        const SizedBox(width: 6),
+        Text(
+          '$value $label',
+          style: const TextStyle(color: AppTheme.muted, fontSize: 11, fontWeight: FontWeight.w700),
+        ),
+      ],
+    );
+  }
+}
+
+class _RoommateDebtCard extends StatelessWidget {
+  const _RoommateDebtCard({required this.record});
+
+  final GroupedDebtRecord record;
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = record.totalAmount > 0 ? record.repaidAmount / record.totalAmount : 0.0;
+    
+    return GlassCard(
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => FriendDebtsScreen(groupedDebt: record))),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                ),
+                child: Center(
+                  child: Text(
+                    record.friendName.substring(0, 1).toUpperCase(),
+                    style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900),
                   ),
-                ],
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(record.friendName, style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w800)),
+                    const SizedBox(height: 4),
+                    Text('${record.debts.length} pending items', style: const TextStyle(color: AppTheme.muted, fontSize: 12)),
+                  ],
+                ),
+              ),
+              ProgressRing(
+                progress: progress,
+                size: 48,
+                strokeWidth: 4.5,
+                child: Text('${(progress * 100).toInt()}%', style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w900)),
               ),
             ],
           ),
-        ),
+          const SizedBox(height: 16),
+          // Inner Stats Card
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF151515), // Dark inner card
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _StatColumn(label: 'Total', value: '₹${record.totalAmount}'),
+                _StatColumn(label: 'Paid', value: '₹${record.repaidAmount}', color: AppTheme.secondary),
+                _StatColumn(label: 'Remaining', value: '₹${record.remainingAmount}', color: AppTheme.secondary, isBold: true),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Progress underline
+          ClipRRect(
+            borderRadius: BorderRadius.circular(2),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 3,
+              backgroundColor: Colors.white10,
+              valueColor: const AlwaysStoppedAnimation(Colors.white),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _SummaryItem extends StatelessWidget {
-  const _SummaryItem({
-    required this.label,
-    required this.value,
-    this.color,
-    this.isBold = false,
-  });
+class _StatColumn extends StatelessWidget {
+  const _StatColumn({required this.label, required this.value, this.color, this.isBold = false});
 
   final String label;
   final String value;
@@ -153,28 +286,20 @@ class _SummaryItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 11),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(color: AppTheme.muted, fontSize: 10, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 6),
+        Text(
+          value,
+          style: TextStyle(
+            color: color ?? Colors.white,
+            fontSize: 15,
+            fontWeight: isBold ? FontWeight.w900 : FontWeight.w700,
           ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontWeight: isBold ? FontWeight.w800 : FontWeight.w600,
-              fontSize: 16,
-              color: color,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -185,36 +310,9 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const AppStatusView(
-      icon: Icons.check_circle_outline,
-      title: 'No pending debts',
-      message: 'All debts are settled!',
+      icon: Icons.done_all_rounded,
+      title: 'Clear Skies',
+      message: 'No pending debts at the moment.',
     );
   }
-}
-
-class _ErrorState extends StatelessWidget {
-  const _ErrorState({
-    required this.message,
-    required this.details,
-    required this.onRetry,
-  });
-
-  final String message;
-  final String details;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return AppStatusView(
-      icon: Icons.error_outline,
-      title: message,
-      message: details,
-      actionLabel: 'Retry',
-      onAction: onRetry,
-    );
-  }
-}
-
-String _formatCurrency(int amount) {
-  return '₹${amount.toStringAsFixed(0)}';
 }
