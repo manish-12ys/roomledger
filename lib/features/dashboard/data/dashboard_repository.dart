@@ -54,8 +54,8 @@ class DashboardRepository {
           (row) => PendingDebtItem(
             friendName: row['friend_name'] as String,
             note: row['note'] as String,
-            totalAmount: row['total_amount'] as int,
-            repaidAmount: row['repaid_amount'] as int,
+            totalAmount: (row['total_amount'] as num?)?.toInt() ?? 0,
+            repaidAmount: (row['repaid_amount'] as num?)?.toInt() ?? 0,
             createdAt: DateTime.parse(row['created_at'] as String),
           ),
         )
@@ -67,7 +67,7 @@ class DashboardRepository {
         (row) => DashboardActivity(
           title: '${row['friend_name']} owes ${row['total_amount']}',
           subtitle: row['note'] as String,
-          amount: row['total_amount'] as int,
+          amount: (row['total_amount'] as num?)?.toInt() ?? 0,
           createdAt: DateTime.parse(row['created_at'] as String),
           isSettlement: false,
         ),
@@ -76,7 +76,7 @@ class DashboardRepository {
         (row) => DashboardActivity(
           title: '${row['friend_name']} made a repayment',
           subtitle: '${row['note']} · ${row['debt_note']}',
-          amount: row['amount'] as int,
+          amount: (row['amount'] as num?)?.toInt() ?? 0,
           createdAt: DateTime.parse(row['created_at'] as String),
           isSettlement: true,
         ),
@@ -85,7 +85,7 @@ class DashboardRepository {
         (row) => DashboardActivity(
           title: 'Personal: ${row['category']}',
           subtitle: row['description'] as String,
-          amount: row['amount'] as int,
+          amount: (row['amount'] as num?)?.toInt() ?? 0,
           createdAt: DateTime.parse(row['created_at'] as String),
           isSettlement: false,
           isPersonal: true,
@@ -116,6 +116,10 @@ class DashboardRepository {
 
     final totalPending = pendingDebts.fold<int>(0, (sum, debt) => sum + debt.remainingAmount);
     final overdueCount = pendingDebts.where((debt) => debt.isOverdue).length;
+
+    // Compute total ever owed and total repaid across ALL debts (for the ring)
+    final totalDebt = debtRows.fold<int>(0, (sum, row) => sum + ((row['total_amount'] as num?)?.toInt() ?? 0));
+    final totalRepaid = debtRows.fold<int>(0, (sum, row) => sum + ((row['repaid_amount'] as num?)?.toInt() ?? 0));
     
     // Count unique friends with pending debts
     final uniqueFriendDebts = <String>{};
@@ -124,13 +128,10 @@ class DashboardRepository {
     }
     final debtorCount = uniqueFriendDebts.length;
 
-    final reserveRows = await database.query('wallet_settings', where: 'id = 1');
-    final emergencyReserve = reserveRows.isNotEmpty ? reserveRows.first['emergency_reserve'] as int : 0;
-    
     final cashRows = await database.query('cash_transactions');
     int cashBalance = 0;
     for (final row in cashRows) {
-      final amount = row['amount'] as int;
+      final amount = (row['amount'] as num?)?.toInt() ?? 0;
       if (row['type'] == 'IN') {
         cashBalance += amount;
       } else {
@@ -138,8 +139,13 @@ class DashboardRepository {
       }
     }
 
+    final reserveRows = await database.query('wallet_settings', where: 'id = 1');
+    final emergencyReserve = (reserveRows.isNotEmpty ? reserveRows.first['emergency_reserve'] as num? : null)?.toInt() ?? 0;
+
     return DashboardOverview(
       totalPending: totalPending,
+      totalDebt: totalDebt,
+      totalRepaid: totalRepaid,
       debtorCount: debtorCount,
       monthlySpending: monthlySpending,
       sharedSpending: sharedSpending,

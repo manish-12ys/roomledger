@@ -51,6 +51,8 @@ void main() {
     testWidgets('renders overview data and quick actions', (tester) async {
       final overview = DashboardOverview(
         totalPending: 4500,
+        totalDebt: 5000,
+        totalRepaid: 500,
         debtorCount: 3,
         monthlySpending: 12000,
         sharedSpending: 7500,

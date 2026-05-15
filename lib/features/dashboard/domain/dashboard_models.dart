@@ -1,6 +1,8 @@
 class DashboardOverview {
   const DashboardOverview({
     required this.totalPending,
+    required this.totalDebt,
+    required this.totalRepaid,
     required this.debtorCount,
     required this.monthlySpending,
     required this.sharedSpending,
@@ -13,6 +15,8 @@ class DashboardOverview {
   });
 
   final int totalPending;
+  final int totalDebt;
+  final int totalRepaid;
   final int debtorCount;
   final int monthlySpending;
   final int sharedSpending;

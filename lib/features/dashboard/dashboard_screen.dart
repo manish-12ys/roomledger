@@ -64,7 +64,7 @@ class _DashboardContent extends StatelessWidget {
           actions: [
             IconButton(
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => BackupRestoreScreen())),
-              icon: const Icon(Icons.settings_backup_restore, size: 22, color: Colors.white70),
+              icon: const Icon(Icons.settings_backup_restore, size: 22, color: AppTheme.onSurfaceVariant),
             ),
             const SizedBox(width: 8),
           ],
@@ -90,7 +90,7 @@ class _DashboardContent extends StatelessWidget {
                 _AccessPill(
                   label: 'Analytics',
                   icon: Icons.insights_rounded,
-                  color: Colors.orangeAccent,
+                  color: AppTheme.warning,
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AnalyticsScreen())),
                 ),
                 const SizedBox(width: 10),
@@ -126,7 +126,7 @@ class _DashboardContent extends StatelessWidget {
                     label: 'Spent',
                     value: '₹${overview.monthlySpending}',
                     icon: Icons.trending_up_rounded,
-                    color: Colors.white,
+                    color: AppTheme.onSurface,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -170,7 +170,10 @@ class _PremiumHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final progress = overview.debtorCount > 0 ? (overview.debtorCount - overview.overdueCount) / overview.debtorCount : 1.0;
+    // Same calculation as Shared Ledger: total repaid / total ever owed across ALL debts
+    final progress = overview.totalDebt > 0
+        ? (overview.totalRepaid / overview.totalDebt).clamp(0.0, 1.0)
+        : 0.0;
 
     return GlassCard(
       padding: const EdgeInsets.all(24),
@@ -183,24 +186,34 @@ class _PremiumHero extends StatelessWidget {
                 const Text('Total Shared Debt', style: TextStyle(color: AppTheme.muted, fontSize: 13, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 12),
                 Text('₹${overview.totalPending}', 
-                  style: const TextStyle(fontSize: 34, fontWeight: FontWeight.w900, color: Colors.white)),
+                  style: const TextStyle(fontSize: 34, fontWeight: FontWeight.w900, color: AppTheme.onSurface)),
                 const SizedBox(height: 16),
                 Row(
                   children: [
                     _Badge(label: 'Debtors', value: '${overview.debtorCount}', color: AppTheme.secondary),
                     const SizedBox(width: 12),
-                    _Badge(label: 'Overdue', value: '${overview.overdueCount}', color: const Color(0xFFFF5252)),
+                    _Badge(label: 'Overdue', value: '${overview.overdueCount}', color: AppTheme.error),
                   ],
                 ),
               ],
             ),
           ),
-          ProgressRing(
-            progress: progress,
-            size: 80,
-            strokeWidth: 6,
-            child: Text('${(progress * 100).toInt()}%', 
-              style: const TextStyle(color: AppTheme.secondary, fontWeight: FontWeight.w900, fontSize: 14)),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ProgressRing(
+                progress: progress,
+                size: 80,
+                strokeWidth: 6,
+                child: Text('${(progress * 100).toInt()}%',
+                  style: const TextStyle(color: AppTheme.secondary, fontWeight: FontWeight.w900, fontSize: 14)),
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'repaid',
+                style: TextStyle(color: AppTheme.muted, fontSize: 10, fontWeight: FontWeight.w600),
+              ),
+            ],
           ),
         ],
       ),
@@ -231,7 +244,7 @@ class _AccessPill extends StatelessWidget {
             children: [
               Icon(icon, color: color, size: 22),
               const SizedBox(height: 8),
-              Text(label, style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w700)),
+              Text(label, style: TextStyle(color: AppTheme.onSurfaceVariant, fontSize: 11, fontWeight: FontWeight.w700)),
             ],
           ),
         ),
@@ -258,7 +271,7 @@ class _MiniMetric extends StatelessWidget {
           const SizedBox(height: 12),
           Text(label, style: const TextStyle(color: AppTheme.muted, fontSize: 10, fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
-          Text(value, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900)),
+          Text(value, style: const TextStyle(color: AppTheme.onSurface, fontSize: 18, fontWeight: FontWeight.w900)),
         ],
       ),
     );
@@ -271,7 +284,7 @@ class _ActivityItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = activity.isSettlement ? AppTheme.secondary : (activity.isPersonal ? AppTheme.accent : Colors.white70);
+    final color = activity.isSettlement ? AppTheme.secondary : (activity.isPersonal ? AppTheme.accent : AppTheme.onSurfaceVariant);
     
     return GlassCard(
       padding: const EdgeInsets.all(16),
@@ -295,7 +308,7 @@ class _ActivityItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(activity.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 15)),
+                Text(activity.title, style: const TextStyle(color: AppTheme.onSurface, fontWeight: FontWeight.w800, fontSize: 15)),
                 const SizedBox(height: 4),
                 Text(activity.subtitle, style: const TextStyle(color: AppTheme.muted, fontSize: 11, fontWeight: FontWeight.w600)),
               ],

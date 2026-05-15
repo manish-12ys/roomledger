@@ -14,6 +14,7 @@ class DebtsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final debtsAsync = ref.watch(groupedDebtsProvider);
+    final allDebtsAsync = ref.watch(pendingDebtsProvider);
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -26,31 +27,48 @@ class DebtsScreen extends ConsumerWidget {
           actionLabel: 'Retry',
           onAction: () => ref.invalidate(groupedDebtsProvider),
         ),
-        data: (debts) => RefreshIndicator(
-          color: AppTheme.secondary,
-          backgroundColor: AppTheme.surfaceElevated,
-          onRefresh: () async {
-            ref.invalidate(groupedDebtsProvider);
-            await ref.read(groupedDebtsProvider.future);
-          },
-          child: debts.isEmpty ? const _EmptyState() : _DebtsContent(debts: debts),
-        ),
+        data: (debts) {
+          // Use all debts (including settled) for the ring — same as Shared Ledger
+          final allDebts = allDebtsAsync.valueOrNull ?? [];
+          final totalDebt = allDebts.fold<int>(0, (s, d) => s + d.totalAmount);
+          final totalRepaid = allDebts.fold<int>(0, (s, d) => s + d.repaidAmount);
+          return RefreshIndicator(
+            color: AppTheme.secondary,
+            backgroundColor: AppTheme.surfaceElevated,
+            onRefresh: () async {
+              ref.invalidate(groupedDebtsProvider);
+              ref.invalidate(pendingDebtsProvider);
+              await ref.read(groupedDebtsProvider.future);
+            },
+            child: debts.isEmpty
+                ? const _EmptyState()
+                : _DebtsContent(
+                    debts: debts,
+                    totalDebt: totalDebt,
+                    totalRepaid: totalRepaid,
+                  ),
+          );
+        },
       ),
     );
   }
 }
 
 class _DebtsContent extends StatelessWidget {
-  const _DebtsContent({required this.debts});
+  const _DebtsContent({
+    required this.debts,
+    required this.totalDebt,
+    required this.totalRepaid,
+  });
 
   final List<GroupedDebtRecord> debts;
+  final int totalDebt;
+  final int totalRepaid;
 
   @override
   Widget build(BuildContext context) {
     final totalPending = debts.fold<int>(0, (s, d) => s + d.remainingAmount);
-    final totalRepaid = debts.fold<int>(0, (s, d) => s + d.repaidAmount);
-    final totalAmount = debts.fold<int>(0, (s, d) => s + d.totalAmount);
-    final overallProgress = totalAmount > 0 ? totalRepaid / totalAmount : 0.0;
+    final overallProgress = totalDebt > 0 ? totalRepaid / totalDebt : 0.0;
 
     return CustomScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
@@ -64,7 +82,7 @@ class _DebtsContent extends StatelessWidget {
               style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.w900,
-                color: Colors.white,
+                color: AppTheme.onSurface,
                 letterSpacing: -0.5,
               ),
             ),
@@ -107,16 +125,25 @@ class _DebtsContent extends StatelessWidget {
                       ],
                     ),
                   ),
-                  ProgressRing(
-                    progress: overallProgress,
-                    size: 84,
-                    strokeWidth: 7,
-                    child: Text(
-                      '${(overallProgress * 100).toInt()}%',
-                      style: const TextStyle(color: AppTheme.secondary, fontWeight: FontWeight.w900, fontSize: 16),
-                    ),
-                  ),
-                ],
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ProgressRing(
+                        progress: overallProgress,
+                        size: 84,
+                        strokeWidth: 7,
+                        child: Text(
+                          '${(overallProgress * 100).toInt()}%',
+                          style: const TextStyle(color: AppTheme.secondary, fontWeight: FontWeight.w900, fontSize: 16),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'repaid',
+                        style: TextStyle(color: AppTheme.muted, fontSize: 10, fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),                ],
               ),
             ),
           ),
