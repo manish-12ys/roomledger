@@ -4,6 +4,7 @@ class PendingDebtRecord {
     required this.friendId,
     required this.friendName,
     required this.note,
+    required this.category,
     required this.totalAmount,
     required this.repaidAmount,
     required this.createdAt,
@@ -13,6 +14,7 @@ class PendingDebtRecord {
   final int friendId;
   final String friendName;
   final String note;
+  final String category;
   final int totalAmount;
   final int repaidAmount;
   final DateTime createdAt;

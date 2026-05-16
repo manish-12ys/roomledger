@@ -16,6 +16,7 @@ class DebtsRepository {
         f.id as friend_id,
         f.name as friend_name,
         d.note,
+        d.category,
         d.total_amount,
         COALESCE(SUM(s.amount), 0) as repaid_amount,
         d.created_at
@@ -31,11 +32,14 @@ class DebtsRepository {
           (row) => PendingDebtRecord(
             debtId: row['debt_id'] as int,
             friendId: row['friend_id'] as int,
-            friendName: row['friend_name'] as String,
-            note: row['note'] as String,
+            friendName: row['friend_name'] as String? ?? 'Unknown',
+            note: row['note'] as String? ?? '',
+            category: row['category'] as String? ?? 'Others',
             totalAmount: (row['total_amount'] as num?)?.toInt() ?? 0,
             repaidAmount: (row['repaid_amount'] as num?)?.toInt() ?? 0,
-            createdAt: DateTime.parse(row['created_at'] as String),
+            createdAt: row['created_at'] != null
+                ? DateTime.parse(row['created_at'] as String)
+                : DateTime.now(),
           ),
         )
         .toList();

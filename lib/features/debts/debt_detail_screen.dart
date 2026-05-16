@@ -118,6 +118,25 @@ class _SectionLabel extends StatelessWidget {
   }
 }
 
+String _getCategoryIcon(String category) {
+  switch (category) {
+    case 'Groceries': return '🛒';
+    case 'Vegetables': return '🥦';
+    case 'Auto / Fuel': return '🚗';
+    case 'Shopping': return '🛍';
+    case 'Bills': return '💡';
+    case 'Food': return '🍔';
+    case 'Entertainment': return '🎬';
+    case 'Medical': return '💊';
+    case 'Transport': return '🚕';
+    case 'Education': return '📚';
+    case 'Rent': return '🏠';
+    case 'Recharge': return '📱';
+    case 'Travel': return '✈';
+    default: return '🎁';
+  }
+}
+
 class _PremiumSummaryCard extends StatelessWidget {
   const _PremiumSummaryCard({required this.debt});
 
@@ -146,12 +165,8 @@ class _PremiumSummaryCard extends StatelessWidget {
                 ),
                 child: Center(
                   child: Text(
-                    debt.friendName.substring(0, 1).toUpperCase(),
-                    style: const TextStyle(
-                      color: AppTheme.secondary,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 22,
-                    ),
+                    _getCategoryIcon(debt.category),
+                    style: const TextStyle(fontSize: 24),
                   ),
                 ),
               ),
@@ -161,7 +176,7 @@ class _PremiumSummaryCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      debt.friendName,
+                      debt.category,
                       style: const TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 18,
@@ -169,14 +184,25 @@ class _PremiumSummaryCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      debt.note,
+                      'Split with ${debt.friendName}',
                       style: TextStyle(
                         color: AppTheme.onSurfaceVariant,
                         fontSize: 13,
+                        fontWeight: FontWeight.w600,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
+                    if (debt.note.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        debt.note,
+                        style: TextStyle(
+                          color: AppTheme.onSurface.withValues(alpha: 0.7),
+                          fontSize: 12,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                     const SizedBox(height: 4),
                     Text(
                       'Created ${_formatDate(debt.createdAt)}',

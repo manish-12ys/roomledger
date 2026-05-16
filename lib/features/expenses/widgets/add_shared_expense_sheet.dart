@@ -21,6 +21,26 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
   final _amountController = TextEditingController();
   bool _submitting = false;
 
+  // Categories
+  final List<Map<String, dynamic>> _categories = [
+    {'name': 'Groceries', 'icon': '🛒'},
+    {'name': 'Vegetables', 'icon': '🥦'},
+    {'name': 'Auto / Fuel', 'icon': '🚗'},
+    {'name': 'Shopping', 'icon': '🛍'},
+    {'name': 'Bills', 'icon': '💡'},
+    {'name': 'Food', 'icon': '🍔'},
+    {'name': 'Entertainment', 'icon': '🎬'},
+    {'name': 'Medical', 'icon': '💊'},
+    {'name': 'Transport', 'icon': '🚕'},
+    {'name': 'Education', 'icon': '📚'},
+    {'name': 'Rent', 'icon': '🏠'},
+    {'name': 'Recharge', 'icon': '📱'},
+    {'name': 'Travel', 'icon': '✈'},
+    {'name': 'Others', 'icon': '🎁'},
+  ];
+
+  String _selectedCategory = 'Groceries';
+
   // Split mode: 'equal', 'custom', 'percentage'
   String _splitMode = 'equal';
 
@@ -83,6 +103,7 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
         await repository.addSplitExpense(
           AddSplitExpenseInput(
             note: _noteController.text.trim(),
+            category: _selectedCategory,
             totalAmount: totalAmount,
             participantIds: participantIds,
             splitWithSelf: true,
@@ -112,6 +133,7 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
         await repository.addCustomSplitExpense(
           AddCustomSplitExpenseInput(
             note: _noteController.text.trim(),
+            category: _selectedCategory,
             totalAmount: totalAmount,
             allocations: allocations,
           ),
@@ -139,6 +161,7 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
         await repository.addPercentageSplitExpense(
           AddPercentageSplitExpenseInput(
             note: _noteController.text.trim(),
+            category: _selectedCategory,
             totalAmount: totalAmount,
             allocations: allocations,
           ),
@@ -196,26 +219,92 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
                 'Add Shared Expense',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
-              // Note field
-              TextFormField(
-                controller: _noteController,
-                decoration: const InputDecoration(
-                  labelText: 'Description / Note',
-                  filled: true,
+              // 1. Category Section
+              const Text(
+                'Expense Category *',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.onSurfaceVariant,
                 ),
-                validator: (v) =>
-                    (v == null || v.isEmpty) ? 'Provide a description' : null,
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: _categories.map((cat) {
+                  final isSelected = _selectedCategory == cat['name'];
+                  return GestureDetector(
+                    onTap: () => setState(() => _selectedCategory = cat['name']),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppTheme.secondary.withValues(alpha: 0.15)
+                            : AppTheme.surfaceElevated,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isSelected
+                              ? AppTheme.secondary
+                              : AppTheme.onSurface.withValues(alpha: 0.08),
+                          width: isSelected ? 1.5 : 1,
+                        ),
+                        boxShadow: isSelected
+                            ? [
+                                BoxShadow(
+                                  color: AppTheme.secondary.withValues(alpha: 0.2),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                )
+                              ]
+                            : null,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            cat['icon'],
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            cat['name'],
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight:
+                                  isSelected ? FontWeight.w800 : FontWeight.w600,
+                              color: isSelected
+                                  ? AppTheme.secondary
+                                  : AppTheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 24),
 
-              // Amount field
+              // 2. Amount Section
               TextFormField(
                 controller: _amountController,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.secondary,
+                ),
                 decoration: const InputDecoration(
-                  labelText: 'Total Amount (₹)',
+                  labelText: 'Amount (₹)',
+                  hintText: '0',
                   filled: true,
+                  prefixIcon: Icon(Icons.currency_rupee, color: AppTheme.secondary),
                 ),
                 keyboardType: TextInputType.number,
                 validator: (v) {
@@ -224,9 +313,9 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
                   return null;
                 },
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
-              // Split mode selector
+              // 3. Split Method Section
               const Text(
                 'Split Method',
                 style: TextStyle(
@@ -235,7 +324,7 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
                   color: AppTheme.onSurfaceVariant,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               Row(
                 children: [
                   _SplitModeChip(
@@ -260,9 +349,9 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
-              // Friends list
+              // 4. Members Section
               const Text(
                 'Split With',
                 style: TextStyle(
@@ -271,7 +360,7 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
                   color: AppTheme.onSurfaceVariant,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               friendsAsync.when(
                 loading: () => const Center(
                   child: Padding(
@@ -429,7 +518,37 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
                   );
                 },
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 24),
+
+              // 5. Optional Note Section
+              const Text(
+                'Add Note (Optional)',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: _noteController,
+                decoration: InputDecoration(
+                  hintText: 'Example: Bought vegetables for dinner',
+                  hintStyle: TextStyle(
+                    color: AppTheme.onSurface.withValues(alpha: 0.3),
+                    fontSize: 13,
+                  ),
+                  filled: true,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                ),
+                maxLines: 2,
+              ),
+              const SizedBox(height: 32),
+
+              // CTA Button
               SizedBox(
                 width: double.infinity,
                 child: NeumorphicButton(
@@ -469,7 +588,7 @@ class _SplitModeChip extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: selected
               ? AppTheme.secondary.withValues(alpha: 0.15)
@@ -487,14 +606,14 @@ class _SplitModeChip extends StatelessWidget {
           children: [
             Icon(
               icon,
-              size: 14,
+              size: 16,
               color: selected ? AppTheme.secondary : AppTheme.onSurfaceVariant,
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: 8),
             Text(
               label,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 13,
                 fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
                 color: selected
                     ? AppTheme.secondary

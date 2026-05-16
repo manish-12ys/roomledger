@@ -34,6 +34,7 @@ class ExpensesRepository {
         debts.friend_id AS friend_id,
         friends.name AS friend_name,
         debts.note AS note,
+        debts.category AS category,
         debts.total_amount AS total_amount,
         debts.created_at AS created_at,
         COALESCE(SUM(settlements.amount), 0) AS repaid_amount
@@ -52,11 +53,14 @@ class ExpensesRepository {
           (row) => ExpenseListItem(
             id: row['debt_id'] as int,
             friendId: row['friend_id'] as int,
-            friendName: row['friend_name'] as String,
-            note: row['note'] as String,
+            friendName: row['friend_name'] as String? ?? 'Unknown',
+            note: row['note'] as String? ?? '',
+            category: row['category'] as String? ?? 'Others',
             totalAmount: (row['total_amount'] as num?)?.toInt() ?? 0,
             repaidAmount: (row['repaid_amount'] as num?)?.toInt() ?? 0,
-            createdAt: DateTime.parse(row['created_at'] as String),
+            createdAt: row['created_at'] != null
+                ? DateTime.parse(row['created_at'] as String)
+                : DateTime.now(),
           ),
         )
         .toList();
@@ -69,6 +73,7 @@ class ExpensesRepository {
     await database.insert('debts', {
       'friend_id': input.friendId,
       'note': input.note,
+      'category': input.category,
       'total_amount': input.amount,
       'created_at': now,
     });
@@ -92,6 +97,7 @@ class ExpensesRepository {
       await database.insert('debts', {
         'friend_id': input.participantIds[i],
         'note': input.note,
+        'category': input.category,
         'total_amount': shares[startIndex + i],
         'created_at': now,
       });
@@ -114,6 +120,7 @@ class ExpensesRepository {
         await txn.insert('debts', {
           'friend_id': allocation.friendId,
           'note': input.note,
+          'category': input.category,
           'total_amount': allocation.amount,
           'created_at': now,
         });
@@ -140,6 +147,7 @@ class ExpensesRepository {
         await txn.insert('debts', {
           'friend_id': input.allocations[i].friendId,
           'note': input.note,
+          'category': input.category,
           'total_amount': shares[i],
           'created_at': now,
         });
@@ -166,6 +174,7 @@ class ExpensesRepository {
         await txn.insert('debts', {
           'friend_id': input.allocations[i].friendId,
           'note': input.note,
+          'category': input.category,
           'total_amount': shares[i],
           'created_at': now,
         });
@@ -186,6 +195,7 @@ class ExpensesRepository {
       {
         'friend_id': friendId,
         'note': note,
+        'category': 'Others', // Assuming default for updates if not provided
         'total_amount': amount,
         'created_at': date.toIso8601String(),
       },

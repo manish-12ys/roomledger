@@ -6,6 +6,7 @@ void main() {
     test('calculateShares splits equally with no remainder', () {
       final input = AddSplitExpenseInput(
         note: 'Dinner',
+        category: 'Food',
         totalAmount: 300,
         participantIds: [1, 2, 3],
         splitWithSelf: false,
@@ -20,6 +21,7 @@ void main() {
     test('calculateShares distributes remainder to first participants', () {
       final input = AddSplitExpenseInput(
         note: 'Lunch',
+        category: 'Food',
         totalAmount: 100,
         participantIds: [1, 2, 3],
         splitWithSelf: false,
@@ -34,6 +36,7 @@ void main() {
     test('calculateShares handles single participant', () {
       final input = AddSplitExpenseInput(
         note: 'Personal',
+        category: 'Others',
         totalAmount: 500,
         participantIds: [1],
         splitWithSelf: false,
@@ -47,6 +50,7 @@ void main() {
     test('calculateShares handles two participants with remainder', () {
       final input = AddSplitExpenseInput(
         note: 'Bill',
+        category: 'Bills',
         totalAmount: 101,
         participantIds: [1, 2],
         splitWithSelf: false,
@@ -61,6 +65,7 @@ void main() {
     test('isValid returns true for valid split', () {
       final input = AddSplitExpenseInput(
         note: 'Dinner',
+        category: 'Food',
         totalAmount: 300,
         participantIds: [1, 2, 3],
         splitWithSelf: false,
@@ -72,6 +77,7 @@ void main() {
     test('isValid returns false for empty participants', () {
       final input = AddSplitExpenseInput(
         note: 'Dinner',
+        category: 'Food',
         totalAmount: 300,
         participantIds: [],
         splitWithSelf: false,
@@ -83,6 +89,7 @@ void main() {
     test('sharePerPerson calculates correct base share', () {
       final input = AddSplitExpenseInput(
         note: 'Dinner',
+        category: 'Food',
         totalAmount: 325,
         participantIds: [1, 2, 3],
         splitWithSelf: false,
@@ -94,6 +101,7 @@ void main() {
     test('remainder property returns correct value', () {
       final input = AddSplitExpenseInput(
         note: 'Dinner',
+        category: 'Food',
         totalAmount: 325,
         participantIds: [1, 2, 3],
         splitWithSelf: false,
@@ -105,6 +113,7 @@ void main() {
     test('participantCount returns correct count', () {
       final input = AddSplitExpenseInput(
         note: 'Dinner',
+        category: 'Food',
         totalAmount: 300,
         participantIds: [1, 2, 3, 4],
         splitWithSelf: false,
@@ -116,6 +125,7 @@ void main() {
     test('calculateShares with 4 people and ₹1000', () {
       final input = AddSplitExpenseInput(
         note: 'Rent split',
+        category: 'Rent',
         totalAmount: 1000,
         participantIds: [1, 2, 3, 4],
         splitWithSelf: false,
@@ -130,6 +140,7 @@ void main() {
     test('calculateShares with 4 people and ₹1001', () {
       final input = AddSplitExpenseInput(
         note: 'Rent split',
+        category: 'Rent',
         totalAmount: 1001,
         participantIds: [1, 2, 3, 4],
         splitWithSelf: false,
@@ -147,6 +158,7 @@ void main() {
       final input = AddExpenseInput(
         friendId: 5,
         note: 'Groceries',
+        category: 'Groceries',
         amount: 250,
       );
 
@@ -160,6 +172,7 @@ void main() {
     test('isValid returns true when allocations match total', () {
       final input = AddCustomSplitExpenseInput(
         note: 'Rent',
+        category: 'Rent',
         totalAmount: 1000,
         allocations: const [
           SplitAllocation(friendId: 1, amount: 400),
@@ -177,6 +190,7 @@ void main() {
     test('isValid returns false when allocations do not match total', () {
       final input = AddCustomSplitExpenseInput(
         note: 'Rent',
+        category: 'Rent',
         totalAmount: 1000,
         allocations: const [
           SplitAllocation(friendId: 1, amount: 400),
@@ -191,6 +205,7 @@ void main() {
     test('isValid returns false for duplicate participant ids', () {
       final input = AddCustomSplitExpenseInput(
         note: 'Trip',
+        category: 'Travel',
         totalAmount: 500,
         allocations: const [
           SplitAllocation(friendId: 1, amount: 200),
@@ -204,6 +219,7 @@ void main() {
     test('isValid returns false for zero or negative allocation amounts', () {
       final input = AddCustomSplitExpenseInput(
         note: 'Trip',
+        category: 'Travel',
         totalAmount: 500,
         allocations: const [
           SplitAllocation(friendId: 1, amount: 0),
@@ -219,6 +235,7 @@ void main() {
     test('isValid returns true when percentages total 100', () {
       final input = AddPercentageSplitExpenseInput(
         note: 'Trip',
+        category: 'Travel',
         totalAmount: 1000,
         allocations: const [
           PercentageAllocation(friendId: 1, percentage: 50),
@@ -237,6 +254,7 @@ void main() {
       () {
         final input = AddPercentageSplitExpenseInput(
           note: 'Trip',
+          category: 'Travel',
           totalAmount: 1001,
           allocations: const [
             PercentageAllocation(friendId: 1, percentage: 50),
@@ -253,6 +271,7 @@ void main() {
     test('isValid returns false when percentages do not total 100', () {
       final input = AddPercentageSplitExpenseInput(
         note: 'Trip',
+        category: 'Travel',
         totalAmount: 1000,
         allocations: const [
           PercentageAllocation(friendId: 1, percentage: 40),
@@ -266,6 +285,7 @@ void main() {
     test('isValid returns false for duplicate participant ids', () {
       final input = AddPercentageSplitExpenseInput(
         note: 'Trip',
+        category: 'Travel',
         totalAmount: 1000,
         allocations: const [
           PercentageAllocation(friendId: 1, percentage: 60),
@@ -281,6 +301,7 @@ void main() {
     test('isValid returns true when quantities are positive', () {
       final input = AddQuantitySplitExpenseInput(
         note: 'Fuel',
+        category: 'Auto / Fuel',
         totalAmount: 900,
         allocations: const [
           QuantityAllocation(friendId: 1, quantity: 1),
@@ -297,6 +318,7 @@ void main() {
     test('calculateShares distributes rounding remainder by weight', () {
       final input = AddQuantitySplitExpenseInput(
         note: 'Fuel',
+        category: 'Auto / Fuel',
         totalAmount: 1000,
         allocations: const [
           QuantityAllocation(friendId: 1, quantity: 1),
@@ -312,6 +334,7 @@ void main() {
     test('isValid returns false when any quantity is zero', () {
       final input = AddQuantitySplitExpenseInput(
         note: 'Fuel',
+        category: 'Auto / Fuel',
         totalAmount: 900,
         allocations: const [
           QuantityAllocation(friendId: 1, quantity: 0),
@@ -325,6 +348,7 @@ void main() {
     test('isValid returns false for duplicate participant ids', () {
       final input = AddQuantitySplitExpenseInput(
         note: 'Fuel',
+        category: 'Auto / Fuel',
         totalAmount: 900,
         allocations: const [
           QuantityAllocation(friendId: 1, quantity: 1),

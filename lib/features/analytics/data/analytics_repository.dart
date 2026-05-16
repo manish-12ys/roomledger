@@ -124,21 +124,43 @@ class AnalyticsRepository {
       SELECT 
         category,
         COALESCE(SUM(amount), 0) as total,
-        COUNT(*) as count
-      FROM personal_expenses
-      WHERE created_at BETWEEN ? AND ?
+        COALESCE(SUM(item_count), 0) as total_count
+      FROM (
+        SELECT 
+          category, 
+          SUM(amount) as amount, 
+          COUNT(*) as item_count 
+        FROM personal_expenses 
+        WHERE created_at BETWEEN ? AND ? 
+        GROUP BY category
+        
+        UNION ALL
+        
+        SELECT 
+          category, 
+          SUM(total_amount) as amount, 
+          COUNT(*) as item_count 
+        FROM debts 
+        WHERE created_at BETWEEN ? AND ? 
+        GROUP BY category
+      ) t
       GROUP BY category
       ORDER BY total DESC
     ''',
-      [startDate.toIso8601String(), endDate.toIso8601String()],
+      [
+        startDate.toIso8601String(),
+        endDate.toIso8601String(),
+        startDate.toIso8601String(),
+        endDate.toIso8601String(),
+      ],
     );
 
     return results
         .map(
           (row) => CategorySpending(
-            category: row['category'] as String,
-            amount: (row['total'] as num).toDouble(),
-            count: row['count'] as int,
+            category: row['category'] as String? ?? 'Others',
+            amount: (row['total'] as num?)?.toDouble() ?? 0.0,
+            count: (row['total_count'] as num?)?.toInt() ?? 0,
           ),
         )
         .toList();

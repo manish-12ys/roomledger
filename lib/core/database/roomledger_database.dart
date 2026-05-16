@@ -24,7 +24,7 @@ class RoomLedgerDatabase {
 
     final openedDatabase = await openDatabase(
       databasePath,
-      version: 4,
+      version: 5,
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON;');
       },
@@ -72,6 +72,24 @@ class RoomLedgerDatabase {
               created_at TEXT NOT NULL
             )
           ''');
+        }
+        if (oldVersion < 5) {
+          // Add category column to debts table
+          try {
+            await db.execute(
+              'ALTER TABLE debts ADD COLUMN category TEXT NOT NULL DEFAULT "Others"',
+            );
+          } catch (e) {
+            // Column might already exist
+          }
+        }
+      },
+      onOpen: (db) async {
+        // Safety check to ensure category column exists in debts table
+        final tableInfo = await db.rawQuery('PRAGMA table_info(debts)');
+        final hasCategory = tableInfo.any((column) => column['name'] == 'category');
+        if (!hasCategory) {
+          await db.execute('ALTER TABLE debts ADD COLUMN category TEXT NOT NULL DEFAULT "Others"');
         }
       },
     );
@@ -178,6 +196,7 @@ class RoomLedgerDatabase {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         friend_id INTEGER NOT NULL,
         note TEXT NOT NULL,
+        category TEXT NOT NULL,
         total_amount INTEGER NOT NULL,
         created_at TEXT NOT NULL,
         FOREIGN KEY(friend_id) REFERENCES friends(id)
@@ -231,5 +250,6 @@ class RoomLedgerDatabase {
         created_at TEXT NOT NULL
       )
     ''');
+
   }
 }

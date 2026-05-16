@@ -11,6 +11,7 @@ class ExpenseListItem {
     required this.friendId,
     required this.friendName,
     required this.note,
+    required this.category,
     required this.totalAmount,
     required this.repaidAmount,
     required this.createdAt,
@@ -20,6 +21,7 @@ class ExpenseListItem {
   final int friendId;
   final String friendName;
   final String note;
+  final String category;
   final int totalAmount;
   final int repaidAmount;
   final DateTime createdAt;
@@ -31,12 +33,14 @@ class AddExpenseInput {
   const AddExpenseInput({
     required this.friendId,
     required this.note,
+    required this.category,
     required this.amount,
     this.date,
   });
 
   final int friendId;
   final String note;
+  final String category;
   final int amount;
   final DateTime? date;
 }
@@ -44,6 +48,7 @@ class AddExpenseInput {
 class AddSplitExpenseInput {
   const AddSplitExpenseInput({
     required this.note,
+    required this.category,
     required this.totalAmount,
     required this.participantIds,
     this.splitWithSelf = true,
@@ -51,6 +56,7 @@ class AddSplitExpenseInput {
   });
 
   final String note;
+  final String category;
   final int totalAmount;
   final List<int> participantIds;
   final bool splitWithSelf;
@@ -89,12 +95,14 @@ class SplitAllocation {
 class AddCustomSplitExpenseInput {
   const AddCustomSplitExpenseInput({
     required this.note,
+    required this.category,
     required this.totalAmount,
     required this.allocations,
     this.date,
   });
 
   final String note;
+  final String category;
   final int totalAmount;
   final List<SplitAllocation> allocations;
   final DateTime? date;
@@ -138,12 +146,14 @@ class PercentageAllocation {
 class AddPercentageSplitExpenseInput {
   const AddPercentageSplitExpenseInput({
     required this.note,
+    required this.category,
     required this.totalAmount,
     required this.allocations,
     this.date,
   });
 
   final String note;
+  final String category;
   final int totalAmount;
   final List<PercentageAllocation> allocations;
   final DateTime? date;
@@ -217,12 +227,14 @@ class QuantityAllocation {
 class AddQuantitySplitExpenseInput {
   const AddQuantitySplitExpenseInput({
     required this.note,
+    required this.category,
     required this.totalAmount,
     required this.allocations,
     this.date,
   });
 
   final String note;
+  final String category;
   final int totalAmount;
   final List<QuantityAllocation> allocations;
   final DateTime? date;

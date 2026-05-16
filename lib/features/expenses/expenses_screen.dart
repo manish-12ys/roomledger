@@ -287,6 +287,25 @@ class _ExpenseCard extends ConsumerWidget {
   const _ExpenseCard({required this.item});
   final ExpenseListItem item;
 
+  String _getCategoryIcon(String category) {
+    switch (category) {
+      case 'Groceries': return '🛒';
+      case 'Vegetables': return '🥦';
+      case 'Auto / Fuel': return '🚗';
+      case 'Shopping': return '🛍';
+      case 'Bills': return '💡';
+      case 'Food': return '🍔';
+      case 'Entertainment': return '🎬';
+      case 'Medical': return '💊';
+      case 'Transport': return '🚕';
+      case 'Education': return '📚';
+      case 'Rent': return '🏠';
+      case 'Recharge': return '📱';
+      case 'Travel': return '✈';
+      default: return '🎁';
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final progress = item.totalAmount > 0
@@ -301,6 +320,7 @@ class _ExpenseCard extends ConsumerWidget {
           friendId: item.friendId,
           friendName: item.friendName,
           note: item.note,
+          category: item.category,
           totalAmount: item.totalAmount,
           repaidAmount: item.repaidAmount,
           createdAt: item.createdAt,
@@ -329,12 +349,8 @@ class _ExpenseCard extends ConsumerWidget {
                 ),
                 child: Center(
                   child: Text(
-                    item.friendName.substring(0, 1).toUpperCase(),
-                    style: const TextStyle(
-                      color: AppTheme.secondary,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 20,
-                    ),
+                    _getCategoryIcon(item.category),
+                    style: const TextStyle(fontSize: 22),
                   ),
                 ),
               ),
@@ -344,12 +360,26 @@ class _ExpenseCard extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      item.note,
+                      item.category,
                       style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                        color: AppTheme.onSurface,
                       ),
                     ),
+                    if (item.note.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        item.note,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: AppTheme.onSurface.withValues(alpha: 0.7),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 4),
                     Text(
                       '${item.friendName} • ${_formatRelativeDate(item.createdAt)}',
