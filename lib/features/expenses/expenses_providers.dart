@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../dashboard/dashboard_providers.dart';
+import '../../core/providers/app_providers.dart';
 import 'data/expenses_repository.dart';
 import 'domain/expense_models.dart';
 
@@ -9,9 +9,11 @@ final expensesRepositoryProvider = Provider<ExpensesRepository>((ref) {
 });
 
 final expensesListProvider = FutureProvider<List<ExpenseListItem>>((ref) {
+  ref.watch(appDataVersionProvider);
   return ref.watch(expensesRepositoryProvider).loadExpenses();
 });
 
 final friendOptionsProvider = FutureProvider<List<FriendOption>>((ref) {
+  ref.watch(appDataVersionProvider);
   return ref.watch(expensesRepositoryProvider).loadFriends();
 });

@@ -22,11 +22,13 @@ class CashRepository {
     );
   }
 
-  Future<List<CashTransaction>> getCashTransactions() async {
+  Future<List<CashTransaction>> getCashTransactions({int? limit, int? offset}) async {
     final database = await _db.database;
     final results = await database.query(
       'cash_transactions',
       orderBy: 'created_at DESC',
+      limit: limit,
+      offset: offset,
     );
     return results.map(CashTransaction.fromMap).toList();
   }
@@ -49,29 +51,35 @@ class CashRepository {
   }
 
   Future<CashOverview> getCashOverview() async {
+    final database = await _db.database;
     final reserve = await getEmergencyReserve();
-    final transactions = await getCashTransactions();
+    
+    // 1. Calculate balance via SQL
+    final balanceResult = await database.rawQuery('''
+      SELECT 
+        SUM(CASE WHEN type = 'IN' THEN amount ELSE -amount END) as balance
+      FROM cash_transactions
+    ''');
+    final balance = (balanceResult.first['balance'] as num?)?.toInt() ?? 0;
 
-    int balance = 0;
-    int monthlyUsage = 0;
+    // 2. Calculate monthly usage via SQL
     final now = DateTime.now();
+    final firstDayOfMonth = DateTime(now.year, now.month, 1).toIso8601String();
+    final usageResult = await database.rawQuery('''
+      SELECT SUM(amount) as usage
+      FROM cash_transactions
+      WHERE type = 'OUT' AND created_at >= ?
+    ''', [firstDayOfMonth]);
+    final monthlyUsage = (usageResult.first['usage'] as num?)?.toInt() ?? 0;
 
-    for (final tx in transactions) {
-      if (tx.type == 'IN') {
-        balance += tx.amount;
-      } else if (tx.type == 'OUT') {
-        balance -= tx.amount;
-        if (tx.createdAt.year == now.year && tx.createdAt.month == now.month) {
-          monthlyUsage += tx.amount;
-        }
-      }
-    }
+    // 3. Get recent 20 transactions for preview
+    final recentTransactions = await getCashTransactions(limit: 20);
 
     return CashOverview(
       currentBalance: balance,
       emergencyReserve: reserve,
       monthlyUsage: monthlyUsage,
-      transactions: transactions,
+      transactions: recentTransactions,
     );
   }
 }

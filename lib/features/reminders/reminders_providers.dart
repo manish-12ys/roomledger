@@ -1,23 +1,20 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/database/roomledger_database.dart';
+import '../../core/providers/app_providers.dart';
 import 'data/reminders_repository.dart';
 import 'domain/reminder_models.dart';
 import 'services/notification_service.dart';
-
-final remindersDatabaseProvider = Provider<RoomLedgerDatabase>((ref) {
-  return RoomLedgerDatabase();
-});
 
 final notificationServiceProvider = Provider<NotificationService>((ref) {
   return NotificationService();
 });
 
 final remindersRepositoryProvider = Provider<RemindersRepository>((ref) {
-  return RemindersRepository(ref.watch(remindersDatabaseProvider));
+  return RemindersRepository(ref.watch(roomLedgerDatabaseProvider));
 });
 
 final remindersProvider = FutureProvider<List<Reminder>>((ref) {
+  ref.watch(appDataVersionProvider);
   return ref.watch(remindersRepositoryProvider).getReminders();
 });
 

@@ -15,58 +15,57 @@ class AnalyticsRepository {
 
     // Use daily grouping if the range is 31 days or less
     final isShortRange = endDate.difference(startDate).inDays <= 31;
-    final groupByKey = isShortRange ? _getDayKey : _getMonthKey;
+    final format = isShortRange ? '%Y-%m-%d' : '%Y-%m';
 
-    // Query all debts within the date range
-    final debtResults = await db.query(
-      'debts',
-      where: 'created_at BETWEEN ? AND ?',
-      whereArgs: [startDate.toIso8601String(), endDate.toIso8601String()],
-      orderBy: 'created_at ASC',
-    );
+    // 1. Get aggregated shared expenses (debts)
+    final sharedResults = await db.rawQuery('''
+      SELECT 
+        strftime(?, created_at) as key,
+        MIN(created_at) as raw_date,
+        SUM(total_amount) as amount
+      FROM debts
+      WHERE created_at BETWEEN ? AND ?
+      GROUP BY key
+    ''', [format, startDate.toIso8601String(), endDate.toIso8601String()]);
 
-    // Query all personal expenses within the date range
-    final personalResults = await db.query(
-      'personal_expenses',
-      where: 'created_at BETWEEN ? AND ?',
-      whereArgs: [startDate.toIso8601String(), endDate.toIso8601String()],
-      orderBy: 'created_at ASC',
-    );
+    // 2. Get aggregated personal expenses
+    final personalResults = await db.rawQuery('''
+      SELECT 
+        strftime(?, created_at) as key,
+        MIN(created_at) as raw_date,
+        SUM(amount) as amount
+      FROM personal_expenses
+      WHERE created_at BETWEEN ? AND ?
+      GROUP BY key
+    ''', [format, startDate.toIso8601String(), endDate.toIso8601String()]);
 
-    // Group data
+    // Combine data
     final aggregatedData = <String, _Aggregate>{};
 
-    // Process shared expenses (debts)
-    for (final row in debtResults) {
-      final createdAt = DateTime.parse(row['created_at'] as String);
-      final key = groupByKey(createdAt);
-      final amount = (row['total_amount'] as num).toDouble();
-
-      aggregatedData.putIfAbsent(
-        key,
-        () => _Aggregate(date: createdAt),
-      );
-      aggregatedData[key]!.sharedAmount += amount;
+    for (final row in sharedResults) {
+      final key = row['key'] as String;
+      final date = DateTime.parse(row['raw_date'] as String);
+      final amount = (row['amount'] as num).toDouble();
+      
+      aggregatedData[key] = _Aggregate(date: date)..sharedAmount = amount;
     }
 
-    // Process personal expenses
     for (final row in personalResults) {
-      final createdAt = DateTime.parse(row['created_at'] as String);
-      final key = groupByKey(createdAt);
+      final key = row['key'] as String;
+      final date = DateTime.parse(row['raw_date'] as String);
       final amount = (row['amount'] as num).toDouble();
-
-      aggregatedData.putIfAbsent(
-        key,
-        () => _Aggregate(date: createdAt),
-      );
-      aggregatedData[key]!.personalAmount += amount;
+      
+      if (aggregatedData.containsKey(key)) {
+        aggregatedData[key]!.personalAmount = amount;
+      } else {
+        aggregatedData[key] = _Aggregate(date: date)..personalAmount = amount;
+      }
     }
 
     // Convert to sorted list
     final trends = aggregatedData.values
-        .toList()
         .map((agg) => SpendingTrendPoint(
-              month: agg.date, // Note: field is called 'month' in model but we use it for 'date'
+              month: agg.date,
               amount: agg.totalAmount,
               sharedAmount: agg.sharedAmount,
               personalAmount: agg.personalAmount,
@@ -219,13 +218,6 @@ class AnalyticsRepository {
     return getAnalyticsReport(startDate: startDate, endDate: endDate);
   }
 
-  String _getMonthKey(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}';
-  }
-
-  String _getDayKey(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-  }
 }
 
 class _Aggregate {

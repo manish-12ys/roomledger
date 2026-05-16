@@ -8,7 +8,7 @@ import '../analytics/analytics_screen.dart';
 import '../backup_restore/backup_restore_screen.dart';
 import '../cash_management/cash_management_screen.dart';
 import '../expenses/expenses_providers.dart';
-import '../expenses/expenses_screen.dart';
+import '../expenses/widgets/add_shared_expense_sheet.dart';
 import '../personal_expenses/personal_expenses_screen.dart';
 import 'dashboard_providers.dart';
 import 'domain/dashboard_models.dart';

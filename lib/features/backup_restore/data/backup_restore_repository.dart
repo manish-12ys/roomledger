@@ -53,4 +53,12 @@ class BackupRestoreRepository {
   Future<void> restoreBackup(BackupSnapshot backup) async {
     await database.restoreFromBackupFile(backup.path);
   }
+
+  Future<String> getDatabasePath() async {
+    return await database.getDatabasePath();
+  }
+
+  Future<void> restoreFromPath(String filePath) async {
+    await database.restoreFromBackupFile(filePath);
+  }
 }

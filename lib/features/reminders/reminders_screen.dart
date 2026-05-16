@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../../core/theme/app_theme.dart';
+import '../../core/widgets/app_components.dart';
 
 import '../../core/widgets/app_states.dart';
 import 'domain/reminder_models.dart';
@@ -17,7 +19,18 @@ class RemindersScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Reminders'),
       ),
-      body: remindersAsync.when(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              AppTheme.background,
+              AppTheme.surface.withValues(alpha: 0.5),
+            ],
+          ),
+        ),
+        child: remindersAsync.when(
         loading: () => const AppListLoadingSkeleton(itemCount: 4),
         error: (err, stack) => AppStatusView(
           icon: Icons.error_outline,
@@ -54,28 +67,33 @@ class RemindersScreen extends ConsumerWidget {
             }
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: entries.length,
-            itemBuilder: (context, index) {
-              final entry = entries[index];
-              switch (entry.type) {
-                case _ReminderEntryType.header:
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Text(
-                      entry.label!,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                  );
-                case _ReminderEntryType.spacer:
-                  return SizedBox(height: entry.spacerHeight);
-                case _ReminderEntryType.reminder:
-                  return _ReminderTile(reminder: entry.reminder!);
-              }
-            },
-          );
-        },
+            return ListView.builder(
+              padding: const EdgeInsets.all(20),
+              itemCount: entries.length,
+              itemBuilder: (context, index) {
+                final entry = entries[index];
+                switch (entry.type) {
+                  case _ReminderEntryType.header:
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12, top: 4),
+                      child: Text(
+                        entry.label!,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.secondary,
+                              letterSpacing: 0.5,
+                            ),
+                      ),
+                    );
+                  case _ReminderEntryType.spacer:
+                    return SizedBox(height: entry.spacerHeight);
+                  case _ReminderEntryType.reminder:
+                    return _ReminderTile(reminder: entry.reminder!);
+                }
+              },
+            );
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -170,39 +188,62 @@ class _ReminderTileState extends ConsumerState<_ReminderTile> {
     final effectiveCompleted = _optimisticCompleted ?? widget.reminder.completed;
     final isOverdue = !effectiveCompleted && widget.reminder.reminderDate.isBefore(DateTime.now());
 
-    return Card(
-      child: ListTile(
-        leading: Checkbox(
-          value: effectiveCompleted,
-          onChanged: _updating ? null : (val) => _toggleReminder(),
-        ),
-        title: Text(
-          widget.reminder.title,
-          style: TextStyle(
-            decoration: effectiveCompleted ? TextDecoration.lineThrough : null,
-            fontWeight: FontWeight.w600,
+    return GlassCard(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+      accentColor: isOverdue ? AppTheme.error : (effectiveCompleted ? AppTheme.muted : AppTheme.secondary),
+      child: Row(
+        children: [
+          Checkbox(
+            value: effectiveCompleted,
+            activeColor: AppTheme.secondary,
+            checkColor: AppTheme.background,
+            onChanged: _updating ? null : (val) => _toggleReminder(),
           ),
-        ),
-        subtitle: Text(
-          formatter.format(widget.reminder.reminderDate),
-          style: TextStyle(
-            color: isOverdue ? Theme.of(context).colorScheme.error : null,
-            fontWeight: isOverdue ? FontWeight.bold : null,
+          const AppSpacing.horizontal(8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.reminder.title,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        decoration: effectiveCompleted ? TextDecoration.lineThrough : null,
+                        color: effectiveCompleted ? AppTheme.muted : AppTheme.onSurface,
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+                const AppSpacing.vertical(4),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.access_time_rounded,
+                      size: 14,
+                      color: isOverdue ? AppTheme.error : AppTheme.onSurfaceVariant,
+                    ),
+                    const AppSpacing.horizontal(6),
+                    Text(
+                      formatter.format(widget.reminder.reminderDate),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: isOverdue ? AppTheme.error : AppTheme.onSurfaceVariant,
+                            fontWeight: isOverdue ? FontWeight.bold : null,
+                          ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-        trailing: IconButton(
-          icon: const Icon(Icons.delete_outline),
-          onPressed: _updating
-              ? null
-              : () {
-                  ref.read(remindersControllerProvider.notifier).deleteReminder(widget.reminder);
-                },
-          tooltip: 'Delete reminder',
-        ),
-        enabled: !_updating,
-        horizontalTitleGap: 8,
-        minLeadingWidth: 16,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+          IconButton(
+            icon: const Icon(Icons.delete_outline_rounded, color: AppTheme.muted, size: 22),
+            onPressed: _updating
+                ? null
+                : () {
+                    ref.read(remindersControllerProvider.notifier).deleteReminder(widget.reminder);
+                  },
+            tooltip: 'Delete reminder',
+          ),
+        ],
       ),
     );
   }
@@ -308,7 +349,10 @@ class _AddReminderSheetState extends ConsumerState<AddReminderSheet> {
             children: [
               Text(
                 'New Reminder',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.secondary,
+                    ),
               ),
               const SizedBox(height: 16),
               TextField(
@@ -353,14 +397,12 @@ class _AddReminderSheetState extends ConsumerState<AddReminderSheet> {
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
-              Semantics(
-                button: true,
-                label: 'Save reminder',
-                child: FilledButton(
-                  onPressed: _submit,
-                  child: const Text('Save Reminder'),
-                ),
+              const AppSpacing.vertical(AppTheme.space300),
+              ActionButton(
+                label: 'Save Reminder',
+                icon: Icons.check_rounded,
+                onPressed: _submit,
+                variant: ActionButtonVariant.primary,
               ),
             ],
           ),

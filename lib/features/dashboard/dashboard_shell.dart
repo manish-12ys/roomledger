@@ -8,6 +8,7 @@ import '../analytics/analytics_screen.dart';
 import '../debts/debts_screen.dart';
 import '../expenses/expenses_providers.dart';
 import '../expenses/expenses_screen.dart';
+import '../expenses/widgets/add_shared_expense_sheet.dart';
 import '../friends/friends_providers.dart';
 import '../friends/friends_screen.dart';
 import '../personal_expenses/personal_expenses_screen.dart';

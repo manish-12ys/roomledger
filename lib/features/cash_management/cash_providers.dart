@@ -1,19 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/database/roomledger_database.dart';
+import '../../core/providers/app_providers.dart';
 import 'data/cash_repository.dart';
 import 'domain/cash_models.dart';
 
-final cashDatabaseProvider = Provider<RoomLedgerDatabase>((ref) {
-  return RoomLedgerDatabase();
-});
-
 final cashRepositoryProvider = Provider<CashRepository>((ref) {
-  final db = ref.watch(cashDatabaseProvider);
+  final db = ref.watch(roomLedgerDatabaseProvider);
   return CashRepository(db);
 });
 
 final cashOverviewProvider = FutureProvider<CashOverview>((ref) {
+  ref.watch(appDataVersionProvider);
   final repo = ref.watch(cashRepositoryProvider);
   return repo.getCashOverview();
 });

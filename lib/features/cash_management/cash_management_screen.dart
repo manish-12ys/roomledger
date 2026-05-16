@@ -81,69 +81,94 @@ class _CashContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        _BalanceCard(overview: overview),
-        const SizedBox(height: 20),
-        Row(
-          children: [
-            Expanded(
-              child: FilledButton.icon(
-                onPressed: () => _showTransactionSheet(context, 'IN'),
-                icon: const Icon(Icons.add),
-                label: const Text('Cash In'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppTheme.success,
-                  foregroundColor: AppTheme.background,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: FilledButton.icon(
-                onPressed: () => _showTransactionSheet(context, 'OUT'),
-                icon: const Icon(Icons.remove),
-                label: const Text('Cash Out'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppTheme.error,
-                  foregroundColor: AppTheme.background,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-              ),
-            ),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppTheme.background,
+            AppTheme.surface.withValues(alpha: 0.5),
           ],
         ),
-        const SizedBox(height: 20),
-        GlassCard(
-          padding: EdgeInsets.zero,
-          child: ListTile(
-            leading: const Icon(Icons.shield_outlined, color: AppTheme.secondary),
-            title: const Text('Emergency Reserve'),
-            subtitle: Text('₹${overview.emergencyReserve}'),
-            trailing: TextButton(
-              onPressed: () => _showReserveDialog(context, ref),
-              child: const Text('Edit'),
+      ),
+      child: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          _BalanceCard(overview: overview),
+          const AppSpacing.vertical(20),
+          Row(
+            children: [
+              Expanded(
+                child: ActionButton(
+                  label: 'Cash In',
+                  icon: Icons.add_rounded,
+                  onPressed: () => _showTransactionSheet(context, 'IN'),
+                  variant: ActionButtonVariant.primary,
+                ),
+              ),
+              const AppSpacing.horizontal(16),
+              Expanded(
+                child: ActionButton(
+                  label: 'Cash Out',
+                  icon: Icons.remove_rounded,
+                  onPressed: () => _showTransactionSheet(context, 'OUT'),
+                  variant: ActionButtonVariant.secondary,
+                ),
+              ),
+            ],
+          ),
+          const AppSpacing.vertical(20),
+          GlassCard(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            accentColor: AppTheme.secondary,
+            child: Row(
+              children: [
+                const Icon(Icons.shield_outlined, color: AppTheme.secondary),
+                const AppSpacing.horizontal(16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Emergency Reserve',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      Text(
+                        '₹${overview.emergencyReserve}',
+                        style: const TextStyle(color: AppTheme.onSurfaceVariant),
+                      ),
+                    ],
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => _showReserveDialog(context, ref),
+                  child: const Text('Edit', style: TextStyle(color: AppTheme.secondary)),
+                ),
+              ],
             ),
           ),
-        ),
-        const SizedBox(height: 24),
-        Text(
-          'Transactions',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 12),
-        if (overview.transactions.isEmpty)
-          const AppStatusView(
-            scrollable: false,
-            icon: Icons.account_balance_wallet_outlined,
-            title: 'No cash transactions yet',
-            message: 'Add a cash-in or cash-out entry to build your history.',
-          )
-        else
-          ...overview.transactions.map((tx) => _TransactionTile(tx: tx)),
-      ],
+          const AppSpacing.vertical(32),
+          Text(
+            'Transactions',
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.secondary,
+                  letterSpacing: 0.5,
+                ),
+          ),
+          const AppSpacing.vertical(12),
+          if (overview.transactions.isEmpty)
+            const AppStatusView(
+              scrollable: false,
+              icon: Icons.account_balance_wallet_outlined,
+              title: 'No transactions',
+              message: 'Add a cash entry to see it here.',
+            )
+          else
+            ...overview.transactions.map((tx) => _TransactionTile(tx: tx)),
+        ],
+      ),
     );
   }
 }
@@ -155,50 +180,87 @@ class _BalanceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final isLow = overview.isLowCash;
+    final accentColor = isLow ? AppTheme.error : AppTheme.secondary;
 
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: isLow ? AppTheme.error.withValues(alpha: 0.2) : colorScheme.primaryContainer.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: isLow ? AppTheme.error.withValues(alpha: 0.5) : colorScheme.primary.withValues(alpha: 0.2)),
-      ),
+    return GlassCard(
+      accentColor: accentColor,
+      padding: const EdgeInsets.all(AppTheme.space400),
       child: Column(
         children: [
-          Text(
-            'Current Balance',
-            style: TextStyle(
-              color: isLow ? AppTheme.error : colorScheme.onPrimaryContainer.withValues(alpha: 0.7),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '₹${overview.currentBalance}',
-            style: TextStyle(
-              fontSize: 36,
-              fontWeight: FontWeight.bold,
-              color: isLow ? AppTheme.background : colorScheme.onPrimaryContainer,
-            ),
-          ),
-          const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                Icons.calendar_month,
+                Icons.account_balance_wallet_rounded,
                 size: 16,
-                color: isLow ? AppTheme.error : colorScheme.onPrimaryContainer.withValues(alpha: 0.7),
+                color: isLow ? AppTheme.error : AppTheme.onSurfaceVariant,
               ),
-              const SizedBox(width: 8),
+              const AppSpacing.horizontal(8),
               Text(
-                'Spent this month: ₹${overview.monthlyUsage}',
+                'Current Balance',
                 style: TextStyle(
-                  color: isLow ? AppTheme.error : colorScheme.onPrimaryContainer.withValues(alpha: 0.7),
+                  color: isLow ? AppTheme.error : AppTheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
                 ),
               ),
             ],
+          ),
+          const AppSpacing.vertical(12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 8, right: 4),
+                child: Text(
+                  '₹',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: accentColor,
+                        fontWeight: FontWeight.w400,
+                      ),
+                ),
+              ),
+              AnimatedCounterText(
+                value: overview.currentBalance,
+                style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                      color: AppTheme.onSurface,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -1,
+                    ),
+              ),
+            ],
+          ),
+          const AppSpacing.vertical(20),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceContainer.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.calendar_today_rounded,
+                  size: 14,
+                  color: AppTheme.muted,
+                ),
+                const AppSpacing.horizontal(8),
+                Text(
+                  'Spent this month: ',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.muted),
+                ),
+                Text(
+                  '₹${overview.monthlyUsage}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppTheme.onSurface,
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -217,47 +279,49 @@ class _TransactionTile extends ConsumerWidget {
     final formatter = DateFormat('MMM d, yyyy');
 
     return GlassCard(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: EdgeInsets.zero,
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       accentColor: isOut ? AppTheme.error : AppTheme.success,
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: isOut ? AppTheme.error.withValues(alpha: 0.2) : AppTheme.success.withValues(alpha: 0.2),
-          child: Icon(
-            isOut ? Icons.arrow_upward : Icons.arrow_downward,
-            color: isOut ? AppTheme.error : AppTheme.success,
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: (isOut ? AppTheme.error : AppTheme.success).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+            ),
+            child: Icon(
+              isOut ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+              color: isOut ? AppTheme.error : AppTheme.success,
+              size: 20,
+            ),
           ),
-        ),
-        title: Text(tx.note, style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Text(formatter.format(tx.createdAt)),
-        trailing: Text(
-          '${isOut ? '-' : '+'}₹${tx.amount}',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: isOut ? AppTheme.error : AppTheme.success,
-            fontSize: 16,
-          ),
-        ),
-        onLongPress: () {
-          showDialog(
-            context: context,
-            builder: (ctx) => AlertDialog(
-              title: const Text('Delete Transaction'),
-              content: const Text('Are you sure you want to delete this cash transaction?'),
-              actions: [
-                TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-                FilledButton(
-                  onPressed: () {
-                    ref.read(cashControllerProvider.notifier).deleteTransaction(tx.id);
-                    Navigator.pop(ctx);
-                  },
-                  style: FilledButton.styleFrom(backgroundColor: AppTheme.error),
-                  child: const Text('Delete'),
+          const AppSpacing.horizontal(16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  tx.note,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+                Text(
+                  formatter.format(tx.createdAt),
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
             ),
-          );
-        },
+          ),
+          Text(
+            '${isOut ? '-' : '+'}₹${tx.amount}',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  color: isOut ? AppTheme.error : AppTheme.success,
+                ),
+          ),
+        ],
       ),
     );
   }

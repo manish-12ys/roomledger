@@ -8,139 +8,129 @@ class DashboardRepository {
 
   Future<DashboardOverview> loadOverview() async {
     final database = await _database.database;
+    final now = DateTime.now();
+    final startOfMonth = DateTime(now.year, now.month, 1).toIso8601String();
 
-    final debtRows = await database.rawQuery('''
+    // 1. Calculate Monthly Spending (Shared + Personal) via SQL
+    final spendingResult = await database.rawQuery('''
+      SELECT 
+        (SELECT COALESCE(SUM(total_amount), 0) FROM debts WHERE created_at >= ?) as shared_spending,
+        (SELECT COALESCE(SUM(amount), 0) FROM personal_expenses WHERE created_at >= ?) as personal_spending
+    ''', [startOfMonth, startOfMonth]);
+    
+    final sharedSpending = (spendingResult.first['shared_spending'] as num?)?.toInt() ?? 0;
+    final personalSpending = (spendingResult.first['personal_spending'] as num?)?.toInt() ?? 0;
+    final monthlySpending = sharedSpending + personalSpending;
+
+    // 2. Calculate Pending Debt Totals and Debtor Count via SQL
+    final debtStatsResult = await database.rawQuery('''
+      SELECT 
+        COALESCE(SUM(d.total_amount), 0) as total_debt,
+        COALESCE(SUM(s_total.repaid), 0) as total_repaid,
+        COUNT(DISTINCT CASE WHEN d.total_amount > COALESCE(s_total.repaid, 0) THEN d.friend_id END) as debtor_count
+      FROM debts d
+      LEFT JOIN (
+        SELECT debt_id, SUM(amount) as repaid 
+        FROM settlements 
+        GROUP BY debt_id
+      ) s_total ON s_total.debt_id = d.id
+    ''');
+    
+    final totalDebt = (debtStatsResult.first['total_debt'] as num?)?.toInt() ?? 0;
+    final totalRepaid = (debtStatsResult.first['total_repaid'] as num?)?.toInt() ?? 0;
+    final totalPending = totalDebt - totalRepaid;
+    final debtorCount = (debtStatsResult.first['debtor_count'] as num?)?.toInt() ?? 0;
+
+    // 3. Get Top 5 Pending Debts
+    final pendingDebtRows = await database.rawQuery('''
       SELECT
-        debts.id AS debt_id,
         friends.name AS friend_name,
         debts.note AS note,
         debts.total_amount AS total_amount,
         debts.created_at AS created_at,
-        COALESCE(SUM(settlements.amount), 0) AS repaid_amount
+        COALESCE(s_total.repaid, 0) AS repaid_amount
       FROM debts
       INNER JOIN friends ON friends.id = debts.friend_id
-      LEFT JOIN settlements ON settlements.debt_id = debts.id
-      GROUP BY debts.id
+      LEFT JOIN (
+        SELECT debt_id, SUM(amount) as repaid 
+        FROM settlements 
+        GROUP BY debt_id
+      ) s_total ON s_total.debt_id = debts.id
+      WHERE debts.total_amount > COALESCE(s_total.repaid, 0)
       ORDER BY datetime(debts.created_at) DESC
+      LIMIT 5
     ''');
 
-    final settlementRows = await database.rawQuery('''
-      SELECT
-        settlements.id AS settlement_id,
-        friends.name AS friend_name,
-        debts.note AS debt_note,
-        settlements.note AS note,
-        settlements.amount AS amount,
-        settlements.created_at AS created_at
-      FROM settlements
-      INNER JOIN debts ON debts.id = settlements.debt_id
-      INNER JOIN friends ON friends.id = debts.friend_id
-      ORDER BY datetime(settlements.created_at) DESC
+    final pendingDebts = pendingDebtRows.map((row) => PendingDebtItem(
+      friendName: row['friend_name'] as String,
+      note: row['note'] as String,
+      totalAmount: (row['total_amount'] as num?)?.toInt() ?? 0,
+      repaidAmount: (row['repaid_amount'] as num?)?.toInt() ?? 0,
+      createdAt: DateTime.parse(row['created_at'] as String),
+    )).toList();
+
+    // 4. Calculate Cash Balance and Emergency Reserve
+    final cashResult = await database.rawQuery('''
+      SELECT SUM(CASE WHEN type = 'IN' THEN amount ELSE -amount END) as balance
+      FROM cash_transactions
     ''');
-
-    final personalRows = await database.rawQuery('''
-      SELECT
-        id,
-        category,
-        description,
-        amount,
-        created_at
-      FROM personal_expenses
-      ORDER BY datetime(created_at) DESC
-    ''');
-
-    final pendingDebts = debtRows
-        .map(
-          (row) => PendingDebtItem(
-            friendName: row['friend_name'] as String,
-            note: row['note'] as String,
-            totalAmount: (row['total_amount'] as num?)?.toInt() ?? 0,
-            repaidAmount: (row['repaid_amount'] as num?)?.toInt() ?? 0,
-            createdAt: DateTime.parse(row['created_at'] as String),
-          ),
-        )
-        .where((debt) => debt.remainingAmount > 0)
-        .toList();
-
-    final recentActivities = <DashboardActivity>[
-      ...debtRows.map(
-        (row) => DashboardActivity(
-          title: '${row['friend_name']} owes ${row['total_amount']}',
-          subtitle: row['note'] as String,
-          amount: (row['total_amount'] as num?)?.toInt() ?? 0,
-          createdAt: DateTime.parse(row['created_at'] as String),
-          isSettlement: false,
-        ),
-      ),
-      ...settlementRows.map(
-        (row) => DashboardActivity(
-          title: '${row['friend_name']} made a repayment',
-          subtitle: '${row['note']} · ${row['debt_note']}',
-          amount: (row['amount'] as num?)?.toInt() ?? 0,
-          createdAt: DateTime.parse(row['created_at'] as String),
-          isSettlement: true,
-        ),
-      ),
-      ...personalRows.map(
-        (row) => DashboardActivity(
-          title: 'Personal: ${row['category']}',
-          subtitle: row['description'] as String,
-          amount: (row['amount'] as num?)?.toInt() ?? 0,
-          createdAt: DateTime.parse(row['created_at'] as String),
-          isSettlement: false,
-          isPersonal: true,
-        ),
-      ),
-    ]..sort((left, right) => right.createdAt.compareTo(left.createdAt));
-
-    final now = DateTime.now();
-    final startOfMonth = DateTime(now.year, now.month);
-
-    int monthlySpending = 0;
-    int sharedSpending = 0;
-    int personalSpending = 0;
-
-    for (final activity in recentActivities) {
-      if (activity.createdAt.isBefore(startOfMonth)) {
-        continue;
-      }
-
-      if (activity.isPersonal) {
-        personalSpending += activity.amount;
-        monthlySpending += activity.amount;
-      } else if (!activity.isSettlement) {
-        sharedSpending += activity.amount;
-        monthlySpending += activity.amount;
-      }
-    }
-
-    final totalPending = pendingDebts.fold<int>(0, (sum, debt) => sum + debt.remainingAmount);
-    final overdueCount = pendingDebts.where((debt) => debt.isOverdue).length;
-
-    // Compute total ever owed and total repaid across ALL debts (for the ring)
-    final totalDebt = debtRows.fold<int>(0, (sum, row) => sum + ((row['total_amount'] as num?)?.toInt() ?? 0));
-    final totalRepaid = debtRows.fold<int>(0, (sum, row) => sum + ((row['repaid_amount'] as num?)?.toInt() ?? 0));
-    
-    // Count unique friends with pending debts
-    final uniqueFriendDebts = <String>{};
-    for (final debt in pendingDebts) {
-      uniqueFriendDebts.add(debt.friendName);
-    }
-    final debtorCount = uniqueFriendDebts.length;
-
-    final cashRows = await database.query('cash_transactions');
-    int cashBalance = 0;
-    for (final row in cashRows) {
-      final amount = (row['amount'] as num?)?.toInt() ?? 0;
-      if (row['type'] == 'IN') {
-        cashBalance += amount;
-      } else {
-        cashBalance -= amount;
-      }
-    }
+    final cashBalance = (cashResult.first['balance'] as num?)?.toInt() ?? 0;
 
     final reserveRows = await database.query('wallet_settings', where: 'id = 1');
     final emergencyReserve = (reserveRows.isNotEmpty ? reserveRows.first['emergency_reserve'] as num? : null)?.toInt() ?? 0;
+
+    // 5. Calculate Overdue Count (simplified check for demo/context)
+    final overdueCount = pendingDebts.where((debt) => debt.isOverdue).length;
+
+    // 6. Recent Activities (Unified via UNION for performance)
+    final activityRows = await database.rawQuery('''
+      SELECT * FROM (
+        SELECT 
+          friends.name || ' owes ' || debts.total_amount as title,
+          debts.note as subtitle,
+          debts.total_amount as amount,
+          debts.created_at as created_at,
+          0 as is_settlement,
+          0 as is_personal
+        FROM debts
+        JOIN friends ON friends.id = debts.friend_id
+        
+        UNION ALL
+        
+        SELECT 
+          friends.name || ' made a repayment' as title,
+          settlements.note as subtitle,
+          settlements.amount as amount,
+          settlements.created_at as created_at,
+          1 as is_settlement,
+          0 as is_personal
+        FROM settlements
+        JOIN debts ON debts.id = settlements.debt_id
+        JOIN friends ON friends.id = debts.friend_id
+        
+        UNION ALL
+        
+        SELECT 
+          'Personal: ' || category as title,
+          description as subtitle,
+          amount as amount,
+          created_at as created_at,
+          0 as is_settlement,
+          1 as is_personal
+        FROM personal_expenses
+      )
+      ORDER BY datetime(created_at) DESC
+      LIMIT 5
+    ''');
+
+    final recentActivities = activityRows.map((row) => DashboardActivity(
+      title: row['title'] as String,
+      subtitle: row['subtitle'] as String,
+      amount: (row['amount'] as num?)?.toInt() ?? 0,
+      createdAt: DateTime.parse(row['created_at'] as String),
+      isSettlement: row['is_settlement'] == 1,
+      isPersonal: row['is_personal'] == 1,
+    )).toList();
 
     return DashboardOverview(
       totalPending: totalPending,
@@ -152,7 +142,7 @@ class DashboardRepository {
       personalSpending: personalSpending,
       overdueCount: overdueCount,
       pendingDebts: pendingDebts,
-      recentActivities: recentActivities.take(5).toList(),
+      recentActivities: recentActivities,
       cashBalance: cashBalance,
       emergencyReserve: emergencyReserve,
     );

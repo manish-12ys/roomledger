@@ -44,12 +44,14 @@ class PersonalExpensesRepository {
     return id;
   }
 
-  Future<List<PersonalExpense>> getExpenses() async {
+  Future<List<PersonalExpense>> getExpenses({int limit = 50, int offset = 0}) async {
     final db = await database.database;
 
     final result = await db.query(
       'personal_expenses',
       orderBy: 'created_at DESC',
+      limit: limit,
+      offset: offset,
     );
 
     return result
@@ -66,21 +68,32 @@ class PersonalExpensesRepository {
   }
 
   Future<PersonalExpenseSummary> getSummary() async {
-    final expenses = await getExpenses();
+    final db = await database.database;
+
+    // 1. Get total spending and category breakdown via SQL
+    final breakdownResult = await db.rawQuery('''
+      SELECT category, SUM(amount) as total 
+      FROM personal_expenses 
+      GROUP BY category
+    ''');
 
     final categoryBreakdown = <ExpenseCategory, int>{};
     int totalSpending = 0;
 
-    for (final expense in expenses) {
-      totalSpending += expense.amount;
-      categoryBreakdown[expense.category] =
-          (categoryBreakdown[expense.category] ?? 0) + expense.amount;
+    for (final row in breakdownResult) {
+      final category = ExpenseCategory.fromString(row['category'] as String);
+      final total = (row['total'] as num?)?.toInt() ?? 0;
+      categoryBreakdown[category] = total;
+      totalSpending += total;
     }
+
+    // 2. Get only the most recent 20 expenses for the summary preview
+    final recentExpenses = await getExpenses(limit: 20, offset: 0);
 
     return PersonalExpenseSummary(
       totalSpending: totalSpending,
       categoryBreakdown: categoryBreakdown,
-      expenses: expenses,
+      expenses: recentExpenses,
     );
   }
 

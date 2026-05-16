@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
+import 'app_components.dart';
 
 class AppStatusView extends StatelessWidget {
   const AppStatusView({
@@ -44,11 +46,12 @@ class AppStatusView extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             if (actionLabel != null && onAction != null) ...[
-              const SizedBox(height: 18),
-              FilledButton.icon(
-                onPressed: onAction,
-                icon: const Icon(Icons.refresh),
-                label: Text(actionLabel!),
+              const AppSpacing.vertical(AppTheme.space300),
+              ActionButton(
+                label: actionLabel!,
+                icon: Icons.refresh_rounded,
+                onPressed: onAction!,
+                variant: ActionButtonVariant.primary,
               ),
             ],
           ],
@@ -88,19 +91,16 @@ class AppListLoadingSkeleton extends StatelessWidget {
       itemCount: itemCount,
       separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
-        return Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                _SkeletonLine(widthFactor: 0.42, height: 14),
-                SizedBox(height: 10),
-                _SkeletonLine(widthFactor: 0.72, height: 12),
-                SizedBox(height: 14),
-                _SkeletonLine(widthFactor: 1.0, height: 10),
-              ],
-            ),
+        return GlassCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              _SkeletonLine(widthFactor: 0.42, height: 14),
+              AppSpacing.vertical(10),
+              _SkeletonLine(widthFactor: 0.72, height: 12),
+              AppSpacing.vertical(14),
+              _SkeletonLine(widthFactor: 1.0, height: 10),
+            ],
           ),
         );
       },

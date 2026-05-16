@@ -25,6 +25,9 @@ class RoomLedgerDatabase {
     final openedDatabase = await openDatabase(
       databasePath,
       version: 4,
+      onConfigure: (db) async {
+        await db.execute('PRAGMA foreign_keys = ON;');
+      },
       onCreate: _createSchema,
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
@@ -111,17 +114,44 @@ class RoomLedgerDatabase {
 
   Future<void> restoreFromBackupFile(String backupPath) async {
     final databasePath = await getDatabasePath();
+    final backupFile = File(backupPath);
+    
+    if (!await backupFile.exists()) {
+      throw Exception('Backup file does not exist at $backupPath');
+    }
 
     await _database?.close();
     _database = null;
+    _dbFuture = null; // Clear the future so it can be re-initialized
 
     final databaseFile = File(databasePath);
+    final rollbackPath = '$databasePath.rollback';
+    final rollbackFile = File(rollbackPath);
+
+    bool renamed = false;
     if (await databaseFile.exists()) {
-      await databaseFile.delete();
+      await databaseFile.rename(rollbackPath);
+      renamed = true;
     }
 
-    await File(backupPath).copy(databasePath);
-    await database;
+    try {
+      await backupFile.copy(databasePath);
+      if (renamed && await rollbackFile.exists()) {
+        await rollbackFile.delete();
+      }
+    } catch (e) {
+      // Rollback if copy fails
+      if (renamed && await rollbackFile.exists()) {
+        if (await databaseFile.exists()) {
+          await databaseFile.delete();
+        }
+        await rollbackFile.rename(databasePath);
+      }
+      rethrow;
+    } finally {
+      // Re-initialize database
+      await database;
+    }
   }
 
   Future<void> close() async {
