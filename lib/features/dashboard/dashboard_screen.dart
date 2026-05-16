@@ -283,6 +283,41 @@ class _PremiumHero extends StatelessWidget {
                     ),
                   ],
                 ),
+                if (overview.cashBalance < overview.emergencyReserve) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.warning.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: AppTheme.warning.withValues(alpha: 0.2),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(
+                          Icons.warning_amber_rounded,
+                          color: AppTheme.warning,
+                          size: 14,
+                        ),
+                        SizedBox(width: 6),
+                        Text(
+                          'Low Cash Warning',
+                          style: TextStyle(
+                            color: AppTheme.warning,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

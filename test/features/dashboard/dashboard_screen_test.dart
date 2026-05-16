@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:roomledger/features/dashboard/dashboard_providers.dart';
 import 'package:roomledger/features/dashboard/dashboard_screen.dart';
 import 'package:roomledger/features/dashboard/domain/dashboard_models.dart';
+import 'package:roomledger/core/widgets/app_states.dart';
 
 void main() {
   group('DashboardScreen', () {
@@ -23,7 +24,7 @@ void main() {
         ),
       );
 
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(AppListLoadingSkeleton), findsOneWidget);
     });
 
     testWidgets('shows error state when overview fails', (tester) async {
@@ -40,7 +41,7 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('Could not load dashboard data.'), findsOneWidget);
+      expect(find.text('Unable to load your financial overview.'), findsOneWidget);
       expect(find.text('Retry'), findsOneWidget);
     });
 
@@ -92,14 +93,14 @@ void main() {
       expect(find.text('Low Cash Warning'), findsOneWidget);
 
       await tester.scrollUntilVisible(
-        find.text('Quick actions'),
+        find.text('QUICK ACCESS'),
         250,
         scrollable: find.byType(Scrollable).first,
       );
 
-      expect(find.text('Quick actions'), findsOneWidget);
-      expect(find.text('Backup & Restore'), findsOneWidget);
-      expect(find.text('View analytics'), findsOneWidget);
+      expect(find.text('QUICK ACCESS'), findsOneWidget);
+      expect(find.byIcon(Icons.settings_backup_restore), findsOneWidget);
+      expect(find.text('Analytics'), findsOneWidget);
     });
   });
 }

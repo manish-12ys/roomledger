@@ -22,13 +22,13 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byTooltip('Add roommate'));
+      await tester.tap(find.text('Add New Roommate'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Add Roommate'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Add Roommate'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Please enter a name'), findsOneWidget);
+      expect(find.text('Enter a name'), findsOneWidget);
     });
   });
 }
