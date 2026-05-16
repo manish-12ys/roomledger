@@ -106,6 +106,18 @@ final categoryBreakdownProvider =
       );
     });
 
+// Shared category breakdown provider
+final sharedCategoryBreakdownProvider =
+    FutureProvider.autoDispose<List<CategorySpending>>((ref) async {
+      final repository = ref.watch(analyticsRepositoryProvider);
+      final dateRange = ref.watch(dateRangeProvider);
+
+      return repository.getSharedCategoryBreakdown(
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+      );
+    });
+
 // Friend debt comparison provider
 final friendDebtComparisonProvider =
     FutureProvider.autoDispose<List<FriendDebtComparison>>((ref) async {

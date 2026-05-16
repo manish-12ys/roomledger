@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/category_utils.dart';
 import '../../core/widgets/app_components.dart';
+import '../../core/widgets/app_states.dart';
 import 'debt_detail_screen.dart';
+import 'debts_providers.dart';
 import 'domain/debts_models.dart';
 import 'domain/grouped_debt_record.dart';
 
@@ -15,12 +17,39 @@ class FriendDebtsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final progress = groupedDebt.totalAmount > 0
-        ? groupedDebt.repaidAmount / groupedDebt.totalAmount
+    final debtsAsync = ref.watch(groupedDebtsProvider);
+
+    // Find the latest data for this friend, or use passed data as fallback
+    final currentDebt = debtsAsync.maybeWhen(
+      data: (list) {
+        try {
+          return list.firstWhere((g) => g.friendId == groupedDebt.friendId);
+        } catch (_) {
+          // Friend no longer has pending debts
+          return null;
+        }
+      },
+      orElse: () => groupedDebt,
+    );
+
+    // If friend is no longer in pending list, they are fully settled
+    if (currentDebt == null) {
+      return Scaffold(
+        appBar: AppBar(title: Text('${groupedDebt.friendName}\'s Debts')),
+        body: const AppStatusView(
+          icon: Icons.done_all_rounded,
+          title: 'Fully Settled!',
+          message: 'All debts for this friend have been cleared.',
+        ),
+      );
+    }
+
+    final progress = currentDebt.totalAmount > 0
+        ? currentDebt.repaidAmount / currentDebt.totalAmount
         : 0.0;
 
     return Scaffold(
-      appBar: AppBar(title: Text('${groupedDebt.friendName}\'s Debts')),
+      appBar: AppBar(title: Text('${currentDebt.friendName}\'s Debts')),
       body: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
@@ -48,7 +77,7 @@ class FriendDebtsScreen extends ConsumerWidget {
                           ),
                           child: Center(
                             child: Text(
-                              groupedDebt.friendName
+                              currentDebt.friendName
                                   .substring(0, 1)
                                   .toUpperCase(),
                               style: const TextStyle(
@@ -65,7 +94,7 @@ class FriendDebtsScreen extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                groupedDebt.friendName,
+                                currentDebt.friendName,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w800,
                                   fontSize: 20,
@@ -73,7 +102,7 @@ class FriendDebtsScreen extends ConsumerWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                '${groupedDebt.debts.length} active debt${groupedDebt.debts.length != 1 ? 's' : ''}',
+                                '${currentDebt.debts.length} active debt${currentDebt.debts.length != 1 ? 's' : ''}',
                                 style: TextStyle(
                                   color: AppTheme.onSurfaceVariant,
                                   fontSize: 13,
@@ -111,17 +140,17 @@ class FriendDebtsScreen extends ConsumerWidget {
                         children: [
                           _Stat(
                             label: 'Total',
-                            value: _formatCurrency(groupedDebt.totalAmount),
+                            value: _formatCurrency(currentDebt.totalAmount),
                           ),
                           _Stat(
                             label: 'Paid',
-                            value: _formatCurrency(groupedDebt.repaidAmount),
+                            value: _formatCurrency(currentDebt.repaidAmount),
                             color: AppTheme.secondary,
                           ),
                           _Stat(
                             label: 'Remaining',
-                            value: _formatCurrency(groupedDebt.remainingAmount),
-                            color: groupedDebt.isOverdue
+                            value: _formatCurrency(currentDebt.remainingAmount),
+                            color: currentDebt.isOverdue
                                 ? AppTheme.error
                                 : null,
                             isBold: true,
@@ -186,12 +215,12 @@ class FriendDebtsScreen extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate((context, index) {
-                final debt = groupedDebt.debts[index];
+                final debt = currentDebt.debts[index];
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: _DebtItemCard(debt: debt),
                 );
-              }, childCount: groupedDebt.debts.length),
+              }, childCount: currentDebt.debts.length),
             ),
           ),
         ],

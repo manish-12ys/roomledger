@@ -5,6 +5,9 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/category_utils.dart';
 import '../../core/widgets/app_components.dart';
 import '../dashboard/dashboard_providers.dart';
+import '../expenses/expenses_providers.dart';
+import '../expenses/expenses_controller.dart';
+import '../analytics/analytics_providers.dart';
 import 'debts_providers.dart';
 import 'domain/debts_models.dart';
 
@@ -27,27 +30,46 @@ class DebtDetailScreen extends ConsumerWidget {
           onRetry: () =>
               ref.invalidate(settlementsForDebtProvider(debt.debtId)),
         ),
-        data: (settlements) => SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _PremiumSummaryCard(debt: debt),
-                const SizedBox(height: 20),
-                _AnimatedProgressSection(debt: debt),
-                const SizedBox(height: 24),
-                _SectionLabel(label: 'SETTLEMENT TIMELINE'),
-                const SizedBox(height: 12),
-                if (settlements.isEmpty)
-                  _EmptyTimeline()
-                else
-                  _SettlementTimeline(settlements: settlements),
-              ],
+        data: (settlements) {
+          // Calculate actual repaid amount from settlements list for real-time updates
+          final actualRepaidAmount = settlements.fold<int>(
+            0,
+            (sum, s) => sum + s.amount,
+          );
+
+          final liveDebt = PendingDebtRecord(
+            debtId: debt.debtId,
+            friendId: debt.friendId,
+            friendName: debt.friendName,
+            note: debt.note,
+            category: debt.category,
+            totalAmount: debt.totalAmount,
+            repaidAmount: actualRepaidAmount,
+            createdAt: debt.createdAt,
+          );
+
+          return SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _PremiumSummaryCard(debt: liveDebt),
+                  const SizedBox(height: 20),
+                  _AnimatedProgressSection(debt: liveDebt),
+                  const SizedBox(height: 24),
+                  _SectionLabel(label: 'SETTLEMENT TIMELINE'),
+                  const SizedBox(height: 12),
+                  if (settlements.isEmpty)
+                    _EmptyTimeline()
+                  else
+                    _SettlementTimeline(settlements: settlements),
+                ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
       floatingActionButton: !debt.isFullySettled
           ? Padding(
@@ -742,6 +764,16 @@ class _RecordSettlementSheetState
         amount: amount,
         note: note,
       );
+
+      // Invalidate providers to force immediate UI refresh
+      ref.invalidate(settlementsForDebtProvider(widget.debt.debtId));
+      ref.invalidate(expensesListProvider);
+      ref.invalidate(groupedExpensesProvider);
+      ref.invalidate(pendingDebtsProvider);
+      ref.invalidate(groupedDebtsProvider);
+      ref.invalidate(dashboardOverviewProvider);
+      // Invalidate analytics as well
+      ref.invalidate(sharedCategoryBreakdownProvider);
 
       if (mounted) {
         Navigator.pop(context);

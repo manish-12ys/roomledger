@@ -5,6 +5,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/category_utils.dart';
 import '../../core/widgets/app_components.dart';
 import '../../core/widgets/app_states.dart';
+import '../analytics/analytics_providers.dart';
 import '../debts/debt_detail_screen.dart';
 import '../debts/domain/debts_models.dart';
 import '../dashboard/dashboard_shell.dart';
@@ -127,7 +128,7 @@ class _TimelineExpenseList extends StatelessWidget {
       slivers: [
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
             child: _ExpensesSummaryHero(
               totalPending: grouped.totalPending,
               count:
@@ -136,6 +137,26 @@ class _TimelineExpenseList extends StatelessWidget {
                   grouped.earlier.length,
               totalAmount: grouped.totalAmount,
             ),
+          ),
+        ),
+        const SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(20, 12, 20, 4),
+            child: Text(
+              'CATEGORY BREAKDOWN',
+              style: TextStyle(
+                color: AppTheme.muted,
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.2,
+              ),
+            ),
+          ),
+        ),
+        const SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(16, 8, 16, 20),
+            child: _SharedCategoryBreakdown(),
           ),
         ),
         if (grouped.today.isNotEmpty) ...[
@@ -464,6 +485,84 @@ class _EmptyState extends ConsumerWidget {
             onCreated: () {
               ref.invalidate(friendOptionsProvider);
             },
+          ),
+        );
+      },
+    );
+  }
+}
+class _SharedCategoryBreakdown extends ConsumerWidget {
+  const _SharedCategoryBreakdown();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final breakdownAsync = ref.watch(sharedCategoryBreakdownProvider);
+
+    return breakdownAsync.when(
+      loading: () => const SizedBox(height: 100),
+      error: (error, _) => const SizedBox.shrink(),
+      data: (breakdown) {
+        if (breakdown.isEmpty) return const SizedBox.shrink();
+
+        final totalAmount = breakdown.fold<double>(
+          0,
+          (sum, item) => sum + item.amount,
+        );
+
+        return GlassCard(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          child: Column(
+            children: breakdown.map((item) {
+              final color = CategoryUtils.getColor(item.category);
+              final pct = totalAmount > 0 ? (item.amount / totalAmount) : 0.0;
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: color,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            '${CategoryUtils.getIcon(item.category)}  ${item.category}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          '₹${item.amount.toInt()}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 14,
+                            color: color,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: pct.clamp(0.0, 1.0),
+                        minHeight: 5,
+                        backgroundColor: AppTheme.surfaceElevated,
+                        valueColor: AlwaysStoppedAnimation(color),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
           ),
         );
       },

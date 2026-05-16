@@ -31,6 +31,9 @@ final groupedExpensesProvider = Provider<AsyncValue<GroupedExpenses>>((ref) {
     final earlierItems = <ExpenseListItem>[];
 
     for (final item in items) {
+      // Hide settled expenses (fully repaid)
+      if (item.repaidAmount >= item.totalAmount) continue;
+
       final itemDate = DateTime(
         item.createdAt.year,
         item.createdAt.month,

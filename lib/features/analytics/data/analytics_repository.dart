@@ -166,6 +166,41 @@ class AnalyticsRepository {
         .toList();
   }
 
+  /// Get category breakdown for shared expenses (debts table)
+  Future<List<CategorySpending>> getSharedCategoryBreakdown({
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    final db = await database.database;
+
+    final results = await db.rawQuery(
+      '''
+      SELECT 
+        category, 
+        SUM(total_amount) as total, 
+        COUNT(*) as total_count 
+      FROM debts 
+      WHERE created_at BETWEEN ? AND ? 
+      GROUP BY category
+      ORDER BY total DESC
+    ''',
+      [
+        startDate.toIso8601String(),
+        endDate.toIso8601String(),
+      ],
+    );
+
+    return results
+        .map(
+          (row) => CategorySpending(
+            category: row['category'] as String? ?? 'Others',
+            amount: (row['total'] as num?)?.toDouble() ?? 0.0,
+            count: (row['total_count'] as num?)?.toInt() ?? 0,
+          ),
+        )
+        .toList();
+  }
+
   /// Get friend debt comparison for the date range
   Future<List<FriendDebtComparison>> getFriendDebtComparison({
     required DateTime startDate,

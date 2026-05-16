@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/category_utils.dart';
 import '../../core/widgets/app_components.dart';
 import '../../core/widgets/app_states.dart';
 import 'domain/personal_expense_models.dart';
@@ -9,15 +10,7 @@ import 'personal_expenses_providers.dart';
 
 // ─── Category color palette ───────────────────────────────────────────────────
 Color _categoryColor(ExpenseCategory cat) {
-  return switch (cat) {
-    ExpenseCategory.food => const Color(0xFFFF6B6B),
-    ExpenseCategory.travel => AppTheme.secondary,
-    ExpenseCategory.bills => AppTheme.warning,
-    ExpenseCategory.entertainment => const Color(0xFFA78BFA),
-    ExpenseCategory.shopping => const Color(0xFFF97316),
-    ExpenseCategory.utilities => AppTheme.info,
-    ExpenseCategory.other => AppTheme.muted,
-  };
+  return CategoryUtils.getColor(cat.label);
 }
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────

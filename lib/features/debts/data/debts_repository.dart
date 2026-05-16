@@ -24,6 +24,7 @@ class DebtsRepository {
       LEFT JOIN friends f ON d.friend_id = f.id
       LEFT JOIN settlements s ON d.id = s.debt_id
       GROUP BY d.id
+      HAVING COALESCE(SUM(s.amount), 0) < d.total_amount
       ORDER BY d.created_at DESC
     ''');
 
