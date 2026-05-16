@@ -5,7 +5,7 @@ enum ExpenseCategory {
   entertainment('Entertainment', '🎬'),
   shopping('Shopping', '🛍️'),
   utilities('Utilities', '⚡'),
-  other('Other', '🎁');
+  other('Other', '🏷️');
 
   const ExpenseCategory(this.label, this.emoji);
 

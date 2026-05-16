@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/category_utils.dart';
 import '../../core/widgets/app_components.dart';
 import 'debt_detail_screen.dart';
 import 'domain/debts_models.dart';
@@ -248,25 +249,6 @@ class _DebtItemCard extends StatelessWidget {
 
   final PendingDebtRecord debt;
 
-  String _getCategoryIcon(String category) {
-    switch (category) {
-      case 'Groceries': return '🛒';
-      case 'Vegetables': return '🥦';
-      case 'Auto / Fuel': return '🚗';
-      case 'Shopping': return '🛍';
-      case 'Bills': return '💡';
-      case 'Food': return '🍔';
-      case 'Entertainment': return '🎬';
-      case 'Medical': return '💊';
-      case 'Transport': return '🚕';
-      case 'Education': return '📚';
-      case 'Rent': return '🏠';
-      case 'Recharge': return '📱';
-      case 'Travel': return '✈';
-      default: return '🎁';
-    }
-  }
-
   StatusType get _statusType {
     if (debt.isFullySettled) return StatusType.paid;
     if (debt.repaidAmount > 0) return StatusType.partial;
@@ -304,7 +286,7 @@ class _DebtItemCard extends StatelessWidget {
                 ),
                 child: Center(
                   child: Text(
-                    _getCategoryIcon(debt.category),
+                    CategoryUtils.getIcon(debt.category),
                     style: const TextStyle(fontSize: 20),
                   ),
                 ),

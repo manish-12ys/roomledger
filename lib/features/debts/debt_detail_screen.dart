@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/category_utils.dart';
 import '../../core/widgets/app_components.dart';
 import '../dashboard/dashboard_providers.dart';
 import 'debts_providers.dart';
@@ -118,25 +119,6 @@ class _SectionLabel extends StatelessWidget {
   }
 }
 
-String _getCategoryIcon(String category) {
-  switch (category) {
-    case 'Groceries': return '🛒';
-    case 'Vegetables': return '🥦';
-    case 'Auto / Fuel': return '🚗';
-    case 'Shopping': return '🛍';
-    case 'Bills': return '💡';
-    case 'Food': return '🍔';
-    case 'Entertainment': return '🎬';
-    case 'Medical': return '💊';
-    case 'Transport': return '🚕';
-    case 'Education': return '📚';
-    case 'Rent': return '🏠';
-    case 'Recharge': return '📱';
-    case 'Travel': return '✈';
-    default: return '🎁';
-  }
-}
-
 class _PremiumSummaryCard extends StatelessWidget {
   const _PremiumSummaryCard({required this.debt});
 
@@ -165,7 +147,7 @@ class _PremiumSummaryCard extends StatelessWidget {
                 ),
                 child: Center(
                   child: Text(
-                    _getCategoryIcon(debt.category),
+                    CategoryUtils.getIcon(debt.category),
                     style: const TextStyle(fontSize: 24),
                   ),
                 ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/category_utils.dart';
 import '../../core/widgets/app_components.dart';
 import '../../core/widgets/app_states.dart';
 import '../debts/debt_detail_screen.dart';
@@ -287,25 +288,6 @@ class _ExpenseCard extends ConsumerWidget {
   const _ExpenseCard({required this.item});
   final ExpenseListItem item;
 
-  String _getCategoryIcon(String category) {
-    switch (category) {
-      case 'Groceries': return '🛒';
-      case 'Vegetables': return '🥦';
-      case 'Auto / Fuel': return '🚗';
-      case 'Shopping': return '🛍';
-      case 'Bills': return '💡';
-      case 'Food': return '🍔';
-      case 'Entertainment': return '🎬';
-      case 'Medical': return '💊';
-      case 'Transport': return '🚕';
-      case 'Education': return '📚';
-      case 'Rent': return '🏠';
-      case 'Recharge': return '📱';
-      case 'Travel': return '✈';
-      default: return '🎁';
-    }
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final progress = item.totalAmount > 0
@@ -349,7 +331,7 @@ class _ExpenseCard extends ConsumerWidget {
                 ),
                 child: Center(
                   child: Text(
-                    _getCategoryIcon(item.category),
+                    CategoryUtils.getIcon(item.category),
                     style: const TextStyle(fontSize: 22),
                   ),
                 ),

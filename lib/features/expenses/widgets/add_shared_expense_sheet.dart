@@ -26,7 +26,7 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
     {'name': 'Groceries', 'icon': '🛒'},
     {'name': 'Vegetables', 'icon': '🥦'},
     {'name': 'Auto / Fuel', 'icon': '🚗'},
-    {'name': 'Shopping', 'icon': '🛍'},
+    {'name': 'Shopping', 'icon': '🛍️'},
     {'name': 'Bills', 'icon': '💡'},
     {'name': 'Food', 'icon': '🍔'},
     {'name': 'Entertainment', 'icon': '🎬'},
@@ -35,8 +35,8 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
     {'name': 'Education', 'icon': '📚'},
     {'name': 'Rent', 'icon': '🏠'},
     {'name': 'Recharge', 'icon': '📱'},
-    {'name': 'Travel', 'icon': '✈'},
-    {'name': 'Others', 'icon': '🎁'},
+    {'name': 'Travel', 'icon': '✈️'},
+    {'name': 'Others', 'icon': '🏷️'},
   ];
 
   String _selectedCategory = 'Groceries';
