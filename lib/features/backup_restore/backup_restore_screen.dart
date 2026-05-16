@@ -18,9 +18,7 @@ class BackupRestoreScreen extends ConsumerWidget {
     final backupsAsync = ref.watch(backupSnapshotsProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Backups'),
-      ),
+      appBar: AppBar(title: const Text('Backups')),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(backupSnapshotsProvider);
@@ -96,7 +94,9 @@ class BackupRestoreScreen extends ConsumerWidget {
                   case _BackupEntryType.sectionTitle:
                     return Text(
                       entry.title!,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     );
                   case _BackupEntryType.externalSharing:
                     return _ExternalSharingCard(
@@ -108,7 +108,9 @@ class BackupRestoreScreen extends ConsumerWidget {
                       child: Padding(
                         padding: EdgeInsets.all(AppTheme.space400),
                         child: Center(
-                          child: Text('No backups yet. Create one to protect your data.'),
+                          child: Text(
+                            'No backups yet. Create one to protect your data.',
+                          ),
                         ),
                       ),
                     );
@@ -154,13 +156,19 @@ class BackupRestoreScreen extends ConsumerWidget {
       await repository.createBackup();
       await _refreshAppState(ref);
       ref.invalidate(backupSnapshotsProvider);
-      messenger.showSnackBar(const SnackBar(content: Text('Backup created successfully.')));
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Backup created successfully.')),
+      );
     } catch (error) {
       messenger.showSnackBar(SnackBar(content: Text('Backup failed: $error')));
     }
   }
 
-  Future<void> _restoreBackup(BuildContext context, WidgetRef ref, BackupSnapshot backup) async {
+  Future<void> _restoreBackup(
+    BuildContext context,
+    WidgetRef ref,
+    BackupSnapshot backup,
+  ) async {
     final repository = ref.read(backupRestoreRepositoryProvider);
     final messenger = ScaffoldMessenger.of(context);
 
@@ -176,7 +184,10 @@ class BackupRestoreScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Cancel', style: TextStyle(color: AppTheme.muted)),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: AppTheme.muted),
+            ),
           ),
           ActionButton(
             label: 'Restore',
@@ -196,7 +207,9 @@ class BackupRestoreScreen extends ConsumerWidget {
       await repository.restoreBackup(backup);
       await _refreshAppState(ref);
       ref.invalidate(backupSnapshotsProvider);
-      messenger.showSnackBar(SnackBar(content: Text('Restored ${backup.fileName}.')));
+      messenger.showSnackBar(
+        SnackBar(content: Text('Restored ${backup.fileName}.')),
+      );
     } catch (error) {
       messenger.showSnackBar(SnackBar(content: Text('Restore failed: $error')));
     }
@@ -210,10 +223,7 @@ class BackupRestoreScreen extends ConsumerWidget {
       final dbPath = await repository.getDatabasePath();
       final file = XFile(dbPath);
       await SharePlus.instance.share(
-        ShareParams(
-          files: [file],
-          text: 'RoomLedger Database Backup',
-        ),
+        ShareParams(files: [file], text: 'RoomLedger Database Backup'),
       );
     } catch (error) {
       messenger.showSnackBar(SnackBar(content: Text('Sharing failed: $error')));
@@ -225,14 +235,12 @@ class BackupRestoreScreen extends ConsumerWidget {
     final messenger = ScaffoldMessenger.of(context);
 
     try {
-      final result = await FilePicker.pickFiles(
-        type: FileType.any,
-      );
+      final result = await FilePicker.pickFiles(type: FileType.any);
 
       if (result == null || result.files.single.path == null) return;
 
       final filePath = result.files.single.path!;
-      
+
       if (!context.mounted) return;
       final confirmed = await showDialog<bool>(
         context: context,
@@ -246,7 +254,10 @@ class BackupRestoreScreen extends ConsumerWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('Cancel', style: TextStyle(color: AppTheme.muted)),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: AppTheme.muted),
+              ),
             ),
             ActionButton(
               label: 'Import',
@@ -263,7 +274,9 @@ class BackupRestoreScreen extends ConsumerWidget {
       await repository.restoreFromPath(filePath);
       await _refreshAppState(ref);
       ref.invalidate(backupSnapshotsProvider);
-      messenger.showSnackBar(const SnackBar(content: Text('External ledger imported successfully.')));
+      messenger.showSnackBar(
+        const SnackBar(content: Text('External ledger imported successfully.')),
+      );
     } catch (error) {
       messenger.showSnackBar(SnackBar(content: Text('Import failed: $error')));
     }
@@ -296,47 +309,37 @@ class _BackupListEntry {
     this.onImport,
   });
 
-  const _BackupListEntry.header({required VoidCallback onCreateBackup, required VoidCallback onRefresh})
-      : this._(
-          type: _BackupEntryType.header,
-          onCreateBackup: onCreateBackup,
-          onRefresh: onRefresh,
-        );
+  const _BackupListEntry.header({
+    required VoidCallback onCreateBackup,
+    required VoidCallback onRefresh,
+  }) : this._(
+         type: _BackupEntryType.header,
+         onCreateBackup: onCreateBackup,
+         onRefresh: onRefresh,
+       );
 
   const _BackupListEntry.spacer(double spacerHeight)
-      : this._(
-          type: _BackupEntryType.spacer,
-          spacerHeight: spacerHeight,
-        );
+    : this._(type: _BackupEntryType.spacer, spacerHeight: spacerHeight);
 
   const _BackupListEntry.sectionTitle(String title)
-      : this._(
-          type: _BackupEntryType.sectionTitle,
-          title: title,
-        );
+    : this._(type: _BackupEntryType.sectionTitle, title: title);
 
-  const _BackupListEntry.empty()
-      : this._(
-          type: _BackupEntryType.empty,
-        );
+  const _BackupListEntry.empty() : this._(type: _BackupEntryType.empty);
 
   const _BackupListEntry.backup(BackupSnapshot backup)
-      : this._(
-          type: _BackupEntryType.backup,
-          backup: backup,
-        );
+    : this._(type: _BackupEntryType.backup, backup: backup);
 
-  const _BackupListEntry.externalSharing({required VoidCallback onShare, required VoidCallback onImport})
-      : this._(
-          type: _BackupEntryType.externalSharing,
-          onShare: onShare,
-          onImport: onImport,
-        );
+  const _BackupListEntry.externalSharing({
+    required VoidCallback onShare,
+    required VoidCallback onImport,
+  }) : this._(
+         type: _BackupEntryType.externalSharing,
+         onShare: onShare,
+         onImport: onImport,
+       );
 
   const _BackupListEntry.privacyPolicy()
-      : this._(
-          type: _BackupEntryType.privacyPolicy,
-        );
+    : this._(type: _BackupEntryType.privacyPolicy);
 
   final _BackupEntryType type;
   final double spacerHeight;
@@ -418,7 +421,11 @@ class _ExternalSharingCard extends StatelessWidget {
                   color: AppTheme.info.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Icon(Icons.share_rounded, color: AppTheme.info, size: 20),
+                child: const Icon(
+                  Icons.share_rounded,
+                  color: AppTheme.info,
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 14),
               const Text(
@@ -430,7 +437,11 @@ class _ExternalSharingCard extends StatelessWidget {
           const AppSpacing.vertical(AppTheme.space150),
           const Text(
             'Send your ledger to another device via WhatsApp or email. You can also import a shared file.',
-            style: TextStyle(color: AppTheme.onSurfaceVariant, fontSize: 13, height: 1.4),
+            style: TextStyle(
+              color: AppTheme.onSurfaceVariant,
+              fontSize: 13,
+              height: 1.4,
+            ),
           ),
           const AppSpacing.vertical(AppTheme.space200),
           Row(
@@ -460,7 +471,6 @@ class _ExternalSharingCard extends StatelessWidget {
   }
 }
 
-
 class _BackupCard extends StatelessWidget {
   const _BackupCard({required this.backup, required this.onRestore});
 
@@ -479,7 +489,11 @@ class _BackupCard extends StatelessWidget {
               color: AppTheme.secondary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
             ),
-            child: const Icon(Icons.folder_zip_outlined, color: AppTheme.secondary, size: 28),
+            child: const Icon(
+              Icons.folder_zip_outlined,
+              color: AppTheme.secondary,
+              size: 28,
+            ),
           ),
           const AppSpacing.horizontal(AppTheme.space200),
           Expanded(
@@ -488,9 +502,9 @@ class _BackupCard extends StatelessWidget {
               children: [
                 Text(
                   backup.fileName,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
                 ),
                 const AppSpacing.vertical(4),
                 Text(
@@ -514,7 +528,11 @@ class _BackupCard extends StatelessWidget {
 }
 
 class _ErrorState extends StatelessWidget {
-  const _ErrorState({required this.message, required this.details, required this.onRetry});
+  const _ErrorState({
+    required this.message,
+    required this.details,
+    required this.onRetry,
+  });
 
   final String message;
   final String details;

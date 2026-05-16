@@ -232,20 +232,23 @@ void main() {
       expect(input.calculateShares(), [500, 300, 200]);
     });
 
-    test('calculateShares distributes rounding remainder by fractional part', () {
-      final input = AddPercentageSplitExpenseInput(
-        note: 'Trip',
-        totalAmount: 1001,
-        allocations: const [
-          PercentageAllocation(friendId: 1, percentage: 50),
-          PercentageAllocation(friendId: 2, percentage: 30),
-          PercentageAllocation(friendId: 3, percentage: 20),
-        ],
-      );
+    test(
+      'calculateShares distributes rounding remainder by fractional part',
+      () {
+        final input = AddPercentageSplitExpenseInput(
+          note: 'Trip',
+          totalAmount: 1001,
+          allocations: const [
+            PercentageAllocation(friendId: 1, percentage: 50),
+            PercentageAllocation(friendId: 2, percentage: 30),
+            PercentageAllocation(friendId: 3, percentage: 20),
+          ],
+        );
 
-      expect(input.calculateShares(), [501, 300, 200]);
-      expect(input.calculateShares().fold<int>(0, (a, b) => a + b), 1001);
-    });
+        expect(input.calculateShares(), [501, 300, 200]);
+        expect(input.calculateShares().fold<int>(0, (a, b) => a + b), 1001);
+      },
+    );
 
     test('isValid returns false when percentages do not total 100', () {
       final input = AddPercentageSplitExpenseInput(

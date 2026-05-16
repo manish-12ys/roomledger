@@ -12,14 +12,19 @@ class DashboardRepository {
     final startOfMonth = DateTime(now.year, now.month, 1).toIso8601String();
 
     // 1. Calculate Monthly Spending (Shared + Personal) via SQL
-    final spendingResult = await database.rawQuery('''
+    final spendingResult = await database.rawQuery(
+      '''
       SELECT 
         (SELECT COALESCE(SUM(total_amount), 0) FROM debts WHERE created_at >= ?) as shared_spending,
         (SELECT COALESCE(SUM(amount), 0) FROM personal_expenses WHERE created_at >= ?) as personal_spending
-    ''', [startOfMonth, startOfMonth]);
-    
-    final sharedSpending = (spendingResult.first['shared_spending'] as num?)?.toInt() ?? 0;
-    final personalSpending = (spendingResult.first['personal_spending'] as num?)?.toInt() ?? 0;
+    ''',
+      [startOfMonth, startOfMonth],
+    );
+
+    final sharedSpending =
+        (spendingResult.first['shared_spending'] as num?)?.toInt() ?? 0;
+    final personalSpending =
+        (spendingResult.first['personal_spending'] as num?)?.toInt() ?? 0;
     final monthlySpending = sharedSpending + personalSpending;
 
     // 2. Calculate Pending Debt Totals and Debtor Count via SQL
@@ -35,11 +40,14 @@ class DashboardRepository {
         GROUP BY debt_id
       ) s_total ON s_total.debt_id = d.id
     ''');
-    
-    final totalDebt = (debtStatsResult.first['total_debt'] as num?)?.toInt() ?? 0;
-    final totalRepaid = (debtStatsResult.first['total_repaid'] as num?)?.toInt() ?? 0;
+
+    final totalDebt =
+        (debtStatsResult.first['total_debt'] as num?)?.toInt() ?? 0;
+    final totalRepaid =
+        (debtStatsResult.first['total_repaid'] as num?)?.toInt() ?? 0;
     final totalPending = totalDebt - totalRepaid;
-    final debtorCount = (debtStatsResult.first['debtor_count'] as num?)?.toInt() ?? 0;
+    final debtorCount =
+        (debtStatsResult.first['debtor_count'] as num?)?.toInt() ?? 0;
 
     // 3. Get Top 5 Pending Debts
     final pendingDebtRows = await database.rawQuery('''
@@ -61,13 +69,17 @@ class DashboardRepository {
       LIMIT 5
     ''');
 
-    final pendingDebts = pendingDebtRows.map((row) => PendingDebtItem(
-      friendName: row['friend_name'] as String,
-      note: row['note'] as String,
-      totalAmount: (row['total_amount'] as num?)?.toInt() ?? 0,
-      repaidAmount: (row['repaid_amount'] as num?)?.toInt() ?? 0,
-      createdAt: DateTime.parse(row['created_at'] as String),
-    )).toList();
+    final pendingDebts = pendingDebtRows
+        .map(
+          (row) => PendingDebtItem(
+            friendName: row['friend_name'] as String,
+            note: row['note'] as String,
+            totalAmount: (row['total_amount'] as num?)?.toInt() ?? 0,
+            repaidAmount: (row['repaid_amount'] as num?)?.toInt() ?? 0,
+            createdAt: DateTime.parse(row['created_at'] as String),
+          ),
+        )
+        .toList();
 
     // 4. Calculate Cash Balance and Emergency Reserve
     final cashResult = await database.rawQuery('''
@@ -76,8 +88,16 @@ class DashboardRepository {
     ''');
     final cashBalance = (cashResult.first['balance'] as num?)?.toInt() ?? 0;
 
-    final reserveRows = await database.query('wallet_settings', where: 'id = 1');
-    final emergencyReserve = (reserveRows.isNotEmpty ? reserveRows.first['emergency_reserve'] as num? : null)?.toInt() ?? 0;
+    final reserveRows = await database.query(
+      'wallet_settings',
+      where: 'id = 1',
+    );
+    final emergencyReserve =
+        (reserveRows.isNotEmpty
+                ? reserveRows.first['emergency_reserve'] as num?
+                : null)
+            ?.toInt() ??
+        0;
 
     // 5. Calculate Overdue Count (simplified check for demo/context)
     final overdueCount = pendingDebts.where((debt) => debt.isOverdue).length;
@@ -123,14 +143,18 @@ class DashboardRepository {
       LIMIT 5
     ''');
 
-    final recentActivities = activityRows.map((row) => DashboardActivity(
-      title: row['title'] as String,
-      subtitle: row['subtitle'] as String,
-      amount: (row['amount'] as num?)?.toInt() ?? 0,
-      createdAt: DateTime.parse(row['created_at'] as String),
-      isSettlement: row['is_settlement'] == 1,
-      isPersonal: row['is_personal'] == 1,
-    )).toList();
+    final recentActivities = activityRows
+        .map(
+          (row) => DashboardActivity(
+            title: row['title'] as String,
+            subtitle: row['subtitle'] as String,
+            amount: (row['amount'] as num?)?.toInt() ?? 0,
+            createdAt: DateTime.parse(row['created_at'] as String),
+            isSettlement: row['is_settlement'] == 1,
+            isPersonal: row['is_personal'] == 1,
+          ),
+        )
+        .toList();
 
     return DashboardOverview(
       totalPending: totalPending,

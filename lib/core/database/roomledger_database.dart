@@ -93,7 +93,9 @@ class RoomLedgerDatabase {
 
   Future<Directory> getBackupDirectory() async {
     final documentsDirectory = await getApplicationDocumentsDirectory();
-    final backupDirectory = Directory(path.join(documentsDirectory.path, 'backups'));
+    final backupDirectory = Directory(
+      path.join(documentsDirectory.path, 'backups'),
+    );
 
     if (!await backupDirectory.exists()) {
       await backupDirectory.create(recursive: true);
@@ -106,7 +108,10 @@ class RoomLedgerDatabase {
     final databasePath = await getDatabasePath();
     final backupDirectory = await getBackupDirectory();
     final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-');
-    final backupPath = path.join(backupDirectory.path, 'roomledger_backup_$timestamp.db');
+    final backupPath = path.join(
+      backupDirectory.path,
+      'roomledger_backup_$timestamp.db',
+    );
 
     await File(databasePath).copy(backupPath);
     return backupPath;
@@ -115,7 +120,7 @@ class RoomLedgerDatabase {
   Future<void> restoreFromBackupFile(String backupPath) async {
     final databasePath = await getDatabasePath();
     final backupFile = File(backupPath);
-    
+
     if (!await backupFile.exists()) {
       throw Exception('Backup file does not exist at $backupPath');
     }
@@ -226,6 +231,5 @@ class RoomLedgerDatabase {
         created_at TEXT NOT NULL
       )
     ''');
-
   }
 }

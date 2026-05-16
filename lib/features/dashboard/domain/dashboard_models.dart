@@ -45,7 +45,8 @@ class PendingDebtItem {
 
   int get remainingAmount => totalAmount - repaidAmount;
 
-  bool get isOverdue => remainingAmount > 0 && DateTime.now().difference(createdAt).inDays > 7;
+  bool get isOverdue =>
+      remainingAmount > 0 && DateTime.now().difference(createdAt).inDays > 7;
 }
 
 class DashboardActivity {

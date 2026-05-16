@@ -36,7 +36,11 @@ class ExpensesScreen extends ConsumerWidget {
         actions: [
           IconButton(
             onPressed: () => _openAddFriendSheet(context, ref),
-            icon: const Icon(Icons.person_add_outlined, size: 22, color: AppTheme.onSurfaceVariant),
+            icon: const Icon(
+              Icons.person_add_outlined,
+              size: 22,
+              color: AppTheme.onSurfaceVariant,
+            ),
             tooltip: 'Add Roommate',
           ),
           const SizedBox(width: 8),
@@ -58,8 +62,11 @@ class ExpensesScreen extends ConsumerWidget {
             ref.invalidate(expensesListProvider);
             await ref.read(expensesListProvider.future);
           },
-          child: (grouped.today.isEmpty && grouped.yesterday.isEmpty && grouped.earlier.isEmpty) 
-              ? const _EmptyState() 
+          child:
+              (grouped.today.isEmpty &&
+                  grouped.yesterday.isEmpty &&
+                  grouped.earlier.isEmpty)
+              ? const _EmptyState()
               : _TimelineExpenseList(grouped: grouped),
         ),
       ),
@@ -121,8 +128,11 @@ class _TimelineExpenseList extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
             child: _ExpensesSummaryHero(
-              totalPending: grouped.totalPending, 
-              count: grouped.today.length + grouped.yesterday.length + grouped.earlier.length, 
+              totalPending: grouped.totalPending,
+              count:
+                  grouped.today.length +
+                  grouped.yesterday.length +
+                  grouped.earlier.length,
               totalAmount: grouped.totalAmount,
             ),
           ),
@@ -162,10 +172,10 @@ class _TimelineExpenseList extends StatelessWidget {
             Text(
               title,
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: AppTheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.0,
-                  ),
+                color: AppTheme.onSurfaceVariant,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.0,
+              ),
             ),
           ],
         ),
@@ -190,7 +200,11 @@ class _TimelineExpenseList extends StatelessWidget {
 }
 
 class _ExpensesSummaryHero extends StatelessWidget {
-  const _ExpensesSummaryHero({required this.totalPending, required this.count, required this.totalAmount});
+  const _ExpensesSummaryHero({
+    required this.totalPending,
+    required this.count,
+    required this.totalAmount,
+  });
   final int totalPending;
   final int count;
   final int totalAmount;
@@ -209,11 +223,29 @@ class _ExpensesSummaryHero extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('SHARED OUTSTANDING', style: TextStyle(color: AppTheme.muted, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
+                const Text(
+                  'SHARED OUTSTANDING',
+                  style: TextStyle(
+                    color: AppTheme.muted,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.2,
+                  ),
+                ),
                 const SizedBox(height: 12),
-                Text('₹$totalPending', style: const TextStyle(fontSize: 34, fontWeight: FontWeight.w900, color: AppTheme.secondary)),
+                Text(
+                  '₹$totalPending',
+                  style: const TextStyle(
+                    fontSize: 34,
+                    fontWeight: FontWeight.w900,
+                    color: AppTheme.secondary,
+                  ),
+                ),
                 const SizedBox(height: 16),
-                Text('$count active ledger entries in shared vault.', style: const TextStyle(color: AppTheme.muted, fontSize: 11)),
+                Text(
+                  '$count active ledger entries in shared vault.',
+                  style: const TextStyle(color: AppTheme.muted, fontSize: 11),
+                ),
               ],
             ),
           ),
@@ -227,13 +259,21 @@ class _ExpensesSummaryHero extends StatelessWidget {
                 child: Text(
                   '$pct%',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: AppTheme.secondary),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                    color: AppTheme.secondary,
+                  ),
                 ),
               ),
               const SizedBox(height: 6),
               const Text(
                 'repaid',
-                style: TextStyle(color: AppTheme.muted, fontSize: 10, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  color: AppTheme.muted,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
@@ -249,7 +289,9 @@ class _ExpenseCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final progress = item.totalAmount > 0 ? item.repaidAmount / item.totalAmount : 0.0;
+    final progress = item.totalAmount > 0
+        ? item.repaidAmount / item.totalAmount
+        : 0.0;
     final isSettled = item.remainingAmount == 0;
 
     return GlassCard(
@@ -263,7 +305,12 @@ class _ExpenseCard extends ConsumerWidget {
           repaidAmount: item.repaidAmount,
           createdAt: item.createdAt,
         );
-        Navigator.push(context, MaterialPageRoute(builder: (context) => DebtDetailScreen(debt: debtRecord)));
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DebtDetailScreen(debt: debtRecord),
+          ),
+        );
       },
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -276,12 +323,18 @@ class _ExpenseCard extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: AppTheme.secondary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppTheme.secondary.withValues(alpha: 0.2)),
+                  border: Border.all(
+                    color: AppTheme.secondary.withValues(alpha: 0.2),
+                  ),
                 ),
                 child: Center(
                   child: Text(
                     item.friendName.substring(0, 1).toUpperCase(),
-                    style: const TextStyle(color: AppTheme.secondary, fontWeight: FontWeight.w800, fontSize: 20),
+                    style: const TextStyle(
+                      color: AppTheme.secondary,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 20,
+                    ),
                   ),
                 ),
               ),
@@ -290,9 +343,21 @@ class _ExpenseCard extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(item.note, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                    Text(
+                      item.note,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    Text('${item.friendName} • ${_formatRelativeDate(item.createdAt)}', style: const TextStyle(color: AppTheme.muted, fontSize: 11)),
+                    Text(
+                      '${item.friendName} • ${_formatRelativeDate(item.createdAt)}',
+                      style: const TextStyle(
+                        color: AppTheme.muted,
+                        fontSize: 11,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -300,7 +365,14 @@ class _ExpenseCard extends ConsumerWidget {
                 progress: progress,
                 size: 40,
                 strokeWidth: 3.5,
-                child: Text('${(progress * 100).toInt()}%', style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: AppTheme.secondary)),
+                child: Text(
+                  '${(progress * 100).toInt()}%',
+                  style: const TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.secondary,
+                  ),
+                ),
               ),
             ],
           ),
@@ -309,8 +381,18 @@ class _ExpenseCard extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _MetricItem(label: 'TOTAL', value: '₹${item.totalAmount}'),
-              _MetricItem(label: 'PAID', value: '₹${item.repaidAmount}', color: AppTheme.secondary),
-              _MetricItem(label: 'REMAINING', value: '₹${item.remainingAmount}', color: isSettled ? AppTheme.secondary : AppTheme.onSurfaceVariant),
+              _MetricItem(
+                label: 'PAID',
+                value: '₹${item.repaidAmount}',
+                color: AppTheme.secondary,
+              ),
+              _MetricItem(
+                label: 'REMAINING',
+                value: '₹${item.remainingAmount}',
+                color: isSettled
+                    ? AppTheme.secondary
+                    : AppTheme.onSurfaceVariant,
+              ),
             ],
           ),
         ],
@@ -330,9 +412,23 @@ class _MetricItem extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: AppTheme.muted, fontSize: 10, fontWeight: FontWeight.w700)),
+        Text(
+          label,
+          style: const TextStyle(
+            color: AppTheme.muted,
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         const SizedBox(height: 4),
-        Text(value, style: TextStyle(color: color ?? AppTheme.onSurface, fontSize: 14, fontWeight: FontWeight.w800)),
+        Text(
+          value,
+          style: TextStyle(
+            color: color ?? AppTheme.onSurface,
+            fontSize: 14,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
       ],
     );
   }

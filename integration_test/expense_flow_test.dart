@@ -7,7 +7,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('Add shared expense updates dashboard', (WidgetTester tester) async {
+  testWidgets('Add shared expense updates dashboard', (
+    WidgetTester tester,
+  ) async {
     // Launch the app
     await tester.pumpWidget(const ProviderScope(child: RoomLedgerApp()));
     await tester.pumpAndSettle();
@@ -22,7 +24,10 @@ void main() {
     await tester.tap(find.text('Add Roommate'));
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.widgetWithText(TextFormField, 'Roommate Name'), 'Alice');
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Roommate Name'),
+      'Alice',
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.bySemanticsLabel('Add roommate'));
@@ -32,7 +37,10 @@ void main() {
     await tester.tap(find.text('Add Roommate'));
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.widgetWithText(TextFormField, 'Roommate Name'), 'Bob');
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Roommate Name'),
+      'Bob',
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.bySemanticsLabel('Add roommate'));
@@ -59,11 +67,17 @@ void main() {
     await tester.pumpAndSettle();
 
     // Enter amount
-    await tester.enterText(find.widgetWithText(TextFormField, 'Amount (INR)'), '500');
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Amount (INR)'),
+      '500',
+    );
     await tester.pumpAndSettle();
 
     // Enter note
-    await tester.enterText(find.widgetWithText(TextFormField, 'Expense Note'), 'Dinner');
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Expense Note'),
+      'Dinner',
+    );
     await tester.pumpAndSettle();
 
     // Save Expense

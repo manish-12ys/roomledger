@@ -39,8 +39,12 @@ class _DashboardShellState extends State<DashboardShell>
       ),
     );
     _tabScales = _tabControllers
-        .map((c) => Tween<double>(begin: 1.0, end: 0.88)
-            .animate(CurvedAnimation(parent: c, curve: Curves.easeInOut)))
+        .map(
+          (c) => Tween<double>(
+            begin: 1.0,
+            end: 0.88,
+          ).animate(CurvedAnimation(parent: c, curve: Curves.easeInOut)),
+        )
         .toList();
     // Animate the initial selected tab
     _tabControllers[_selectedIndex].forward();
@@ -82,13 +86,15 @@ class _DashboardShellState extends State<DashboardShell>
           Navigator.pop(ctx);
           Navigator.push(
             context,
-            MaterialPageRoute(
-                builder: (_) => const PersonalExpensesScreen()),
+            MaterialPageRoute(builder: (_) => const PersonalExpensesScreen()),
           );
         },
         onAddFriend: () {
           Navigator.pop(ctx);
-          Future.delayed(const Duration(milliseconds: 200), _openAddFriendSheet);
+          Future.delayed(
+            const Duration(milliseconds: 200),
+            _openAddFriendSheet,
+          );
         },
         onAnalytics: () {
           Navigator.pop(ctx);
@@ -152,10 +158,7 @@ class _DashboardShellState extends State<DashboardShell>
     return Scaffold(
       backgroundColor: AppTheme.background,
       extendBody: true,
-      body: IndexedStack(
-        index: safeIndex,
-        children: pages,
-      ),
+      body: IndexedStack(index: safeIndex, children: pages),
       bottomNavigationBar: _NavBar(
         selectedIndex: safeIndex,
         tabScales: _tabScales,
@@ -184,7 +187,11 @@ class _NavBar extends StatelessWidget {
     (Icons.home_rounded, Icons.home_outlined, 'Home'),
     (Icons.receipt_long_rounded, Icons.receipt_long_outlined, 'Shared'),
     (null, null, ''),
-    (Icons.account_balance_wallet_rounded, Icons.account_balance_wallet_outlined, 'Debts'),
+    (
+      Icons.account_balance_wallet_rounded,
+      Icons.account_balance_wallet_outlined,
+      'Debts',
+    ),
     (Icons.person_rounded, Icons.person_outline_rounded, 'Profile'),
   ];
 
@@ -196,7 +203,11 @@ class _NavBar extends StatelessWidget {
         child: Container(
           height: 64 + bottomPadding,
           padding: EdgeInsets.only(
-              left: 8, right: 8, bottom: bottomPadding, top: 0),
+            left: 8,
+            right: 8,
+            bottom: bottomPadding,
+            top: 0,
+          ),
           decoration: BoxDecoration(
             color: AppTheme.surfaceElevated.withValues(alpha: 0.92),
             border: Border(
@@ -281,8 +292,7 @@ class _NavItem extends StatelessWidget {
               duration: const Duration(milliseconds: 220),
               style: TextStyle(
                 fontSize: 10,
-                fontWeight:
-                    isSelected ? FontWeight.w700 : FontWeight.w500,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 color: isSelected ? AppTheme.secondary : AppTheme.muted,
               ),
               child: Text(label),
@@ -303,8 +313,7 @@ class _AddFab extends StatefulWidget {
   State<_AddFab> createState() => _AddFabState();
 }
 
-class _AddFabState extends State<_AddFab>
-    with SingleTickerProviderStateMixin {
+class _AddFabState extends State<_AddFab> with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
   late final Animation<double> _scale;
 
@@ -312,9 +321,13 @@ class _AddFabState extends State<_AddFab>
   void initState() {
     super.initState();
     _ctrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 120));
-    _scale = Tween<double>(begin: 1.0, end: 0.90)
-        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
+      vsync: this,
+      duration: const Duration(milliseconds: 120),
+    );
+    _scale = Tween<double>(
+      begin: 1.0,
+      end: 0.90,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
   }
 
   @override
@@ -352,8 +365,11 @@ class _AddFabState extends State<_AddFab>
               ),
             ],
           ),
-          child: const Icon(Icons.add_rounded,
-              color: AppTheme.background, size: 28),
+          child: const Icon(
+            Icons.add_rounded,
+            color: AppTheme.background,
+            size: 28,
+          ),
         ),
       ),
     );
@@ -385,11 +401,11 @@ class _CreateNewSheet extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             color: AppTheme.surfaceContainer.withValues(alpha: 0.97),
-            borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(28)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
             border: Border.all(
-                color: AppTheme.onSurface.withValues(alpha: 0.07),
-                width: 0.5),
+              color: AppTheme.onSurface.withValues(alpha: 0.07),
+              width: 0.5,
+            ),
           ),
           padding: EdgeInsets.fromLTRB(24, 14, 24, bottomPadding + 28),
           child: Column(
@@ -407,24 +423,33 @@ class _CreateNewSheet extends StatelessWidget {
                       color: AppTheme.secondary.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Icon(Icons.add_rounded,
-                        color: AppTheme.secondary, size: 20),
+                    child: const Icon(
+                      Icons.add_rounded,
+                      color: AppTheme.secondary,
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(width: 14),
                   const Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Create New',
-                          style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w900,
-                              color: AppTheme.onSurface,
-                              letterSpacing: -0.3)),
-                      Text('What would you like to add?',
-                          style: TextStyle(
-                              fontSize: 12,
-                              color: AppTheme.muted,
-                              fontWeight: FontWeight.w500)),
+                      Text(
+                        'Create New',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          color: AppTheme.onSurface,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                      Text(
+                        'What would you like to add?',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.muted,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -517,9 +542,13 @@ class _ActionTileState extends State<_ActionTile>
   void initState() {
     super.initState();
     _ctrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 100));
-    _scale = Tween<double>(begin: 1.0, end: 0.94)
-        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
+      vsync: this,
+      duration: const Duration(milliseconds: 100),
+    );
+    _scale = Tween<double>(
+      begin: 1.0,
+      end: 0.94,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
   }
 
   @override
@@ -548,7 +577,9 @@ class _ActionTileState extends State<_ActionTile>
             color: widget.color.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(22),
             border: Border.all(
-                color: widget.color.withValues(alpha: 0.18), width: 1),
+              color: widget.color.withValues(alpha: 0.18),
+              width: 1,
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -627,8 +658,9 @@ class _AddFriendSheetState extends ConsumerState<AddFriendSheet> {
   Future<void> _submit() async {
     final name = _controller.text.trim();
     if (name.isEmpty) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Enter a name')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Enter a name')));
       return;
     }
     setState(() => _submitting = true);
@@ -638,13 +670,15 @@ class _AddFriendSheetState extends ConsumerState<AddFriendSheet> {
       if (mounted) {
         Navigator.pop(context);
         widget.onCreated();
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Roommate added')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Roommate added')));
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $e'), backgroundColor: AppTheme.error));
+          SnackBar(content: Text('Error: $e'), backgroundColor: AppTheme.error),
+        );
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -673,23 +707,32 @@ class _AddFriendSheetState extends ConsumerState<AddFriendSheet> {
                   color: AppTheme.info.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Icon(Icons.person_add_rounded,
-                    color: AppTheme.info, size: 20),
+                child: const Icon(
+                  Icons.person_add_rounded,
+                  color: AppTheme.info,
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 14),
               const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Add Roommate',
-                      style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w900,
-                          color: AppTheme.onSurface)),
-                  Text('They\'ll appear in your shared ledger',
-                      style: TextStyle(
-                          fontSize: 12,
-                          color: AppTheme.muted,
-                          fontWeight: FontWeight.w500)),
+                  Text(
+                    'Add Roommate',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      color: AppTheme.onSurface,
+                    ),
+                  ),
+                  Text(
+                    'They\'ll appear in your shared ledger',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppTheme.muted,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -700,17 +743,23 @@ class _AddFriendSheetState extends ConsumerState<AddFriendSheet> {
             enabled: !_submitting,
             autofocus: true,
             style: const TextStyle(
-                color: AppTheme.onSurface, fontWeight: FontWeight.w700),
+              color: AppTheme.onSurface,
+              fontWeight: FontWeight.w700,
+            ),
             decoration: InputDecoration(
               hintText: 'Enter name...',
               hintStyle: const TextStyle(color: AppTheme.onSurfaceVariant),
               filled: true,
               fillColor: AppTheme.onSurface.withValues(alpha: 0.05),
-              prefixIcon: const Icon(Icons.person_outline_rounded,
-                  color: AppTheme.muted, size: 20),
+              prefixIcon: const Icon(
+                Icons.person_outline_rounded,
+                color: AppTheme.muted,
+                size: 20,
+              ),
               border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none),
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide.none,
+              ),
             ),
             onSubmitted: (_) => _submit(),
           ),
@@ -723,7 +772,8 @@ class _AddFriendSheetState extends ConsumerState<AddFriendSheet> {
                 backgroundColor: AppTheme.info,
                 foregroundColor: AppTheme.background,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
               onPressed: _submitting ? null : _submit,
               child: _submitting
@@ -731,10 +781,17 @@ class _AddFriendSheetState extends ConsumerState<AddFriendSheet> {
                       height: 18,
                       width: 18,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: AppTheme.background))
-                  : const Text('Add Roommate',
+                        strokeWidth: 2,
+                        color: AppTheme.background,
+                      ),
+                    )
+                  : const Text(
+                      'Add Roommate',
                       style: TextStyle(
-                          fontWeight: FontWeight.w800, fontSize: 15)),
+                        fontWeight: FontWeight.w800,
+                        fontSize: 15,
+                      ),
+                    ),
             ),
           ),
         ],

@@ -67,7 +67,9 @@ class AppTheme {
       scrim: Colors.black87,
     );
 
-    final baseTextTheme = GoogleFonts.interTextTheme(ThemeData.dark().textTheme);
+    final baseTextTheme = GoogleFonts.interTextTheme(
+      ThemeData.dark().textTheme,
+    );
 
     return ThemeData(
       useMaterial3: true,
@@ -102,7 +104,11 @@ class AppTheme {
         height: 76,
         elevation: 0,
         labelTextStyle: WidgetStateProperty.all(
-          GoogleFonts.inter(fontWeight: FontWeight.w600, color: onSurface, fontSize: 12),
+          GoogleFonts.inter(
+            fontWeight: FontWeight.w600,
+            color: onSurface,
+            fontSize: 12,
+          ),
         ),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
@@ -115,7 +121,9 @@ class AppTheme {
         backgroundColor: secondary,
         foregroundColor: background,
         elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusMedium)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radiusMedium),
+        ),
       ),
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: surfaceVariant,
@@ -127,7 +135,10 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: surfaceContainer,
-        contentPadding: const EdgeInsets.symmetric(horizontal: space200, vertical: space200),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: space200,
+          vertical: space200,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusMedium),
           borderSide: BorderSide.none,
@@ -140,16 +151,59 @@ class AppTheme {
         hintStyle: GoogleFonts.inter(color: muted),
       ),
       textTheme: baseTextTheme.copyWith(
-        displayLarge: GoogleFonts.outfit(color: onSurface, fontSize: 40, fontWeight: FontWeight.w800, letterSpacing: -1.0),
-        displayMedium: GoogleFonts.outfit(color: onSurface, fontSize: 32, fontWeight: FontWeight.w800, letterSpacing: -0.5),
-        titleLarge: GoogleFonts.outfit(color: onSurface, fontSize: 24, fontWeight: FontWeight.w700),
-        titleMedium: GoogleFonts.inter(color: onSurface, fontSize: 18, fontWeight: FontWeight.w600),
-        titleSmall: GoogleFonts.inter(color: onSurface, fontSize: 16, fontWeight: FontWeight.w600),
-        bodyLarge: GoogleFonts.inter(color: onSurface, fontSize: 16, fontWeight: FontWeight.w400),
-        bodyMedium: GoogleFonts.inter(color: onSurfaceVariant, fontSize: 14, fontWeight: FontWeight.w400),
-        bodySmall: GoogleFonts.inter(color: onSurfaceVariant, fontSize: 12, fontWeight: FontWeight.w400),
-        labelLarge: GoogleFonts.inter(color: onSurface, fontSize: 14, fontWeight: FontWeight.w600),
-        labelSmall: GoogleFonts.inter(color: onSurfaceVariant, fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: 0.5),
+        displayLarge: GoogleFonts.outfit(
+          color: onSurface,
+          fontSize: 40,
+          fontWeight: FontWeight.w800,
+          letterSpacing: -1.0,
+        ),
+        displayMedium: GoogleFonts.outfit(
+          color: onSurface,
+          fontSize: 32,
+          fontWeight: FontWeight.w800,
+          letterSpacing: -0.5,
+        ),
+        titleLarge: GoogleFonts.outfit(
+          color: onSurface,
+          fontSize: 24,
+          fontWeight: FontWeight.w700,
+        ),
+        titleMedium: GoogleFonts.inter(
+          color: onSurface,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+        ),
+        titleSmall: GoogleFonts.inter(
+          color: onSurface,
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
+        bodyLarge: GoogleFonts.inter(
+          color: onSurface,
+          fontSize: 16,
+          fontWeight: FontWeight.w400,
+        ),
+        bodyMedium: GoogleFonts.inter(
+          color: onSurfaceVariant,
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+        ),
+        bodySmall: GoogleFonts.inter(
+          color: onSurfaceVariant,
+          fontSize: 12,
+          fontWeight: FontWeight.w400,
+        ),
+        labelLarge: GoogleFonts.inter(
+          color: onSurface,
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+        ),
+        labelSmall: GoogleFonts.inter(
+          color: onSurfaceVariant,
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.5,
+        ),
       ),
     );
   }

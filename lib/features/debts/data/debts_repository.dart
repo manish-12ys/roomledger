@@ -43,26 +43,25 @@ class DebtsRepository {
 
   Future<List<GroupedDebtRecord>> getGroupedPendingDebts() async {
     final allDebts = await getPendingDebts();
-    
+
     final groupedMap = <int, List<PendingDebtRecord>>{};
     final namesMap = <int, String>{};
-    
+
     for (final debt in allDebts) {
       if (debt.isFullySettled) continue;
-      
+
       groupedMap.putIfAbsent(debt.friendId, () => []);
       groupedMap[debt.friendId]!.add(debt);
       namesMap[debt.friendId] = debt.friendName;
     }
-    
+
     return groupedMap.entries.map((entry) {
       return GroupedDebtRecord(
         friendId: entry.key,
         friendName: namesMap[entry.key]!,
         debts: entry.value,
       );
-    }).toList()
-      ..sort((a, b) => b.lastActivityAt.compareTo(a.lastActivityAt));
+    }).toList()..sort((a, b) => b.lastActivityAt.compareTo(a.lastActivityAt));
   }
 
   Future<List<SettlementRecord>> getSettlementsForDebt(int debtId) async {
@@ -96,15 +95,12 @@ class DebtsRepository {
     final db = await database.database;
 
     final now = DateTime.now();
-    final id = await db.insert(
-      'settlements',
-      {
-        'debt_id': debtId,
-        'amount': amount,
-        'note': note,
-        'created_at': now.toIso8601String(),
-      },
-    );
+    final id = await db.insert('settlements', {
+      'debt_id': debtId,
+      'amount': amount,
+      'note': note,
+      'created_at': now.toIso8601String(),
+    });
 
     return id;
   }
@@ -112,17 +108,23 @@ class DebtsRepository {
   Future<int> getRemainingAmount(int debtId) async {
     final db = await database.database;
 
-    final debtResult = await db.query('debts', where: 'id = ?', whereArgs: [debtId]);
+    final debtResult = await db.query(
+      'debts',
+      where: 'id = ?',
+      whereArgs: [debtId],
+    );
     if (debtResult.isEmpty) return 0;
 
-    final totalAmount = (debtResult.first['total_amount'] as num?)?.toInt() ?? 0;
+    final totalAmount =
+        (debtResult.first['total_amount'] as num?)?.toInt() ?? 0;
 
     final settlementsResult = await db.rawQuery(
       'SELECT COALESCE(SUM(amount), 0) as total_settled FROM settlements WHERE debt_id = ?',
       [debtId],
     );
 
-    final repaidAmount = (settlementsResult.first['total_settled'] as num?)?.toInt() ?? 0;
+    final repaidAmount =
+        (settlementsResult.first['total_settled'] as num?)?.toInt() ?? 0;
 
     return totalAmount - repaidAmount;
   }

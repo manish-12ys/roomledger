@@ -9,10 +9,7 @@ class FriendsRepository {
   Future<List<Friend>> getFriends() async {
     final db = await database.database;
 
-    final result = await db.query(
-      'friends',
-      orderBy: 'created_at DESC',
-    );
+    final result = await db.query('friends', orderBy: 'created_at DESC');
 
     return result
         .map(
@@ -59,13 +56,10 @@ class FriendsRepository {
     final db = await database.database;
 
     final now = DateTime.now();
-    final id = await db.insert(
-      'friends',
-      {
-        'name': name,
-        'created_at': now.toIso8601String(),
-      },
-    );
+    final id = await db.insert('friends', {
+      'name': name,
+      'created_at': now.toIso8601String(),
+    });
 
     return id;
   }
@@ -96,10 +90,6 @@ class FriendsRepository {
   Future<void> deleteFriend({required int friendId}) async {
     final db = await database.database;
 
-    await db.delete(
-      'friends',
-      where: 'id = ?',
-      whereArgs: [friendId],
-    );
+    await db.delete('friends', where: 'id = ?', whereArgs: [friendId]);
   }
 }

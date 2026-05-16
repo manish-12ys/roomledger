@@ -1,9 +1,5 @@
 class Friend {
-  const Friend({
-    required this.id,
-    required this.name,
-    required this.createdAt,
-  });
+  const Friend({required this.id, required this.name, required this.createdAt});
 
   final int id;
   final String name;

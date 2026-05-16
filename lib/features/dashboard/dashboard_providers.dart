@@ -15,4 +15,6 @@ final dashboardOverviewProvider = FutureProvider<DashboardOverview>((ref) {
 
 enum TransactionFilter { all, expenses, repayments, personal }
 
-final transactionFilterProvider = StateProvider<TransactionFilter>((ref) => TransactionFilter.all);
+final transactionFilterProvider = StateProvider<TransactionFilter>(
+  (ref) => TransactionFilter.all,
+);

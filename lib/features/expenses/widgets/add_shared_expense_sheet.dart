@@ -11,7 +11,8 @@ class AddSharedExpenseSheet extends ConsumerStatefulWidget {
   final VoidCallback onCreated;
 
   @override
-  ConsumerState<AddSharedExpenseSheet> createState() => _AddSharedExpenseSheetState();
+  ConsumerState<AddSharedExpenseSheet> createState() =>
+      _AddSharedExpenseSheetState();
 }
 
 class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
@@ -63,7 +64,9 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedFriendIds.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Select at least one friend to split with')),
+        const SnackBar(
+          content: Text('Select at least one friend to split with'),
+        ),
       );
       return;
     }
@@ -87,14 +90,20 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
         );
       } else if (_splitMode == 'custom') {
         final allocations = participantIds.map((id) {
-          final amount = int.tryParse(_customAmountControllers[id]?.text.trim() ?? '') ?? 0;
+          final amount =
+              int.tryParse(_customAmountControllers[id]?.text.trim() ?? '') ??
+              0;
           return SplitAllocation(friendId: id, amount: amount);
         }).toList();
 
         final allocated = allocations.fold<int>(0, (s, a) => s + a.amount);
         if (allocated != totalAmount) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Amounts must add up to ₹$totalAmount (currently ₹$allocated)')),
+            SnackBar(
+              content: Text(
+                'Amounts must add up to ₹$totalAmount (currently ₹$allocated)',
+              ),
+            ),
           );
           setState(() => _submitting = false);
           return;
@@ -109,14 +118,19 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
         );
       } else if (_splitMode == 'percentage') {
         final allocations = participantIds.map((id) {
-          final pct = int.tryParse(_percentageControllers[id]?.text.trim() ?? '') ?? 0;
+          final pct =
+              int.tryParse(_percentageControllers[id]?.text.trim() ?? '') ?? 0;
           return PercentageAllocation(friendId: id, percentage: pct);
         }).toList();
 
         final totalPct = allocations.fold<int>(0, (s, a) => s + a.percentage);
         if (totalPct != 100) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Percentages must add up to 100% (currently $totalPct%)')),
+            SnackBar(
+              content: Text(
+                'Percentages must add up to 100% (currently $totalPct%)',
+              ),
+            ),
           );
           setState(() => _submitting = false);
           return;
@@ -137,9 +151,9 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -154,7 +168,9 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.surfaceContainer,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppTheme.radiusLarge)),
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppTheme.radiusLarge),
+        ),
         border: Border.all(color: AppTheme.onSurface.withValues(alpha: 0.08)),
       ),
       padding: EdgeInsets.fromLTRB(24, 20, 24, 24 + bottomInset),
@@ -185,15 +201,22 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
               // Note field
               TextFormField(
                 controller: _noteController,
-                decoration: const InputDecoration(labelText: 'Description / Note', filled: true),
-                validator: (v) => (v == null || v.isEmpty) ? 'Provide a description' : null,
+                decoration: const InputDecoration(
+                  labelText: 'Description / Note',
+                  filled: true,
+                ),
+                validator: (v) =>
+                    (v == null || v.isEmpty) ? 'Provide a description' : null,
               ),
               const SizedBox(height: 14),
 
               // Amount field
               TextFormField(
                 controller: _amountController,
-                decoration: const InputDecoration(labelText: 'Total Amount (₹)', filled: true),
+                decoration: const InputDecoration(
+                  labelText: 'Total Amount (₹)',
+                  filled: true,
+                ),
                 keyboardType: TextInputType.number,
                 validator: (v) {
                   final n = int.tryParse(v ?? '');
@@ -206,7 +229,11 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
               // Split mode selector
               const Text(
                 'Split Method',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.onSurfaceVariant),
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 10),
               Row(
@@ -238,7 +265,11 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
               // Friends list
               const Text(
                 'Split With',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.onSurfaceVariant),
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 10),
               friendsAsync.when(
@@ -248,23 +279,34 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
                     child: CircularProgressIndicator(),
                   ),
                 ),
-                error: (e, _) => Text('Could not load friends: $e',
-                    style: const TextStyle(color: AppTheme.error)),
+                error: (e, _) => Text(
+                  'Could not load friends: $e',
+                  style: const TextStyle(color: AppTheme.error),
+                ),
                 data: (friends) {
                   if (friends.isEmpty) {
                     return Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: AppTheme.surfaceElevated,
-                        borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                        borderRadius: BorderRadius.circular(
+                          AppTheme.radiusMedium,
+                        ),
                       ),
                       child: const Row(
                         children: [
-                          Icon(Icons.person_add_outlined, color: AppTheme.muted, size: 20),
+                          Icon(
+                            Icons.person_add_outlined,
+                            color: AppTheme.muted,
+                            size: 20,
+                          ),
                           SizedBox(width: 12),
                           Text(
                             'No friends yet — add friends first',
-                            style: TextStyle(color: AppTheme.muted, fontSize: 13),
+                            style: TextStyle(
+                              color: AppTheme.muted,
+                              fontSize: 13,
+                            ),
                           ),
                         ],
                       ),
@@ -279,16 +321,23 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
                             onTap: () => _toggleFriend(friend.id),
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 150),
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 12,
+                              ),
                               decoration: BoxDecoration(
                                 color: isSelected
                                     ? AppTheme.secondary.withValues(alpha: 0.1)
                                     : AppTheme.surfaceElevated,
-                                borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                                borderRadius: BorderRadius.circular(
+                                  AppTheme.radiusMedium,
+                                ),
                                 border: Border.all(
                                   color: isSelected
                                       ? AppTheme.secondary
-                                      : AppTheme.onSurface.withValues(alpha: 0.08),
+                                      : AppTheme.onSurface.withValues(
+                                          alpha: 0.08,
+                                        ),
                                   width: isSelected ? 1.5 : 1,
                                 ),
                               ),
@@ -299,15 +348,21 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
                                     height: 36,
                                     decoration: BoxDecoration(
                                       color: isSelected
-                                          ? AppTheme.secondary.withValues(alpha: 0.2)
+                                          ? AppTheme.secondary.withValues(
+                                              alpha: 0.2,
+                                            )
                                           : AppTheme.surfaceContainer,
                                       shape: BoxShape.circle,
                                     ),
                                     child: Center(
                                       child: Text(
-                                        friend.name.substring(0, 1).toUpperCase(),
+                                        friend.name
+                                            .substring(0, 1)
+                                            .toUpperCase(),
                                         style: TextStyle(
-                                          color: isSelected ? AppTheme.secondary : AppTheme.onSurfaceVariant,
+                                          color: isSelected
+                                              ? AppTheme.secondary
+                                              : AppTheme.onSurfaceVariant,
                                           fontWeight: FontWeight.w800,
                                           fontSize: 16,
                                         ),
@@ -319,14 +374,21 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
                                     child: Text(
                                       friend.name,
                                       style: TextStyle(
-                                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                        color: isSelected ? AppTheme.onSurface : AppTheme.onSurfaceVariant,
+                                        fontWeight: isSelected
+                                            ? FontWeight.w700
+                                            : FontWeight.w500,
+                                        color: isSelected
+                                            ? AppTheme.onSurface
+                                            : AppTheme.onSurfaceVariant,
                                       ),
                                     ),
                                   ),
                                   if (isSelected)
-                                    const Icon(Icons.check_circle_rounded,
-                                        color: AppTheme.secondary, size: 20),
+                                    const Icon(
+                                      Icons.check_circle_rounded,
+                                      color: AppTheme.secondary,
+                                      size: 20,
+                                    ),
                                 ],
                               ),
                             ),
@@ -372,7 +434,8 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
                 width: double.infinity,
                 child: NeumorphicButton(
                   onPressed: () {
-                    final friends = ref.read(friendOptionsProvider).valueOrNull ?? [];
+                    final friends =
+                        ref.read(friendOptionsProvider).valueOrNull ?? [];
                     _submit(friends);
                   },
                   icon: Icons.add_circle_outline,
@@ -408,24 +471,34 @@ class _SplitModeChip extends StatelessWidget {
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? AppTheme.secondary.withValues(alpha: 0.15) : AppTheme.surfaceElevated,
+          color: selected
+              ? AppTheme.secondary.withValues(alpha: 0.15)
+              : AppTheme.surfaceElevated,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: selected ? AppTheme.secondary : AppTheme.onSurface.withValues(alpha: 0.08),
+            color: selected
+                ? AppTheme.secondary
+                : AppTheme.onSurface.withValues(alpha: 0.08),
             width: selected ? 1.5 : 1,
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 14, color: selected ? AppTheme.secondary : AppTheme.onSurfaceVariant),
+            Icon(
+              icon,
+              size: 14,
+              color: selected ? AppTheme.secondary : AppTheme.onSurfaceVariant,
+            ),
             const SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-                color: selected ? AppTheme.secondary : AppTheme.onSurfaceVariant,
+                color: selected
+                    ? AppTheme.secondary
+                    : AppTheme.onSurfaceVariant,
               ),
             ),
           ],

@@ -89,7 +89,9 @@ class FriendsScreen extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _AddFriendSheet(onCreated: () => ref.invalidate(friendsSummaryProvider)),
+      builder: (_) => _AddFriendSheet(
+        onCreated: () => ref.invalidate(friendsSummaryProvider),
+      ),
     );
   }
 }
@@ -110,12 +112,20 @@ class _FriendCard extends ConsumerWidget {
             decoration: BoxDecoration(
               color: AppTheme.secondary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppTheme.secondary.withValues(alpha: 0.2)),
+              border: Border.all(
+                color: AppTheme.secondary.withValues(alpha: 0.2),
+              ),
             ),
             child: Center(
               child: Text(
-                friend.name.isNotEmpty ? friend.name.substring(0, 1).toUpperCase() : '?',
-                style: const TextStyle(color: AppTheme.secondary, fontSize: 22, fontWeight: FontWeight.w900),
+                friend.name.isNotEmpty
+                    ? friend.name.substring(0, 1).toUpperCase()
+                    : '?',
+                style: const TextStyle(
+                  color: AppTheme.secondary,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                ),
               ),
             ),
           ),
@@ -124,12 +134,23 @@ class _FriendCard extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(friend.name, style: const TextStyle(color: AppTheme.onSurface, fontSize: 18, fontWeight: FontWeight.w800)),
+                Text(
+                  friend.name,
+                  style: const TextStyle(
+                    color: AppTheme.onSurface,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
                 const SizedBox(height: 4),
                 Text(
-                  friend.remainingDebt > 0 ? 'Pending: ₹${friend.remainingDebt}' : 'Fully Settled',
+                  friend.remainingDebt > 0
+                      ? 'Pending: ₹${friend.remainingDebt}'
+                      : 'Fully Settled',
                   style: TextStyle(
-                    color: friend.remainingDebt > 0 ? AppTheme.error : AppTheme.secondary,
+                    color: friend.remainingDebt > 0
+                        ? AppTheme.error
+                        : AppTheme.secondary,
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                   ),
@@ -229,18 +250,15 @@ class _FriendCard extends ConsumerWidget {
       await repository.deleteFriend(friendId: friend.id);
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Roommate deleted')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Roommate deleted')));
         ref.invalidate(friendsSummaryProvider);
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: AppTheme.error,
-          ),
+          SnackBar(content: Text('Error: $e'), backgroundColor: AppTheme.error),
         );
       }
     }
@@ -268,9 +286,9 @@ class _AddFriendSheetState extends ConsumerState<_AddFriendSheet> {
   Future<void> _submit() async {
     final name = _controller.text.trim();
     if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter a name')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Enter a name')));
       return;
     }
 
@@ -283,17 +301,14 @@ class _AddFriendSheetState extends ConsumerState<_AddFriendSheet> {
       if (mounted) {
         Navigator.pop(context);
         widget.onCreated();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Roommate added')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Roommate added')));
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: AppTheme.error,
-          ),
+          SnackBar(content: Text('Error: $e'), backgroundColor: AppTheme.error),
         );
       }
     } finally {
@@ -310,25 +325,50 @@ class _AddFriendSheetState extends ConsumerState<_AddFriendSheet> {
         color: AppTheme.surfaceElevated,
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
-      padding: EdgeInsets.fromLTRB(24, 12, 24, MediaQuery.of(context).viewInsets.bottom + 24),
+      padding: EdgeInsets.fromLTRB(
+        24,
+        12,
+        24,
+        MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(width: 40, height: 4, decoration: BoxDecoration(color: AppTheme.onSurface.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(2))),
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppTheme.onSurface.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
           const SizedBox(height: 24),
-          const Text('New Roommate', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: AppTheme.onSurface)),
+          const Text(
+            'New Roommate',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+              color: AppTheme.onSurface,
+            ),
+          ),
           const SizedBox(height: 24),
           TextField(
             controller: _controller,
             enabled: !_submitting,
             autofocus: true,
-            style: const TextStyle(color: AppTheme.onSurface, fontWeight: FontWeight.w700),
+            style: const TextStyle(
+              color: AppTheme.onSurface,
+              fontWeight: FontWeight.w700,
+            ),
             decoration: InputDecoration(
               hintText: 'Enter name...',
               hintStyle: const TextStyle(color: AppTheme.onSurfaceVariant),
               filled: true,
               fillColor: AppTheme.onSurface.withValues(alpha: 0.05),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide.none,
+              ),
             ),
           ),
           const SizedBox(height: 24),
@@ -380,9 +420,9 @@ class _EditFriendSheetState extends ConsumerState<_EditFriendSheet> {
   Future<void> _submit() async {
     final name = _controller.text.trim();
     if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter a name')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Enter a name')));
       return;
     }
 
@@ -400,17 +440,14 @@ class _EditFriendSheetState extends ConsumerState<_EditFriendSheet> {
       if (mounted) {
         Navigator.pop(context);
         widget.onUpdated();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Roommate updated')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Roommate updated')));
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: AppTheme.error,
-          ),
+          SnackBar(content: Text('Error: $e'), backgroundColor: AppTheme.error),
         );
       }
     } finally {
@@ -427,25 +464,50 @@ class _EditFriendSheetState extends ConsumerState<_EditFriendSheet> {
         color: AppTheme.surfaceElevated,
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
-      padding: EdgeInsets.fromLTRB(24, 12, 24, MediaQuery.of(context).viewInsets.bottom + 24),
+      padding: EdgeInsets.fromLTRB(
+        24,
+        12,
+        24,
+        MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(width: 40, height: 4, decoration: BoxDecoration(color: AppTheme.onSurface.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(2))),
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppTheme.onSurface.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
           const SizedBox(height: 24),
-          const Text('Edit Roommate', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: AppTheme.onSurface)),
+          const Text(
+            'Edit Roommate',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+              color: AppTheme.onSurface,
+            ),
+          ),
           const SizedBox(height: 24),
           TextField(
             controller: _controller,
             enabled: !_submitting,
             autofocus: true,
-            style: const TextStyle(color: AppTheme.onSurface, fontWeight: FontWeight.w700),
+            style: const TextStyle(
+              color: AppTheme.onSurface,
+              fontWeight: FontWeight.w700,
+            ),
             decoration: InputDecoration(
               hintText: 'Enter name...',
               hintStyle: const TextStyle(color: AppTheme.onSurfaceVariant),
               filled: true,
               fillColor: AppTheme.onSurface.withValues(alpha: 0.05),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide.none,
+              ),
             ),
           ),
           const SizedBox(height: 24),
@@ -474,7 +536,10 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Center(
-      child: Text('No roommates added yet.', style: TextStyle(color: AppTheme.muted)),
+      child: Text(
+        'No roommates added yet.',
+        style: TextStyle(color: AppTheme.muted),
+      ),
     );
   }
 }

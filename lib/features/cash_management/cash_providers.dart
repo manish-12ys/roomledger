@@ -46,7 +46,8 @@ class CashController extends StateNotifier<AsyncValue<void>> {
   }
 }
 
-final cashControllerProvider = StateNotifierProvider<CashController, AsyncValue<void>>((ref) {
-  final repo = ref.watch(cashRepositoryProvider);
-  return CashController(repo, ref);
-});
+final cashControllerProvider =
+    StateNotifierProvider<CashController, AsyncValue<void>>((ref) {
+      final repo = ref.watch(cashRepositoryProvider);
+      return CashController(repo, ref);
+    });

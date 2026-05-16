@@ -80,10 +80,7 @@ class AddSplitExpenseInput {
 }
 
 class SplitAllocation {
-  const SplitAllocation({
-    required this.friendId,
-    required this.amount,
-  });
+  const SplitAllocation({required this.friendId, required this.amount});
 
   final int friendId;
   final int amount;
@@ -104,7 +101,8 @@ class AddCustomSplitExpenseInput {
 
   int get participantCount => allocations.length;
 
-  int get allocatedAmount => allocations.fold<int>(0, (sum, allocation) => sum + allocation.amount);
+  int get allocatedAmount =>
+      allocations.fold<int>(0, (sum, allocation) => sum + allocation.amount);
 
   int get remainder => totalAmount - allocatedAmount;
 
@@ -152,7 +150,10 @@ class AddPercentageSplitExpenseInput {
 
   int get participantCount => allocations.length;
 
-  int get totalPercentage => allocations.fold<int>(0, (sum, allocation) => sum + allocation.percentage);
+  int get totalPercentage => allocations.fold<int>(
+    0,
+    (sum, allocation) => sum + allocation.percentage,
+  );
 
   bool isValid() {
     if (participantCount == 0) {
@@ -207,10 +208,7 @@ class AddPercentageSplitExpenseInput {
 }
 
 class QuantityAllocation {
-  const QuantityAllocation({
-    required this.friendId,
-    required this.quantity,
-  });
+  const QuantityAllocation({required this.friendId, required this.quantity});
 
   final int friendId;
   final int quantity;
@@ -231,7 +229,8 @@ class AddQuantitySplitExpenseInput {
 
   int get participantCount => allocations.length;
 
-  int get totalQuantity => allocations.fold<int>(0, (sum, allocation) => sum + allocation.quantity);
+  int get totalQuantity =>
+      allocations.fold<int>(0, (sum, allocation) => sum + allocation.quantity);
 
   bool isValid() {
     if (participantCount == 0) {

@@ -11,7 +11,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            friendsSummaryProvider.overrideWith((ref) async => <FriendSummary>[]),
+            friendsSummaryProvider.overrideWith(
+              (ref) async => <FriendSummary>[],
+            ),
             friendsListProvider.overrideWith((ref) async => <Friend>[]),
           ],
           child: const MaterialApp(home: FriendsScreen()),

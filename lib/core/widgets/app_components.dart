@@ -40,10 +40,7 @@ class AppCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
       ),
-      child: Padding(
-        padding: padding,
-        child: child,
-      ),
+      child: Padding(padding: padding, child: child),
     );
 
     if (onTap != null) {
@@ -362,10 +359,7 @@ class GlassCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
         border: Border.all(color: accent.withValues(alpha: 0.12)),
       ),
-      child: Padding(
-        padding: padding,
-        child: child,
-      ),
+      child: Padding(padding: padding, child: child),
     );
 
     if (onTap != null) {
@@ -430,17 +424,22 @@ class NeumorphicButton extends StatefulWidget {
   State<NeumorphicButton> createState() => _NeumorphicButtonState();
 }
 
-class _NeumorphicButtonState extends State<NeumorphicButton> with SingleTickerProviderStateMixin {
+class _NeumorphicButtonState extends State<NeumorphicButton>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _scaleAnimation;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 150));
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 150),
     );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.95,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override

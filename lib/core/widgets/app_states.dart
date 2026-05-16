@@ -31,7 +31,9 @@ class AppStatusView extends StatelessWidget {
             Icon(
               icon,
               size: 54,
-              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.55),
+              color: Theme.of(
+                context,
+              ).colorScheme.primary.withValues(alpha: 0.55),
             ),
             const SizedBox(height: 14),
             Text(
@@ -67,7 +69,10 @@ class AppStatusView extends StatelessWidget {
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
         SizedBox(height: MediaQuery.of(context).size.height * 0.15),
-        SizedBox(height: MediaQuery.of(context).size.height * 0.55, child: content),
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.55,
+          child: content,
+        ),
       ],
     );
   }

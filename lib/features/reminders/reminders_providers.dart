@@ -19,7 +19,8 @@ final remindersProvider = FutureProvider<List<Reminder>>((ref) {
 });
 
 class RemindersController extends StateNotifier<AsyncValue<void>> {
-  RemindersController(this._repo, this._notifService, this._ref) : super(const AsyncData(null));
+  RemindersController(this._repo, this._notifService, this._ref)
+    : super(const AsyncData(null));
 
   final RemindersRepository _repo;
   final NotificationService _notifService;
@@ -29,7 +30,7 @@ class RemindersController extends StateNotifier<AsyncValue<void>> {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       await _notifService.requestPermissions();
-      
+
       final newReminder = Reminder(
         id: 0,
         title: title,
@@ -37,16 +38,16 @@ class RemindersController extends StateNotifier<AsyncValue<void>> {
         type: type,
         completed: false,
       );
-      
+
       final id = await _repo.addReminder(newReminder);
-      
+
       await _notifService.scheduleReminder(
         id: id,
         title: 'RoomLedger Reminder',
         body: title,
         scheduledDate: date,
       );
-      
+
       _ref.invalidate(remindersProvider);
     });
   }
@@ -56,7 +57,7 @@ class RemindersController extends StateNotifier<AsyncValue<void>> {
     state = await AsyncValue.guard(() async {
       final updated = reminder.copyWith(completed: !reminder.completed);
       await _repo.updateReminder(updated);
-      
+
       if (updated.completed) {
         await _notifService.cancelReminder(reminder.id);
       } else {
@@ -69,7 +70,7 @@ class RemindersController extends StateNotifier<AsyncValue<void>> {
           );
         }
       }
-      
+
       _ref.invalidate(remindersProvider);
     });
   }
@@ -84,10 +85,11 @@ class RemindersController extends StateNotifier<AsyncValue<void>> {
   }
 }
 
-final remindersControllerProvider = StateNotifierProvider<RemindersController, AsyncValue<void>>((ref) {
-  return RemindersController(
-    ref.watch(remindersRepositoryProvider),
-    ref.watch(notificationServiceProvider),
-    ref,
-  );
-});
+final remindersControllerProvider =
+    StateNotifierProvider<RemindersController, AsyncValue<void>>((ref) {
+      return RemindersController(
+        ref.watch(remindersRepositoryProvider),
+        ref.watch(notificationServiceProvider),
+        ref,
+      );
+    });

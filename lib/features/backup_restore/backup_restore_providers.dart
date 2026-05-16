@@ -8,8 +8,12 @@ final backupRestoreDatabaseProvider = Provider<RoomLedgerDatabase>((ref) {
   return RoomLedgerDatabase();
 });
 
-final backupRestoreRepositoryProvider = Provider<BackupRestoreRepository>((ref) {
-  return BackupRestoreRepository(database: ref.watch(backupRestoreDatabaseProvider));
+final backupRestoreRepositoryProvider = Provider<BackupRestoreRepository>((
+  ref,
+) {
+  return BackupRestoreRepository(
+    database: ref.watch(backupRestoreDatabaseProvider),
+  );
 });
 
 final backupSnapshotsProvider = FutureProvider<List<BackupSnapshot>>((ref) {

@@ -22,7 +22,11 @@ void main() {
       expect(range.startDate.month, now.month);
       expect(range.startDate.day, 1);
 
-      final expectedEnd = DateTime(now.year, now.month + 1, 1).subtract(const Duration(days: 1));
+      final expectedEnd = DateTime(
+        now.year,
+        now.month + 1,
+        1,
+      ).subtract(const Duration(days: 1));
       expect(range.endDate.year, expectedEnd.year);
       expect(range.endDate.month, expectedEnd.month);
       expect(range.endDate.day, expectedEnd.day);
@@ -33,8 +37,16 @@ void main() {
       final range = container.read(dateRangeProvider);
 
       final now = DateTime.now();
-      final expectedEnd = DateTime(now.year, now.month + 1, 1).subtract(const Duration(days: 1));
-      final expectedStart = DateTime(expectedEnd.year, expectedEnd.month - 2, 1);
+      final expectedEnd = DateTime(
+        now.year,
+        now.month + 1,
+        1,
+      ).subtract(const Duration(days: 1));
+      final expectedStart = DateTime(
+        expectedEnd.year,
+        expectedEnd.month - 2,
+        1,
+      );
 
       expect(range.startDate.year, expectedStart.year);
       expect(range.startDate.month, expectedStart.month);
@@ -50,8 +62,16 @@ void main() {
       final range = container.read(dateRangeProvider);
 
       final now = DateTime.now();
-      final expectedEnd = DateTime(now.year, now.month + 1, 1).subtract(const Duration(days: 1));
-      final expectedStart = DateTime(expectedEnd.year, expectedEnd.month - 5, 1);
+      final expectedEnd = DateTime(
+        now.year,
+        now.month + 1,
+        1,
+      ).subtract(const Duration(days: 1));
+      final expectedStart = DateTime(
+        expectedEnd.year,
+        expectedEnd.month - 5,
+        1,
+      );
 
       expect(range.startDate.year, expectedStart.year);
       expect(range.startDate.month, expectedStart.month);
@@ -67,8 +87,16 @@ void main() {
       final range = container.read(dateRangeProvider);
 
       final now = DateTime.now();
-      final expectedEnd = DateTime(now.year, now.month + 1, 1).subtract(const Duration(days: 1));
-      final expectedStart = DateTime(expectedEnd.year, expectedEnd.month - 11, 1);
+      final expectedEnd = DateTime(
+        now.year,
+        now.month + 1,
+        1,
+      ).subtract(const Duration(days: 1));
+      final expectedStart = DateTime(
+        expectedEnd.year,
+        expectedEnd.month - 11,
+        1,
+      );
 
       expect(range.startDate.year, expectedStart.year);
       expect(range.startDate.month, expectedStart.month);
@@ -91,16 +119,19 @@ void main() {
     });
 
     test('setCurrentMonth resets to current month after custom range', () {
-      container.read(dateRangeProvider.notifier).setCustomRange(
-        DateTime(2025, 6, 1),
-        DateTime(2025, 7, 31),
-      );
+      container
+          .read(dateRangeProvider.notifier)
+          .setCustomRange(DateTime(2025, 6, 1), DateTime(2025, 7, 31));
 
       container.read(dateRangeProvider.notifier).setCurrentMonth();
       final range = container.read(dateRangeProvider);
 
       final now = DateTime.now();
-      final expectedEnd = DateTime(now.year, now.month + 1, 1).subtract(const Duration(days: 1));
+      final expectedEnd = DateTime(
+        now.year,
+        now.month + 1,
+        1,
+      ).subtract(const Duration(days: 1));
 
       expect(range.startDate.year, now.year);
       expect(range.startDate.month, now.month);

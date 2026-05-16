@@ -4,11 +4,7 @@ import 'package:roomledger/features/friends/domain/friends_models.dart';
 void main() {
   group('Friend', () {
     test('Friend stores values correctly', () {
-      final friend = Friend(
-        id: 1,
-        name: 'Ravi',
-        createdAt: DateTime.now(),
-      );
+      final friend = Friend(id: 1, name: 'Ravi', createdAt: DateTime.now());
 
       expect(friend.id, 1);
       expect(friend.name, 'Ravi');

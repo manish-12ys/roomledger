@@ -22,7 +22,8 @@ class DateRangeNotifier extends StateNotifier<DateRange> {
   void setLastThreeMonths() => state = DateRange.lastMonths(3);
   void setLastSixMonths() => state = DateRange.lastMonths(6);
   void setLastYear() => state = DateRange.lastMonths(12);
-  void setCustomRange(DateTime start, DateTime end) => state = DateRange(startDate: start, endDate: end);
+  void setCustomRange(DateTime start, DateTime end) =>
+      state = DateRange(startDate: start, endDate: end);
 }
 
 class DateRange {
@@ -47,12 +48,16 @@ class DateRange {
   }
 }
 
-final dateRangeProvider = StateNotifierProvider<DateRangeNotifier, DateRange>((ref) {
+final dateRangeProvider = StateNotifierProvider<DateRangeNotifier, DateRange>((
+  ref,
+) {
   return DateRangeNotifier();
 });
 
 // Analytics report provider
-final analyticsReportProvider = FutureProvider.autoDispose<AnalyticsReport>((ref) async {
+final analyticsReportProvider = FutureProvider.autoDispose<AnalyticsReport>((
+  ref,
+) async {
   final repository = ref.watch(analyticsRepositoryProvider);
   final dateRange = ref.watch(dateRangeProvider);
 
@@ -63,45 +68,50 @@ final analyticsReportProvider = FutureProvider.autoDispose<AnalyticsReport>((ref
 });
 
 // Spending trend provider
-final spendingTrendProvider = FutureProvider.autoDispose<List<SpendingTrendPoint>>((ref) async {
-  final repository = ref.watch(analyticsRepositoryProvider);
-  final dateRange = ref.watch(dateRangeProvider);
+final spendingTrendProvider =
+    FutureProvider.autoDispose<List<SpendingTrendPoint>>((ref) async {
+      final repository = ref.watch(analyticsRepositoryProvider);
+      final dateRange = ref.watch(dateRangeProvider);
 
-  return repository.getSpendingTrend(
-    startDate: dateRange.startDate,
-    endDate: dateRange.endDate,
-  );
-});
+      return repository.getSpendingTrend(
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+      );
+    });
 
 // Spending breakdown provider
-final spendingBreakdownProvider = FutureProvider.autoDispose<SpendingBreakdown>((ref) async {
-  final repository = ref.watch(analyticsRepositoryProvider);
-  final dateRange = ref.watch(dateRangeProvider);
+final spendingBreakdownProvider = FutureProvider.autoDispose<SpendingBreakdown>(
+  (ref) async {
+    final repository = ref.watch(analyticsRepositoryProvider);
+    final dateRange = ref.watch(dateRangeProvider);
 
-  return repository.getSpendingBreakdown(
-    startDate: dateRange.startDate,
-    endDate: dateRange.endDate,
-  );
-});
+    return repository.getSpendingBreakdown(
+      startDate: dateRange.startDate,
+      endDate: dateRange.endDate,
+    );
+  },
+);
 
 // Category breakdown provider
-final categoryBreakdownProvider = FutureProvider.autoDispose<List<CategorySpending>>((ref) async {
-  final repository = ref.watch(analyticsRepositoryProvider);
-  final dateRange = ref.watch(dateRangeProvider);
+final categoryBreakdownProvider =
+    FutureProvider.autoDispose<List<CategorySpending>>((ref) async {
+      final repository = ref.watch(analyticsRepositoryProvider);
+      final dateRange = ref.watch(dateRangeProvider);
 
-  return repository.getCategoryBreakdown(
-    startDate: dateRange.startDate,
-    endDate: dateRange.endDate,
-  );
-});
+      return repository.getCategoryBreakdown(
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+      );
+    });
 
 // Friend debt comparison provider
-final friendDebtComparisonProvider = FutureProvider.autoDispose<List<FriendDebtComparison>>((ref) async {
-  final repository = ref.watch(analyticsRepositoryProvider);
-  final dateRange = ref.watch(dateRangeProvider);
+final friendDebtComparisonProvider =
+    FutureProvider.autoDispose<List<FriendDebtComparison>>((ref) async {
+      final repository = ref.watch(analyticsRepositoryProvider);
+      final dateRange = ref.watch(dateRangeProvider);
 
-  return repository.getFriendDebtComparison(
-    startDate: dateRange.startDate,
-    endDate: dateRange.endDate,
-  );
-});
+      return repository.getFriendDebtComparison(
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+      );
+    });

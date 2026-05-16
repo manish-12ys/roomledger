@@ -59,8 +59,11 @@ class PersonalExpensesScreen extends ConsumerWidget {
                       if (Navigator.of(context).canPop())
                         IconButton(
                           onPressed: () => Navigator.of(context).pop(),
-                          icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                              size: 20, color: AppTheme.onSurface),
+                          icon: const Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            size: 20,
+                            color: AppTheme.onSurface,
+                          ),
                           tooltip: 'Back',
                         )
                       else
@@ -116,20 +119,20 @@ class PersonalExpensesScreen extends ConsumerWidget {
                         ),
                       )
                     : SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final expense = summary.expenses[index];
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: _ExpenseItemCard(
-                                expense: expense,
-                                onDelete: () => _showDeleteConfirmation(
-                                    context, ref, expense),
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          final expense = summary.expenses[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _ExpenseItemCard(
+                              expense: expense,
+                              onDelete: () => _showDeleteConfirmation(
+                                context,
+                                ref,
+                                expense,
                               ),
-                            );
-                          },
-                          childCount: summary.expenses.length,
-                        ),
+                            ),
+                          );
+                        }, childCount: summary.expenses.length),
                       ),
               ),
             ],
@@ -167,39 +170,55 @@ class PersonalExpensesScreen extends ConsumerWidget {
   }
 
   Future<void> _showDeleteConfirmation(
-      BuildContext context, WidgetRef ref, PersonalExpense expense) async {
+    BuildContext context,
+    WidgetRef ref,
+    PersonalExpense expense,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.surfaceContainer,
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppTheme.radiusMedium)),
-        title: const Text('Delete tracked item?',
-            style: TextStyle(fontWeight: FontWeight.w800)),
+          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+        ),
+        title: const Text(
+          'Delete tracked item?',
+          style: TextStyle(fontWeight: FontWeight.w800),
+        ),
         content: Text(
-            'Remove "${expense.description}" from your personal log?',
-            style: const TextStyle(
-                color: AppTheme.onSurfaceVariant, fontSize: 14)),
+          'Remove "${expense.description}" from your personal log?',
+          style: const TextStyle(
+            color: AppTheme.onSurfaceVariant,
+            fontSize: 14,
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel',
-                style: TextStyle(color: AppTheme.onSurfaceVariant)),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: AppTheme.onSurfaceVariant),
+            ),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppTheme.error),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete',
-                style: TextStyle(
-                    color: AppTheme.onSurface, fontWeight: FontWeight.w700)),
+            child: const Text(
+              'Delete',
+              style: TextStyle(
+                color: AppTheme.onSurface,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
         ],
       ),
     );
 
     if (confirmed == true && context.mounted) {
-      final repository =
-          await ref.read(personalExpensesRepositoryProvider.future);
+      final repository = await ref.read(
+        personalExpensesRepositoryProvider.future,
+      );
       await repository.deleteExpense(id: expense.id);
       ref.invalidate(personalExpensesSummaryProvider);
       ref.invalidate(personalExpensesListProvider);
@@ -220,10 +239,11 @@ class _SectionHeader extends StatelessWidget {
         child: Text(
           title,
           style: const TextStyle(
-              color: AppTheme.muted,
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.2),
+            color: AppTheme.muted,
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.2,
+          ),
         ),
       ),
     );
@@ -246,8 +266,10 @@ class _HeroCard extends StatelessWidget {
 
     final progress = summary.expenses.isEmpty
         ? 0.0
-        : (summary.expenses.length / (summary.expenses.length + 5))
-            .clamp(0.0, 1.0);
+        : (summary.expenses.length / (summary.expenses.length + 5)).clamp(
+            0.0,
+            1.0,
+          );
 
     return GlassCard(
       padding: const EdgeInsets.all(24),
@@ -260,17 +282,19 @@ class _HeroCard extends StatelessWidget {
                 const Text(
                   'Total Personal Spending',
                   style: TextStyle(
-                      color: AppTheme.muted,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600),
+                    color: AppTheme.muted,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   '₹${summary.totalSpending}',
                   style: const TextStyle(
-                      fontSize: 34,
-                      fontWeight: FontWeight.w900,
-                      color: AppTheme.onSurface),
+                    fontSize: 34,
+                    fontWeight: FontWeight.w900,
+                    color: AppTheme.onSurface,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -305,16 +329,18 @@ class _HeroCard extends StatelessWidget {
                     Text(
                       '${summary.expenses.length}',
                       style: const TextStyle(
-                          color: AppTheme.secondary,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 18),
+                        color: AppTheme.secondary,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 18,
+                      ),
                     ),
                     const Text(
                       'items',
                       style: TextStyle(
-                          color: AppTheme.muted,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 9),
+                        color: AppTheme.muted,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 9,
+                      ),
                     ),
                   ],
                 ),
@@ -323,9 +349,10 @@ class _HeroCard extends StatelessWidget {
               const Text(
                 'tracked',
                 style: TextStyle(
-                    color: AppTheme.muted,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600),
+                  color: AppTheme.muted,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
@@ -336,8 +363,7 @@ class _HeroCard extends StatelessWidget {
 }
 
 class _Badge extends StatelessWidget {
-  const _Badge(
-      {required this.label, required this.value, required this.color});
+  const _Badge({required this.label, required this.value, required this.color});
   final String label;
   final String value;
   final Color color;
@@ -351,9 +377,14 @@ class _Badge extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
-      child: Text('$value $label',
-          style: TextStyle(
-              color: color, fontSize: 10, fontWeight: FontWeight.w800)),
+      child: Text(
+        '$value $label',
+        style: TextStyle(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
     );
   }
 }
@@ -365,10 +396,9 @@ class _CategoryBreakdownCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final sorted = summary.categoryBreakdown.entries
-        .where((e) => e.value > 0)
-        .toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
+    final sorted =
+        summary.categoryBreakdown.entries.where((e) => e.value > 0).toList()
+          ..sort((a, b) => b.value.compareTo(a.value));
 
     return GlassCard(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -386,22 +416,27 @@ class _CategoryBreakdownCard extends StatelessWidget {
                       width: 8,
                       height: 8,
                       decoration: BoxDecoration(
-                          color: color, shape: BoxShape.circle),
+                        color: color,
+                        shape: BoxShape.circle,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         '${entry.key.emoji}  ${entry.key.label}',
                         style: const TextStyle(
-                            fontWeight: FontWeight.w700, fontSize: 14),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
                       ),
                     ),
                     Text(
                       '₹${entry.value}',
                       style: TextStyle(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 14,
-                          color: color),
+                        fontWeight: FontWeight.w900,
+                        fontSize: 14,
+                        color: color,
+                      ),
                     ),
                   ],
                 ),
@@ -446,8 +481,10 @@ class _ExpenseItemCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Center(
-              child: Text(expense.category.emoji,
-                  style: const TextStyle(fontSize: 20)),
+              child: Text(
+                expense.category.emoji,
+                style: const TextStyle(fontSize: 20),
+              ),
             ),
           ),
           const SizedBox(width: 14),
@@ -458,9 +495,10 @@ class _ExpenseItemCard extends StatelessWidget {
                 Text(
                   expense.description,
                   style: const TextStyle(
-                      color: AppTheme.onSurface,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 15),
+                    color: AppTheme.onSurface,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 15,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -468,9 +506,10 @@ class _ExpenseItemCard extends StatelessWidget {
                 Text(
                   '${expense.category.label} • ${_formatDate(expense.createdAt)}',
                   style: const TextStyle(
-                      color: AppTheme.muted,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600),
+                    color: AppTheme.muted,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
@@ -479,15 +518,19 @@ class _ExpenseItemCard extends StatelessWidget {
           Text(
             '₹${expense.amount}',
             style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.w900,
-                fontSize: 16),
+              color: color,
+              fontWeight: FontWeight.w900,
+              fontSize: 16,
+            ),
           ),
           const SizedBox(width: 8),
           GestureDetector(
             onTap: onDelete,
-            child: const Icon(Icons.delete_outline,
-                size: 18, color: AppTheme.muted),
+            child: const Icon(
+              Icons.delete_outline,
+              size: 18,
+              color: AppTheme.muted,
+            ),
           ),
         ],
       ),
@@ -532,9 +575,9 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet> {
       decoration: BoxDecoration(
         color: AppTheme.surfaceContainer,
         borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(AppTheme.radiusLarge)),
-        border:
-            Border.all(color: AppTheme.onSurface.withValues(alpha: 0.08)),
+          top: Radius.circular(AppTheme.radiusLarge),
+        ),
+        border: Border.all(color: AppTheme.onSurface.withValues(alpha: 0.08)),
       ),
       padding: EdgeInsets.fromLTRB(24, 20, 24, 24 + bottomInset),
       child: Form(
@@ -555,13 +598,15 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet> {
                 ),
               ),
               const SizedBox(height: 20),
-              const Text('Track Personal Item',
-                  style: TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.w800)),
+              const Text(
+                'Track Personal Item',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+              ),
               const SizedBox(height: 6),
-              const Text('Add an expense to your personal log',
-                  style: TextStyle(
-                      fontSize: 13, color: AppTheme.muted)),
+              const Text(
+                'Add an expense to your personal log',
+                style: TextStyle(fontSize: 13, color: AppTheme.muted),
+              ),
               const SizedBox(height: 24),
               TextFormField(
                 controller: _descriptionController,
@@ -586,12 +631,15 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet> {
                     int.tryParse(v ?? '') == null ? 'Enter valid amount' : null,
               ),
               const SizedBox(height: 22),
-              const Text('Category',
-                  style: TextStyle(
-                      color: AppTheme.muted,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.2)),
+              const Text(
+                'Category',
+                style: TextStyle(
+                  color: AppTheme.muted,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.2,
+                ),
+              ),
               const SizedBox(height: 12),
               Wrap(
                 spacing: 8,
@@ -604,7 +652,9 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet> {
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 150),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: isSelected
                             ? color.withValues(alpha: 0.15)
@@ -620,8 +670,7 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(cat.emoji,
-                              style: const TextStyle(fontSize: 14)),
+                          Text(cat.emoji, style: const TextStyle(fontSize: 14)),
                           const SizedBox(width: 6),
                           Text(
                             cat.label,
@@ -660,8 +709,9 @@ class _AddExpenseSheetState extends ConsumerState<_AddExpenseSheet> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _submitting = true);
     try {
-      final repository =
-          await ref.read(personalExpensesRepositoryProvider.future);
+      final repository = await ref.read(
+        personalExpensesRepositoryProvider.future,
+      );
       await repository.addExpense(
         description: _descriptionController.text.trim(),
         amount: int.parse(_amountController.text.trim()),

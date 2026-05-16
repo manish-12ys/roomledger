@@ -8,10 +8,7 @@ import 'debts_providers.dart';
 import 'domain/debts_models.dart';
 
 class DebtDetailScreen extends ConsumerWidget {
-  const DebtDetailScreen({
-    required this.debt,
-    super.key,
-  });
+  const DebtDetailScreen({required this.debt, super.key});
 
   final PendingDebtRecord debt;
 
@@ -26,7 +23,8 @@ class DebtDetailScreen extends ConsumerWidget {
         error: (error, stackTrace) => _ErrorState(
           message: 'Could not load settlement history.',
           details: error.toString(),
-          onRetry: () => ref.invalidate(settlementsForDebtProvider(debt.debtId)),
+          onRetry: () =>
+              ref.invalidate(settlementsForDebtProvider(debt.debtId)),
         ),
         data: (settlements) => SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -67,7 +65,10 @@ class DebtDetailScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _openRecordSettlementSheet(BuildContext context, WidgetRef ref) async {
+  Future<void> _openRecordSettlementSheet(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -107,10 +108,10 @@ class _SectionLabel extends StatelessWidget {
         Text(
           label,
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: AppTheme.onSurfaceVariant,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.0,
-              ),
+            color: AppTheme.onSurfaceVariant,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.0,
+          ),
         ),
       ],
     );
@@ -161,12 +162,18 @@ class _PremiumSummaryCard extends StatelessWidget {
                   children: [
                     Text(
                       debt.friendName,
-                      style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 18,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       debt.note,
-                      style: TextStyle(color: AppTheme.onSurfaceVariant, fontSize: 13),
+                      style: TextStyle(
+                        color: AppTheme.onSurfaceVariant,
+                        fontSize: 13,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -193,11 +200,21 @@ class _PremiumSummaryCard extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Total Debt', style: TextStyle(color: AppTheme.muted, fontSize: 10, fontWeight: FontWeight.w600)),
+                    Text(
+                      'Total Debt',
+                      style: TextStyle(
+                        color: AppTheme.muted,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     const SizedBox(height: 3),
                     Text(
                       _formatCurrency(debt.totalAmount),
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ],
                 ),
@@ -221,8 +238,8 @@ class _PremiumSummaryCard extends StatelessWidget {
                         color: debt.remainingAmount == 0
                             ? AppTheme.success
                             : debt.isOverdue
-                                ? AppTheme.error
-                                : AppTheme.secondary,
+                            ? AppTheme.error
+                            : AppTheme.secondary,
                       ),
                     ),
                   ],
@@ -237,16 +254,26 @@ class _PremiumSummaryCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppTheme.error.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppTheme.error.withValues(alpha: 0.15)),
+                border: Border.all(
+                  color: AppTheme.error.withValues(alpha: 0.15),
+                ),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.warning_amber_rounded, color: AppTheme.error, size: 18),
+                  Icon(
+                    Icons.warning_amber_rounded,
+                    color: AppTheme.error,
+                    size: 18,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Overdue by ${DateTime.now().difference(debt.createdAt).inDays} days',
-                      style: TextStyle(color: AppTheme.error, fontSize: 12, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        color: AppTheme.error,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
@@ -266,7 +293,9 @@ class _AnimatedProgressSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final progress = debt.totalAmount > 0 ? debt.repaidAmount / debt.totalAmount : 0.0;
+    final progress = debt.totalAmount > 0
+        ? debt.repaidAmount / debt.totalAmount
+        : 0.0;
 
     return GlassCard(
       padding: const EdgeInsets.all(20),
@@ -278,7 +307,9 @@ class _AnimatedProgressSection extends StatelessWidget {
             children: [
               Text(
                 'Payment Progress',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
               ),
               TweenAnimationBuilder<double>(
                 tween: Tween(begin: 0.0, end: progress * 100),
@@ -304,7 +335,9 @@ class _AnimatedProgressSection extends StatelessWidget {
               progress: progress,
               size: 100,
               strokeWidth: 8,
-              activeColor: debt.remainingAmount == 0 ? AppTheme.success : AppTheme.secondary,
+              activeColor: debt.remainingAmount == 0
+                  ? AppTheme.success
+                  : AppTheme.secondary,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -342,12 +375,18 @@ class _AnimatedProgressSection extends StatelessWidget {
             children: [
               Text(
                 'Paid: ${_formatCurrency(debt.repaidAmount)}',
-                style: const TextStyle(color: AppTheme.secondary, fontSize: 11, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  color: AppTheme.secondary,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               Text(
                 'Pending: ${_formatCurrency(debt.remainingAmount)}',
                 style: TextStyle(
-                  color: debt.remainingAmount == 0 ? AppTheme.success : AppTheme.onSurfaceVariant,
+                  color: debt.remainingAmount == 0
+                      ? AppTheme.success
+                      : AppTheme.onSurfaceVariant,
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
                 ),
@@ -410,14 +449,18 @@ class _EmptyTimeline extends StatelessWidget {
               color: AppTheme.secondary.withValues(alpha: 0.08),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.history, size: 24, color: AppTheme.secondary),
+            child: const Icon(
+              Icons.history,
+              size: 24,
+              color: AppTheme.secondary,
+            ),
           ),
           const SizedBox(height: 12),
           Text(
             'No payments recorded yet',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppTheme.onSurfaceVariant,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppTheme.onSurfaceVariant),
           ),
         ],
       ),
@@ -462,20 +505,29 @@ class _SettlementTimeline extends StatelessWidget {
                             children: [
                               Text(
                                 settlement.note,
-                                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 _formatDate(settlement.createdAt),
-                                style: TextStyle(color: AppTheme.muted, fontSize: 11),
+                                style: TextStyle(
+                                  color: AppTheme.muted,
+                                  fontSize: 11,
+                                ),
                               ),
                             ],
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: AppTheme.secondary.withValues(alpha: 0.10),
                             borderRadius: BorderRadius.circular(16),
@@ -503,19 +555,18 @@ class _SettlementTimeline extends StatelessWidget {
 }
 
 class _RecordSettlementSheet extends ConsumerStatefulWidget {
-  const _RecordSettlementSheet({
-    required this.debt,
-    required this.onCreated,
-  });
+  const _RecordSettlementSheet({required this.debt, required this.onCreated});
 
   final PendingDebtRecord debt;
   final VoidCallback onCreated;
 
   @override
-  ConsumerState<_RecordSettlementSheet> createState() => _RecordSettlementSheetState();
+  ConsumerState<_RecordSettlementSheet> createState() =>
+      _RecordSettlementSheetState();
 }
 
-class _RecordSettlementSheetState extends ConsumerState<_RecordSettlementSheet> {
+class _RecordSettlementSheetState
+    extends ConsumerState<_RecordSettlementSheet> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
@@ -544,12 +595,16 @@ class _RecordSettlementSheetState extends ConsumerState<_RecordSettlementSheet> 
             children: [
               Text(
                 'Record Payment',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 6),
               Text(
                 '${widget.debt.friendName} \u00b7 ${widget.debt.note}',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.onSurfaceVariant),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppTheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 16),
               Container(
@@ -564,7 +619,14 @@ class _RecordSettlementSheetState extends ConsumerState<_RecordSettlementSheet> 
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Remaining to pay', style: TextStyle(color: AppTheme.muted, fontSize: 10, fontWeight: FontWeight.w600)),
+                        Text(
+                          'Remaining to pay',
+                          style: TextStyle(
+                            color: AppTheme.muted,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                         const SizedBox(height: 4),
                         Text(
                           _formatCurrency(widget.debt.remainingAmount),
@@ -579,11 +641,21 @@ class _RecordSettlementSheetState extends ConsumerState<_RecordSettlementSheet> 
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text('Total debt', style: TextStyle(color: AppTheme.muted, fontSize: 10, fontWeight: FontWeight.w600)),
+                        Text(
+                          'Total debt',
+                          style: TextStyle(
+                            color: AppTheme.muted,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                         const SizedBox(height: 4),
                         Text(
                           _formatCurrency(widget.debt.totalAmount),
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ],
                     ),
@@ -652,7 +724,9 @@ class _RecordSettlementSheetState extends ConsumerState<_RecordSettlementSheet> 
 
     try {
       final amount = int.parse(_amountController.text);
-      final note = _noteController.text.isNotEmpty ? _noteController.text : 'Payment recorded';
+      final note = _noteController.text.isNotEmpty
+          ? _noteController.text
+          : 'Payment recorded';
 
       final repository = ref.read(debtsRepositoryProvider);
       await repository.addSettlement(

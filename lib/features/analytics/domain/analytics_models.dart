@@ -41,7 +41,10 @@ class SpendingTrendPoint {
 
   @override
   int get hashCode =>
-      month.hashCode ^ amount.hashCode ^ sharedAmount.hashCode ^ personalAmount.hashCode;
+      month.hashCode ^
+      amount.hashCode ^
+      sharedAmount.hashCode ^
+      personalAmount.hashCode;
 }
 
 /// Represents spending breakdown data
@@ -50,13 +53,13 @@ class SpendingBreakdown {
   final double personalTotal;
   final double totalSpending;
 
-  SpendingBreakdown({
-    required this.sharedTotal,
-    required this.personalTotal,
-  }) : totalSpending = sharedTotal + personalTotal;
+  SpendingBreakdown({required this.sharedTotal, required this.personalTotal})
+    : totalSpending = sharedTotal + personalTotal;
 
-  double get sharedPercentage => totalSpending > 0 ? (sharedTotal / totalSpending) * 100 : 0;
-  double get personalPercentage => totalSpending > 0 ? (personalTotal / totalSpending) * 100 : 0;
+  double get sharedPercentage =>
+      totalSpending > 0 ? (sharedTotal / totalSpending) * 100 : 0;
+  double get personalPercentage =>
+      totalSpending > 0 ? (personalTotal / totalSpending) * 100 : 0;
 
   @override
   bool operator ==(Object other) =>
@@ -82,11 +85,7 @@ class CategorySpending {
     required this.count,
   });
 
-  CategorySpending copyWith({
-    String? category,
-    double? amount,
-    int? count,
-  }) {
+  CategorySpending copyWith({String? category, double? amount, int? count}) {
     return CategorySpending(
       category: category ?? this.category,
       amount: amount ?? this.amount,

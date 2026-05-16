@@ -21,7 +21,8 @@ class PendingDebtRecord {
 
   bool get isFullySettled => remainingAmount == 0;
 
-  bool get isOverdue => remainingAmount > 0 && DateTime.now().difference(createdAt).inDays > 7;
+  bool get isOverdue =>
+      remainingAmount > 0 && DateTime.now().difference(createdAt).inDays > 7;
 }
 
 class SettlementRecord {

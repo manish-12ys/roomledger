@@ -9,7 +9,9 @@ import 'package:roomledger/features/dashboard/domain/dashboard_models.dart';
 
 void main() {
   group('DashboardScreen', () {
-    testWidgets('shows loading state while overview is pending', (tester) async {
+    testWidgets('shows loading state while overview is pending', (
+      tester,
+    ) async {
       final completer = Completer<DashboardOverview>();
 
       await tester.pumpWidget(
@@ -17,11 +19,7 @@ void main() {
           overrides: [
             dashboardOverviewProvider.overrideWith((ref) => completer.future),
           ],
-          child: const MaterialApp(
-            home: Scaffold(
-              body: DashboardScreen(),
-            ),
-          ),
+          child: const MaterialApp(home: Scaffold(body: DashboardScreen())),
         ),
       );
 
@@ -32,13 +30,11 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            dashboardOverviewProvider.overrideWith((ref) async => throw Exception('boom')),
-          ],
-          child: const MaterialApp(
-            home: Scaffold(
-              body: DashboardScreen(),
+            dashboardOverviewProvider.overrideWith(
+              (ref) async => throw Exception('boom'),
             ),
-          ),
+          ],
+          child: const MaterialApp(home: Scaffold(body: DashboardScreen())),
         ),
       );
 
@@ -85,11 +81,7 @@ void main() {
           overrides: [
             dashboardOverviewProvider.overrideWith((ref) async => overview),
           ],
-          child: const MaterialApp(
-            home: Scaffold(
-              body: DashboardScreen(),
-            ),
-          ),
+          child: const MaterialApp(home: Scaffold(body: DashboardScreen())),
         ),
       );
 

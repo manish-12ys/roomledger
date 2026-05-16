@@ -17,7 +17,20 @@ Color catColor(String category) {
 }
 
 String monthLabel(DateTime d) {
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
   return months[d.month - 1];
 }
 
@@ -41,10 +54,11 @@ class SectionTitle extends StatelessWidget {
         Text(
           title,
           style: const TextStyle(
-              color: AppTheme.onSurfaceVariant,
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.2),
+            color: AppTheme.onSurfaceVariant,
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.2,
+          ),
         ),
       ],
     );
@@ -79,19 +93,25 @@ class KpiCard extends StatelessWidget {
           children: [
             Icon(icon, color: color, size: 20),
             const SizedBox(height: 10),
-            Text(value,
-                style: TextStyle(
-                    color: color,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis),
+            Text(
+              value,
+              style: TextStyle(
+                color: color,
+                fontSize: 16,
+                fontWeight: FontWeight.w900,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
             const SizedBox(height: 2),
-            Text(label,
-                style: const TextStyle(
-                    color: AppTheme.muted,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600)),
+            Text(
+              label,
+              style: const TextStyle(
+                color: AppTheme.muted,
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
       ),
@@ -117,11 +137,14 @@ class Legend extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        Text(label,
-            style: const TextStyle(
-                color: AppTheme.muted,
-                fontSize: 11,
-                fontWeight: FontWeight.w600)),
+        Text(
+          label,
+          style: const TextStyle(
+            color: AppTheme.muted,
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ],
     );
   }
@@ -178,9 +201,10 @@ class SpendingLineChart extends StatelessWidget {
                       getTitlesWidget: (val, _) => Text(
                         '₹${val.toInt()}',
                         style: const TextStyle(
-                            color: AppTheme.muted,
-                            fontSize: 9,
-                            fontWeight: FontWeight.w600),
+                          color: AppTheme.muted,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),
@@ -198,18 +222,21 @@ class SpendingLineChart extends StatelessWidget {
                           child: Text(
                             monthLabel(trend[idx].month),
                             style: const TextStyle(
-                                color: AppTheme.muted,
-                                fontSize: 9,
-                                fontWeight: FontWeight.w600),
+                              color: AppTheme.muted,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         );
                       },
                     ),
                   ),
                   rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                   topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                 ),
                 lineTouchData: LineTouchData(
                   touchTooltipData: LineTouchTooltipData(
@@ -219,7 +246,9 @@ class SpendingLineChart extends StatelessWidget {
                       return LineTooltipItem(
                         '₹${s.y.toInt()}',
                         TextStyle(
-                          color: isShared ? AppTheme.secondary : AppTheme.warning,
+                          color: isShared
+                              ? AppTheme.secondary
+                              : AppTheme.warning,
                           fontWeight: FontWeight.w800,
                           fontSize: 12,
                         ),
@@ -366,15 +395,19 @@ class SharedVsPersonalDonut extends StatelessWidget {
                     Text(
                       '₹${total.toInt()}',
                       style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
-                          color: AppTheme.onSurface),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                        color: AppTheme.onSurface,
+                      ),
                     ),
-                    const Text('total',
-                        style: TextStyle(
-                            fontSize: 10,
-                            color: AppTheme.muted,
-                            fontWeight: FontWeight.w600)),
+                    const Text(
+                      'total',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: AppTheme.muted,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -432,25 +465,34 @@ class _DonutLegendRow extends StatelessWidget {
               decoration: BoxDecoration(color: color, shape: BoxShape.circle),
             ),
             const SizedBox(width: 8),
-            Text(label,
-                style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.onSurface)),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.onSurface,
+              ),
+            ),
             const Spacer(),
-            Text('${pct.toInt()}%',
-                style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    color: color)),
+            Text(
+              '${pct.toInt()}%',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: color,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 4),
-        Text('₹${amount.toInt()}',
-            style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-                color: AppTheme.onSurface)),
+        Text(
+          '₹${amount.toInt()}',
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w900,
+            color: AppTheme.onSurface,
+          ),
+        ),
       ],
     );
   }
@@ -462,7 +504,10 @@ class CategoryBarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final maxVal = categories.fold<double>(0, (m, c) => c.amount > m ? c.amount : m);
+    final maxVal = categories.fold<double>(
+      0,
+      (m, c) => c.amount > m ? c.amount : m,
+    );
     final top = categories.take(6).toList();
 
     return Container(
@@ -489,9 +534,10 @@ class CategoryBarChart extends StatelessWidget {
                       child: Text(
                         cat.category,
                         style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.onSurface),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.onSurface,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -506,10 +552,8 @@ class CategoryBarChart extends StatelessWidget {
                             return LinearProgressIndicator(
                               value: val,
                               minHeight: 10,
-                              backgroundColor:
-                                  AppTheme.surfaceElevated,
-                              valueColor:
-                                  AlwaysStoppedAnimation(color),
+                              backgroundColor: AppTheme.surfaceElevated,
+                              valueColor: AlwaysStoppedAnimation(color),
                             );
                           },
                         ),
@@ -522,9 +566,10 @@ class CategoryBarChart extends StatelessWidget {
                         '₹${cat.amount.toInt()}',
                         textAlign: TextAlign.right,
                         style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                            color: color),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          color: color,
+                        ),
                       ),
                     ),
                   ],
@@ -545,7 +590,9 @@ class FriendDebtChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final maxVal = friends.fold<double>(
-        0, (m, f) => f.totalDebt > m ? f.totalDebt : m);
+      0,
+      (m, f) => f.totalDebt > m ? f.totalDebt : m,
+    );
 
     final groups = friends.asMap().entries.map((entry) {
       final i = entry.key;
@@ -561,10 +608,7 @@ class FriendDebtChart extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.bottomCenter,
               end: Alignment.topCenter,
-              colors: [
-                AppTheme.error.withValues(alpha: 0.7),
-                AppTheme.error,
-              ],
+              colors: [AppTheme.error.withValues(alpha: 0.7), AppTheme.error],
             ),
           ),
           BarChartRodData(
@@ -610,9 +654,10 @@ class FriendDebtChart extends StatelessWidget {
                       getTitlesWidget: (val, _) => Text(
                         '₹${val.toInt()}',
                         style: const TextStyle(
-                            color: AppTheme.muted,
-                            fontSize: 9,
-                            fontWeight: FontWeight.w600),
+                          color: AppTheme.muted,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),
@@ -630,32 +675,37 @@ class FriendDebtChart extends StatelessWidget {
                           child: Text(
                             friends[idx].friendName.split(' ').first,
                             style: const TextStyle(
-                                color: AppTheme.muted,
-                                fontSize: 9,
-                                fontWeight: FontWeight.w600),
+                              color: AppTheme.muted,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         );
                       },
                     ),
                   ),
                   rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                   topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
                 ),
                 barTouchData: BarTouchData(
                   touchTooltipData: BarTouchTooltipData(
                     getTooltipColor: (_) => AppTheme.surfaceElevated,
                     getTooltipItem: (group, groupIndex, rod, rodIndex) {
                       final label = rodIndex == 0 ? 'Total' : 'Settled';
-                      final color =
-                          rodIndex == 0 ? AppTheme.error : AppTheme.secondary;
+                      final color = rodIndex == 0
+                          ? AppTheme.error
+                          : AppTheme.secondary;
                       return BarTooltipItem(
                         '$label\n₹${rod.toY.toInt()}',
                         TextStyle(
-                            color: color,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 11),
+                          color: color,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 11,
+                        ),
                       );
                     },
                   ),

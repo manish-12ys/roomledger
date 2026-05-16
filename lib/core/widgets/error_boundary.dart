@@ -41,9 +41,9 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
                   const AppSpacing.vertical(AppTheme.space300),
                   Text(
                     'Something went wrong',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: AppTheme.error,
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleLarge?.copyWith(color: AppTheme.error),
                   ),
                   const AppSpacing.vertical(AppTheme.space200),
                   Text(
@@ -184,9 +184,9 @@ class _GlobalErrorScreen extends StatelessWidget {
                 const AppSpacing.vertical(AppTheme.space300),
                 Text(
                   'UI Render Error',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: AppTheme.error,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(color: AppTheme.error),
                 ),
                 const AppSpacing.vertical(AppTheme.space200),
                 Text(

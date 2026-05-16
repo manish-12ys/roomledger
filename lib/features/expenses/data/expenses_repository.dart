@@ -15,13 +15,20 @@ class ExpensesRepository {
     );
 
     return rows
-        .map((row) => FriendOption(id: row['id'] as int, name: row['name'] as String))
+        .map(
+          (row) =>
+              FriendOption(id: row['id'] as int, name: row['name'] as String),
+        )
         .toList();
   }
 
-  Future<List<ExpenseListItem>> loadExpenses({int limit = 50, int offset = 0}) async {
+  Future<List<ExpenseListItem>> loadExpenses({
+    int limit = 50,
+    int offset = 0,
+  }) async {
     final database = await _database.database;
-    final rows = await database.rawQuery('''
+    final rows = await database.rawQuery(
+      '''
       SELECT
         debts.id AS debt_id,
         debts.friend_id AS friend_id,
@@ -36,7 +43,9 @@ class ExpensesRepository {
       GROUP BY debts.id
       ORDER BY datetime(debts.created_at) DESC
       LIMIT ? OFFSET ?
-    ''', [limit, offset]);
+    ''',
+      [limit, offset],
+    );
 
     return rows
         .map(
@@ -55,7 +64,8 @@ class ExpensesRepository {
 
   Future<void> addExpense(AddExpenseInput input) async {
     final database = await _database.database;
-    final now = input.date?.toIso8601String() ?? DateTime.now().toIso8601String();
+    final now =
+        input.date?.toIso8601String() ?? DateTime.now().toIso8601String();
     await database.insert('debts', {
       'friend_id': input.friendId,
       'note': input.note,
@@ -71,11 +81,12 @@ class ExpensesRepository {
 
     final database = await _database.database;
     final shares = input.calculateShares();
-    final now = input.date?.toIso8601String() ?? DateTime.now().toIso8601String();
+    final now =
+        input.date?.toIso8601String() ?? DateTime.now().toIso8601String();
 
     // If splitWithSelf is true, the first share is for the user, so we skip it for DB entries.
     final startIndex = input.splitWithSelf ? 1 : 0;
-    
+
     for (int i = 0; i < input.participantIds.length; i++) {
       // The share for participantIds[i] is at shares[startIndex + i]
       await database.insert('debts', {
@@ -89,11 +100,14 @@ class ExpensesRepository {
 
   Future<void> addCustomSplitExpense(AddCustomSplitExpenseInput input) async {
     if (!input.isValid()) {
-      throw ArgumentError('Invalid custom split expense: allocations must match total');
+      throw ArgumentError(
+        'Invalid custom split expense: allocations must match total',
+      );
     }
 
     final database = await _database.database;
-    final now = input.date?.toIso8601String() ?? DateTime.now().toIso8601String();
+    final now =
+        input.date?.toIso8601String() ?? DateTime.now().toIso8601String();
 
     await database.transaction((txn) async {
       for (final allocation in input.allocations) {
@@ -107,14 +121,19 @@ class ExpensesRepository {
     });
   }
 
-  Future<void> addPercentageSplitExpense(AddPercentageSplitExpenseInput input) async {
+  Future<void> addPercentageSplitExpense(
+    AddPercentageSplitExpenseInput input,
+  ) async {
     if (!input.isValid()) {
-      throw ArgumentError('Invalid percentage split expense: percentages must total 100');
+      throw ArgumentError(
+        'Invalid percentage split expense: percentages must total 100',
+      );
     }
 
     final database = await _database.database;
     final shares = input.calculateShares();
-    final now = input.date?.toIso8601String() ?? DateTime.now().toIso8601String();
+    final now =
+        input.date?.toIso8601String() ?? DateTime.now().toIso8601String();
 
     await database.transaction((txn) async {
       for (var i = 0; i < input.allocations.length; i++) {
@@ -128,14 +147,19 @@ class ExpensesRepository {
     });
   }
 
-  Future<void> addQuantitySplitExpense(AddQuantitySplitExpenseInput input) async {
+  Future<void> addQuantitySplitExpense(
+    AddQuantitySplitExpenseInput input,
+  ) async {
     if (!input.isValid()) {
-      throw ArgumentError('Invalid quantity split expense: quantities must be positive');
+      throw ArgumentError(
+        'Invalid quantity split expense: quantities must be positive',
+      );
     }
 
     final database = await _database.database;
     final shares = input.calculateShares();
-    final now = input.date?.toIso8601String() ?? DateTime.now().toIso8601String();
+    final now =
+        input.date?.toIso8601String() ?? DateTime.now().toIso8601String();
 
     await database.transaction((txn) async {
       for (var i = 0; i < input.allocations.length; i++) {
@@ -183,7 +207,11 @@ class ExpensesRepository {
   Future<void> deleteExpense({required int debtId}) async {
     final database = await _database.database;
     // Delete related settlements first
-    await database.delete('settlements', where: 'debt_id = ?', whereArgs: [debtId]);
+    await database.delete(
+      'settlements',
+      where: 'debt_id = ?',
+      whereArgs: [debtId],
+    );
     // Then delete the debt
     await database.delete('debts', where: 'id = ?', whereArgs: [debtId]);
   }

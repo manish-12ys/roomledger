@@ -8,10 +8,7 @@ import 'domain/debts_models.dart';
 import 'domain/grouped_debt_record.dart';
 
 class FriendDebtsScreen extends ConsumerWidget {
-  const FriendDebtsScreen({
-    required this.groupedDebt,
-    super.key,
-  });
+  const FriendDebtsScreen({required this.groupedDebt, super.key});
 
   final GroupedDebtRecord groupedDebt;
 
@@ -22,9 +19,7 @@ class FriendDebtsScreen extends ConsumerWidget {
         : 0.0;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('${groupedDebt.friendName}\'s Debts'),
-      ),
+      appBar: AppBar(title: Text('${groupedDebt.friendName}\'s Debts')),
       body: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
@@ -52,7 +47,9 @@ class FriendDebtsScreen extends ConsumerWidget {
                           ),
                           child: Center(
                             child: Text(
-                              groupedDebt.friendName.substring(0, 1).toUpperCase(),
+                              groupedDebt.friendName
+                                  .substring(0, 1)
+                                  .toUpperCase(),
                               style: const TextStyle(
                                 color: AppTheme.secondary,
                                 fontWeight: FontWeight.w800,
@@ -68,12 +65,18 @@ class FriendDebtsScreen extends ConsumerWidget {
                             children: [
                               Text(
                                 groupedDebt.friendName,
-                                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 20),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 20,
+                                ),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 '${groupedDebt.debts.length} active debt${groupedDebt.debts.length != 1 ? 's' : ''}',
-                                style: TextStyle(color: AppTheme.onSurfaceVariant, fontSize: 13),
+                                style: TextStyle(
+                                  color: AppTheme.onSurfaceVariant,
+                                  fontSize: 13,
+                                ),
                               ),
                             ],
                           ),
@@ -99,13 +102,29 @@ class FriendDebtsScreen extends ConsumerWidget {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: AppTheme.surfaceElevated.withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                        borderRadius: BorderRadius.circular(
+                          AppTheme.radiusSmall,
+                        ),
                       ),
                       child: Row(
                         children: [
-                          _Stat(label: 'Total', value: _formatCurrency(groupedDebt.totalAmount)),
-                          _Stat(label: 'Paid', value: _formatCurrency(groupedDebt.repaidAmount), color: AppTheme.secondary),
-                          _Stat(label: 'Remaining', value: _formatCurrency(groupedDebt.remainingAmount), color: groupedDebt.isOverdue ? AppTheme.error : null, isBold: true),
+                          _Stat(
+                            label: 'Total',
+                            value: _formatCurrency(groupedDebt.totalAmount),
+                          ),
+                          _Stat(
+                            label: 'Paid',
+                            value: _formatCurrency(groupedDebt.repaidAmount),
+                            color: AppTheme.secondary,
+                          ),
+                          _Stat(
+                            label: 'Remaining',
+                            value: _formatCurrency(groupedDebt.remainingAmount),
+                            color: groupedDebt.isOverdue
+                                ? AppTheme.error
+                                : null,
+                            isBold: true,
+                          ),
                         ],
                       ),
                     ),
@@ -122,7 +141,9 @@ class FriendDebtsScreen extends ConsumerWidget {
                             value: value,
                             minHeight: 4,
                             backgroundColor: AppTheme.surfaceElevated,
-                            valueColor: const AlwaysStoppedAnimation(AppTheme.secondary),
+                            valueColor: const AlwaysStoppedAnimation(
+                              AppTheme.secondary,
+                            ),
                           );
                         },
                       ),
@@ -150,10 +171,10 @@ class FriendDebtsScreen extends ConsumerWidget {
                   Text(
                     'INDIVIDUAL DEBTS',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: AppTheme.onSurfaceVariant,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.0,
-                        ),
+                      color: AppTheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.0,
+                    ),
                   ),
                 ],
               ),
@@ -163,16 +184,13 @@ class FriendDebtsScreen extends ConsumerWidget {
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
             sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final debt = groupedDebt.debts[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _DebtItemCard(debt: debt),
-                  );
-                },
-                childCount: groupedDebt.debts.length,
-              ),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final debt = groupedDebt.debts[index];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: _DebtItemCard(debt: debt),
+                );
+              }, childCount: groupedDebt.debts.length),
             ),
           ),
         ],
@@ -182,7 +200,12 @@ class FriendDebtsScreen extends ConsumerWidget {
 }
 
 class _Stat extends StatelessWidget {
-  const _Stat({required this.label, required this.value, this.color, this.isBold = false});
+  const _Stat({
+    required this.label,
+    required this.value,
+    this.color,
+    this.isBold = false,
+  });
 
   final String label;
   final String value;
@@ -195,7 +218,14 @@ class _Stat extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(color: AppTheme.muted, fontSize: 10, fontWeight: FontWeight.w600)),
+          Text(
+            label,
+            style: TextStyle(
+              color: AppTheme.muted,
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           const SizedBox(height: 3),
           Text(
             value,
@@ -227,15 +257,15 @@ class _DebtItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final progress = debt.totalAmount > 0 ? debt.repaidAmount / debt.totalAmount : 0.0;
+    final progress = debt.totalAmount > 0
+        ? debt.repaidAmount / debt.totalAmount
+        : 0.0;
 
     return GlassCard(
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => DebtDetailScreen(debt: debt),
-          ),
+          MaterialPageRoute(builder: (context) => DebtDetailScreen(debt: debt)),
         );
       },
       padding: const EdgeInsets.all(14),
@@ -249,7 +279,10 @@ class _DebtItemCard extends StatelessWidget {
                   children: [
                     Text(
                       debt.note,
-                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -270,7 +303,9 @@ class _DebtItemCard extends StatelessWidget {
                     style: TextStyle(
                       fontWeight: FontWeight.w800,
                       fontSize: 16,
-                      color: debt.isOverdue ? AppTheme.error : AppTheme.secondary,
+                      color: debt.isOverdue
+                          ? AppTheme.error
+                          : AppTheme.secondary,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -305,11 +340,19 @@ class _DebtItemCard extends StatelessWidget {
               children: [
                 Text(
                   'Paid ${_formatCurrency(debt.repaidAmount)}',
-                  style: TextStyle(color: AppTheme.secondary, fontSize: 10, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    color: AppTheme.secondary,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 Text(
                   'of ${_formatCurrency(debt.totalAmount)}',
-                  style: TextStyle(color: AppTheme.muted, fontSize: 10, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    color: AppTheme.muted,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),

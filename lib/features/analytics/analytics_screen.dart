@@ -78,7 +78,9 @@ class _AnalyticsHeader extends StatelessWidget {
       ),
     );
     if (picked != null) {
-      ref.read(dateRangeProvider.notifier).setCustomRange(picked.start, picked.end);
+      ref
+          .read(dateRangeProvider.notifier)
+          .setCustomRange(picked.start, picked.end);
     }
   }
 
@@ -94,7 +96,9 @@ class _AnalyticsHeader extends StatelessWidget {
         color: AppTheme.background,
         border: Border(
           bottom: BorderSide(
-              color: AppTheme.onSurface.withValues(alpha: 0.07), width: 1),
+            color: AppTheme.onSurface.withValues(alpha: 0.07),
+            width: 1,
+          ),
         ),
       ),
       child: SafeArea(
@@ -109,8 +113,11 @@ class _AnalyticsHeader extends StatelessWidget {
                   if (canPop)
                     IconButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                          size: 20, color: AppTheme.onSurface),
+                      icon: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        size: 20,
+                        color: AppTheme.onSurface,
+                      ),
                       tooltip: 'Back',
                     )
                   else
@@ -121,17 +128,21 @@ class _AnalyticsHeader extends StatelessWidget {
                       color: AppTheme.warning.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Icon(Icons.insights_rounded,
-                        color: AppTheme.warning, size: 20),
+                    child: const Icon(
+                      Icons.insights_rounded,
+                      color: AppTheme.warning,
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   const Text(
                     'Insights',
                     style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.w900,
-                        color: AppTheme.onSurface,
-                        letterSpacing: -0.5),
+                      fontSize: 26,
+                      fontWeight: FontWeight.w900,
+                      color: AppTheme.onSurface,
+                      letterSpacing: -0.5,
+                    ),
                   ),
                 ],
               ),
@@ -208,8 +219,11 @@ class _FilterChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: 13,
-                  color: active ? AppTheme.secondary : AppTheme.muted),
+              Icon(
+                icon,
+                size: 13,
+                color: active ? AppTheme.secondary : AppTheme.muted,
+              ),
               const SizedBox(width: 6),
             ],
             Text(

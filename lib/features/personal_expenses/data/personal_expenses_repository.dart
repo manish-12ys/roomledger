@@ -8,7 +8,7 @@ class PersonalExpensesRepository {
 
   Future<void> createPersonalExpensesTable() async {
     final db = await database.database;
-    
+
     try {
       await db.execute('''
         CREATE TABLE IF NOT EXISTS personal_expenses (
@@ -31,20 +31,20 @@ class PersonalExpensesRepository {
   }) async {
     final db = await database.database;
 
-    final id = await db.insert(
-      'personal_expenses',
-      {
-        'description': description,
-        'amount': amount,
-        'category': category.name,
-        'created_at': DateTime.now().toIso8601String(),
-      },
-    );
+    final id = await db.insert('personal_expenses', {
+      'description': description,
+      'amount': amount,
+      'category': category.name,
+      'created_at': DateTime.now().toIso8601String(),
+    });
 
     return id;
   }
 
-  Future<List<PersonalExpense>> getExpenses({int limit = 50, int offset = 0}) async {
+  Future<List<PersonalExpense>> getExpenses({
+    int limit = 50,
+    int offset = 0,
+  }) async {
     final db = await database.database;
 
     final result = await db.query(
@@ -107,11 +107,7 @@ class PersonalExpensesRepository {
 
     await db.update(
       'personal_expenses',
-      {
-        'description': description,
-        'amount': amount,
-        'category': category.name,
-      },
+      {'description': description, 'amount': amount, 'category': category.name},
       where: 'id = ?',
       whereArgs: [id],
     );
@@ -120,10 +116,6 @@ class PersonalExpensesRepository {
   Future<void> deleteExpense({required int id}) async {
     final db = await database.database;
 
-    await db.delete(
-      'personal_expenses',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await db.delete('personal_expenses', where: 'id = ?', whereArgs: [id]);
   }
 }

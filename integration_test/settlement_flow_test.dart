@@ -7,7 +7,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('Record settlement updates debt status', (WidgetTester tester) async {
+  testWidgets('Record settlement updates debt status', (
+    WidgetTester tester,
+  ) async {
     // Launch the app
     await tester.pumpWidget(const ProviderScope(child: RoomLedgerApp()));
     await tester.pumpAndSettle();
@@ -18,7 +20,7 @@ void main() {
 
     // Look for a Record Payment button
     expect(find.text('Record Payment'), findsWidgets);
-    
+
     // Tap the first Record Payment button
     await tester.tap(find.text('Record Payment').first);
     await tester.pumpAndSettle();
@@ -27,11 +29,17 @@ void main() {
     expect(find.text('Payment Amount (₹)'), findsOneWidget);
 
     // Enter a small payment amount
-    await tester.enterText(find.widgetWithText(TextFormField, 'Payment Amount (₹)'), '50');
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Payment Amount (₹)'),
+      '50',
+    );
     await tester.pumpAndSettle();
 
     // Enter note
-    await tester.enterText(find.widgetWithText(TextFormField, 'Payment Note (Optional)'), 'Integration test payment');
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Payment Note (Optional)'),
+      'Integration test payment',
+    );
     await tester.pumpAndSettle();
 
     // Submit Payment

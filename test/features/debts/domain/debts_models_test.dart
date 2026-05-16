@@ -45,19 +45,22 @@ void main() {
       expect(debt.isFullySettled, false);
     });
 
-    test('isOverdue returns true for debts > 7 days old with unpaid balance', () {
-      final debt = PendingDebtRecord(
-        debtId: 1,
-        friendId: 2,
-        friendName: 'Ravi',
-        note: 'Groceries',
-        totalAmount: 1000,
-        repaidAmount: 0,
-        createdAt: DateTime.now().subtract(const Duration(days: 10)),
-      );
+    test(
+      'isOverdue returns true for debts > 7 days old with unpaid balance',
+      () {
+        final debt = PendingDebtRecord(
+          debtId: 1,
+          friendId: 2,
+          friendName: 'Ravi',
+          note: 'Groceries',
+          totalAmount: 1000,
+          repaidAmount: 0,
+          createdAt: DateTime.now().subtract(const Duration(days: 10)),
+        );
 
-      expect(debt.isOverdue, true);
-    });
+        expect(debt.isOverdue, true);
+      },
+    );
 
     test('isOverdue returns false for debts < 7 days old', () {
       final debt = PendingDebtRecord(

@@ -16,9 +16,7 @@ class CashManagementScreen extends ConsumerWidget {
     final overviewAsync = ref.watch(cashOverviewProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Manage Cash'),
-      ),
+      appBar: AppBar(title: const Text('Manage Cash')),
       body: overviewAsync.when(
         loading: () => const AppListLoadingSkeleton(itemCount: 3),
         error: (err, stack) => AppStatusView(
@@ -48,7 +46,9 @@ class _CashContent extends ConsumerWidget {
   }
 
   void _showReserveDialog(BuildContext context, WidgetRef ref) {
-    final controller = TextEditingController(text: overview.emergencyReserve.toString());
+    final controller = TextEditingController(
+      text: overview.emergencyReserve.toString(),
+    );
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -69,7 +69,9 @@ class _CashContent extends ConsumerWidget {
           FilledButton(
             onPressed: () {
               final val = int.tryParse(controller.text) ?? 0;
-              ref.read(cashControllerProvider.notifier).updateEmergencyReserve(val);
+              ref
+                  .read(cashControllerProvider.notifier)
+                  .updateEmergencyReserve(val);
               Navigator.pop(context);
             },
             child: const Text('Save'),
@@ -136,14 +138,19 @@ class _CashContent extends ConsumerWidget {
                       ),
                       Text(
                         '₹${overview.emergencyReserve}',
-                        style: const TextStyle(color: AppTheme.onSurfaceVariant),
+                        style: const TextStyle(
+                          color: AppTheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
                 ),
                 TextButton(
                   onPressed: () => _showReserveDialog(context, ref),
-                  child: const Text('Edit', style: TextStyle(color: AppTheme.secondary)),
+                  child: const Text(
+                    'Edit',
+                    style: TextStyle(color: AppTheme.secondary),
+                  ),
                 ),
               ],
             ),
@@ -152,10 +159,10 @@ class _CashContent extends ConsumerWidget {
           Text(
             'Transactions',
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: AppTheme.secondary,
-                  letterSpacing: 0.5,
-                ),
+              fontWeight: FontWeight.w800,
+              color: AppTheme.secondary,
+              letterSpacing: 0.5,
+            ),
           ),
           const AppSpacing.vertical(12),
           if (overview.transactions.isEmpty)
@@ -217,18 +224,18 @@ class _BalanceCard extends StatelessWidget {
                 child: Text(
                   '₹',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: accentColor,
-                        fontWeight: FontWeight.w400,
-                      ),
+                    color: accentColor,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
               ),
               AnimatedCounterText(
                 value: overview.currentBalance,
                 style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                      color: AppTheme.onSurface,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -1,
-                    ),
+                  color: AppTheme.onSurface,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -1,
+                ),
               ),
             ],
           ),
@@ -250,14 +257,16 @@ class _BalanceCard extends StatelessWidget {
                 const AppSpacing.horizontal(8),
                 Text(
                   'Spent this month: ',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.muted),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: AppTheme.muted),
                 ),
                 Text(
                   '₹${overview.monthlyUsage}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppTheme.onSurface,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    color: AppTheme.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ],
             ),
@@ -287,7 +296,9 @@ class _TransactionTile extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: (isOut ? AppTheme.error : AppTheme.success).withValues(alpha: 0.1),
+              color: (isOut ? AppTheme.error : AppTheme.success).withValues(
+                alpha: 0.1,
+              ),
               borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
             ),
             child: Icon(
@@ -303,9 +314,9 @@ class _TransactionTile extends ConsumerWidget {
               children: [
                 Text(
                   tx.note,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
                 ),
                 Text(
                   formatter.format(tx.createdAt),
@@ -317,9 +328,9 @@ class _TransactionTile extends ConsumerWidget {
           Text(
             '${isOut ? '-' : '+'}₹${tx.amount}',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w900,
-                  color: isOut ? AppTheme.error : AppTheme.success,
-                ),
+              fontWeight: FontWeight.w900,
+              color: isOut ? AppTheme.error : AppTheme.success,
+            ),
           ),
         ],
       ),
@@ -358,7 +369,9 @@ class _TransactionFormState extends ConsumerState<_TransactionForm> {
       return;
     }
 
-    ref.read(cashControllerProvider.notifier).addTransaction(widget.type, amount, note);
+    ref
+        .read(cashControllerProvider.notifier)
+        .addTransaction(widget.type, amount, note);
     Navigator.pop(context);
   }
 
@@ -379,7 +392,9 @@ class _TransactionFormState extends ConsumerState<_TransactionForm> {
             children: [
               Text(
                 isOut ? 'Cash Out' : 'Cash In',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),

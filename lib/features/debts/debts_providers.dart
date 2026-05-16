@@ -10,20 +10,25 @@ final debtsRepositoryProvider = Provider<DebtsRepository>((ref) {
   return DebtsRepository(database: database);
 });
 
-final pendingDebtsProvider = FutureProvider<List<PendingDebtRecord>>((ref) async {
+final pendingDebtsProvider = FutureProvider<List<PendingDebtRecord>>((
+  ref,
+) async {
   ref.watch(appDataVersionProvider);
   final repository = ref.watch(debtsRepositoryProvider);
   return repository.getPendingDebts();
 });
 
-final groupedDebtsProvider = FutureProvider<List<GroupedDebtRecord>>((ref) async {
+final groupedDebtsProvider = FutureProvider<List<GroupedDebtRecord>>((
+  ref,
+) async {
   ref.watch(appDataVersionProvider);
   final repository = ref.watch(debtsRepositoryProvider);
   return repository.getGroupedPendingDebts();
 });
 
-final settlementsForDebtProvider = FutureProvider.family<List<SettlementRecord>, int>((ref, debtId) async {
-  ref.watch(appDataVersionProvider);
-  final repository = ref.watch(debtsRepositoryProvider);
-  return repository.getSettlementsForDebt(debtId);
-});
+final settlementsForDebtProvider =
+    FutureProvider.family<List<SettlementRecord>, int>((ref, debtId) async {
+      ref.watch(appDataVersionProvider);
+      final repository = ref.watch(debtsRepositoryProvider);
+      return repository.getSettlementsForDebt(debtId);
+    });

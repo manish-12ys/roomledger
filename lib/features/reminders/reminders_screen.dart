@@ -16,9 +16,7 @@ class RemindersScreen extends ConsumerWidget {
     final remindersAsync = ref.watch(remindersProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Reminders'),
-      ),
+      appBar: AppBar(title: const Text('Reminders')),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -31,41 +29,41 @@ class RemindersScreen extends ConsumerWidget {
           ),
         ),
         child: remindersAsync.when(
-        loading: () => const AppListLoadingSkeleton(itemCount: 4),
-        error: (err, stack) => AppStatusView(
-          icon: Icons.error_outline,
-          title: 'Could not load reminders',
-          message: err.toString(),
-          actionLabel: 'Retry',
-          onAction: () => ref.invalidate(remindersProvider),
-        ),
-        data: (reminders) {
-          if (reminders.isEmpty) {
-            return const AppStatusView(
-              icon: Icons.notifications_none,
-              title: 'No reminders yet',
-              message: 'Create reminders for rent, bills, and repayments.',
-            );
-          }
-
-          final upcoming = reminders.where((r) => !r.completed).toList();
-          final completed = reminders.where((r) => r.completed).toList();
-          final entries = <_ReminderListEntry>[];
-
-          if (upcoming.isNotEmpty) {
-            entries.add(const _ReminderListEntry.header('Upcoming'));
-            for (final reminder in upcoming) {
-              entries.add(_ReminderListEntry.reminder(reminder));
+          loading: () => const AppListLoadingSkeleton(itemCount: 4),
+          error: (err, stack) => AppStatusView(
+            icon: Icons.error_outline,
+            title: 'Could not load reminders',
+            message: err.toString(),
+            actionLabel: 'Retry',
+            onAction: () => ref.invalidate(remindersProvider),
+          ),
+          data: (reminders) {
+            if (reminders.isEmpty) {
+              return const AppStatusView(
+                icon: Icons.notifications_none,
+                title: 'No reminders yet',
+                message: 'Create reminders for rent, bills, and repayments.',
+              );
             }
-            entries.add(const _ReminderListEntry.spacer(24));
-          }
 
-          if (completed.isNotEmpty) {
-            entries.add(const _ReminderListEntry.header('Completed'));
-            for (final reminder in completed) {
-              entries.add(_ReminderListEntry.reminder(reminder));
+            final upcoming = reminders.where((r) => !r.completed).toList();
+            final completed = reminders.where((r) => r.completed).toList();
+            final entries = <_ReminderListEntry>[];
+
+            if (upcoming.isNotEmpty) {
+              entries.add(const _ReminderListEntry.header('Upcoming'));
+              for (final reminder in upcoming) {
+                entries.add(_ReminderListEntry.reminder(reminder));
+              }
+              entries.add(const _ReminderListEntry.spacer(24));
             }
-          }
+
+            if (completed.isNotEmpty) {
+              entries.add(const _ReminderListEntry.header('Completed'));
+              for (final reminder in completed) {
+                entries.add(_ReminderListEntry.reminder(reminder));
+              }
+            }
 
             return ListView.builder(
               padding: const EdgeInsets.all(20),
@@ -79,10 +77,10 @@ class RemindersScreen extends ConsumerWidget {
                       child: Text(
                         entry.label!,
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w800,
-                              color: AppTheme.secondary,
-                              letterSpacing: 0.5,
-                            ),
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.secondary,
+                          letterSpacing: 0.5,
+                        ),
                       ),
                     );
                   case _ReminderEntryType.spacer:
@@ -110,11 +108,7 @@ class RemindersScreen extends ConsumerWidget {
   }
 }
 
-enum _ReminderEntryType {
-  header,
-  reminder,
-  spacer,
-}
+enum _ReminderEntryType { header, reminder, spacer }
 
 class _ReminderListEntry {
   const _ReminderListEntry._({
@@ -125,22 +119,13 @@ class _ReminderListEntry {
   });
 
   const _ReminderListEntry.header(String label)
-      : this._(
-          type: _ReminderEntryType.header,
-          label: label,
-        );
+    : this._(type: _ReminderEntryType.header, label: label);
 
   const _ReminderListEntry.reminder(Reminder reminder)
-      : this._(
-          type: _ReminderEntryType.reminder,
-          reminder: reminder,
-        );
+    : this._(type: _ReminderEntryType.reminder, reminder: reminder);
 
   const _ReminderListEntry.spacer(double height)
-      : this._(
-          type: _ReminderEntryType.spacer,
-          spacerHeight: height,
-        );
+    : this._(type: _ReminderEntryType.spacer, spacerHeight: height);
 
   final _ReminderEntryType type;
   final String? label;
@@ -172,7 +157,9 @@ class _ReminderTileState extends ConsumerState<_ReminderTile> {
       _updating = true;
     });
 
-    await ref.read(remindersControllerProvider.notifier).toggleReminder(widget.reminder);
+    await ref
+        .read(remindersControllerProvider.notifier)
+        .toggleReminder(widget.reminder);
 
     if (mounted) {
       setState(() {
@@ -185,13 +172,18 @@ class _ReminderTileState extends ConsumerState<_ReminderTile> {
   @override
   Widget build(BuildContext context) {
     final formatter = DateFormat('MMM d, yyyy · h:mm a');
-    final effectiveCompleted = _optimisticCompleted ?? widget.reminder.completed;
-    final isOverdue = !effectiveCompleted && widget.reminder.reminderDate.isBefore(DateTime.now());
+    final effectiveCompleted =
+        _optimisticCompleted ?? widget.reminder.completed;
+    final isOverdue =
+        !effectiveCompleted &&
+        widget.reminder.reminderDate.isBefore(DateTime.now());
 
     return GlassCard(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-      accentColor: isOverdue ? AppTheme.error : (effectiveCompleted ? AppTheme.muted : AppTheme.secondary),
+      accentColor: isOverdue
+          ? AppTheme.error
+          : (effectiveCompleted ? AppTheme.muted : AppTheme.secondary),
       child: Row(
         children: [
           Checkbox(
@@ -208,10 +200,14 @@ class _ReminderTileState extends ConsumerState<_ReminderTile> {
                 Text(
                   widget.reminder.title,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        decoration: effectiveCompleted ? TextDecoration.lineThrough : null,
-                        color: effectiveCompleted ? AppTheme.muted : AppTheme.onSurface,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    decoration: effectiveCompleted
+                        ? TextDecoration.lineThrough
+                        : null,
+                    color: effectiveCompleted
+                        ? AppTheme.muted
+                        : AppTheme.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const AppSpacing.vertical(4),
                 Row(
@@ -219,15 +215,19 @@ class _ReminderTileState extends ConsumerState<_ReminderTile> {
                     Icon(
                       Icons.access_time_rounded,
                       size: 14,
-                      color: isOverdue ? AppTheme.error : AppTheme.onSurfaceVariant,
+                      color: isOverdue
+                          ? AppTheme.error
+                          : AppTheme.onSurfaceVariant,
                     ),
                     const AppSpacing.horizontal(6),
                     Text(
                       formatter.format(widget.reminder.reminderDate),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: isOverdue ? AppTheme.error : AppTheme.onSurfaceVariant,
-                            fontWeight: isOverdue ? FontWeight.bold : null,
-                          ),
+                        color: isOverdue
+                            ? AppTheme.error
+                            : AppTheme.onSurfaceVariant,
+                        fontWeight: isOverdue ? FontWeight.bold : null,
+                      ),
                     ),
                   ],
                 ),
@@ -235,11 +235,17 @@ class _ReminderTileState extends ConsumerState<_ReminderTile> {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.delete_outline_rounded, color: AppTheme.muted, size: 22),
+            icon: const Icon(
+              Icons.delete_outline_rounded,
+              color: AppTheme.muted,
+              size: 22,
+            ),
             onPressed: _updating
                 ? null
                 : () {
-                    ref.read(remindersControllerProvider.notifier).deleteReminder(widget.reminder);
+                    ref
+                        .read(remindersControllerProvider.notifier)
+                        .deleteReminder(widget.reminder);
                   },
             tooltip: 'Delete reminder',
           ),
@@ -250,11 +256,7 @@ class _ReminderTileState extends ConsumerState<_ReminderTile> {
 }
 
 class AddReminderSheet extends ConsumerStatefulWidget {
-  const AddReminderSheet({
-    super.key,
-    this.initialTitle,
-    this.initialType,
-  });
+  const AddReminderSheet({super.key, this.initialTitle, this.initialType});
 
   final String? initialTitle;
   final String? initialType;
@@ -307,9 +309,9 @@ class _AddReminderSheetState extends ConsumerState<AddReminderSheet> {
   void _submit() {
     final title = _titleController.text.trim();
     if (title.isEmpty || _selectedDate == null || _selectedTime == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please fill all fields')));
       return;
     }
 
@@ -328,7 +330,9 @@ class _AddReminderSheetState extends ConsumerState<AddReminderSheet> {
       return;
     }
 
-    ref.read(remindersControllerProvider.notifier).addReminder(title, reminderDate, _selectedType);
+    ref
+        .read(remindersControllerProvider.notifier)
+        .addReminder(title, reminderDate, _selectedType);
     Navigator.pop(context);
   }
 
@@ -350,9 +354,9 @@ class _AddReminderSheetState extends ConsumerState<AddReminderSheet> {
               Text(
                 'New Reminder',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: AppTheme.secondary,
-                    ),
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.secondary,
+                ),
               ),
               const SizedBox(height: 16),
               TextField(
@@ -367,7 +371,10 @@ class _AddReminderSheetState extends ConsumerState<AddReminderSheet> {
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 initialValue: _selectedType,
-                decoration: const InputDecoration(labelText: 'Type', border: OutlineInputBorder()),
+                decoration: const InputDecoration(
+                  labelText: 'Type',
+                  border: OutlineInputBorder(),
+                ),
                 items: const [
                   DropdownMenuItem(value: 'BILL', child: Text('Bill')),
                   DropdownMenuItem(value: 'RENT', child: Text('Rent')),
@@ -384,7 +391,11 @@ class _AddReminderSheetState extends ConsumerState<AddReminderSheet> {
                     child: OutlinedButton.icon(
                       onPressed: _pickDate,
                       icon: const Icon(Icons.calendar_today),
-                      label: Text(_selectedDate == null ? 'Select Date' : dateFormatter.format(_selectedDate!)),
+                      label: Text(
+                        _selectedDate == null
+                            ? 'Select Date'
+                            : dateFormatter.format(_selectedDate!),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -392,7 +403,11 @@ class _AddReminderSheetState extends ConsumerState<AddReminderSheet> {
                     child: OutlinedButton.icon(
                       onPressed: _pickTime,
                       icon: const Icon(Icons.access_time),
-                      label: Text(_selectedTime == null ? 'Select Time' : _selectedTime!.format(context)),
+                      label: Text(
+                        _selectedTime == null
+                            ? 'Select Time'
+                            : _selectedTime!.format(context),
+                      ),
                     ),
                   ),
                 ],

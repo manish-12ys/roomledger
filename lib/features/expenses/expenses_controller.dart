@@ -31,7 +31,11 @@ final groupedExpensesProvider = Provider<AsyncValue<GroupedExpenses>>((ref) {
     final earlierItems = <ExpenseListItem>[];
 
     for (final item in items) {
-      final itemDate = DateTime(item.createdAt.year, item.createdAt.month, item.createdAt.day);
+      final itemDate = DateTime(
+        item.createdAt.year,
+        item.createdAt.month,
+        item.createdAt.day,
+      );
       if (itemDate == today) {
         todayItems.add(item);
       } else if (itemDate == yesterday) {

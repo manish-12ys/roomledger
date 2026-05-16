@@ -31,7 +31,10 @@ class DebtsScreen extends ConsumerWidget {
           // Use all debts (including settled) for the ring — same as Shared Ledger
           final allDebts = allDebtsAsync.valueOrNull ?? [];
           final totalDebt = allDebts.fold<int>(0, (s, d) => s + d.totalAmount);
-          final totalRepaid = allDebts.fold<int>(0, (s, d) => s + d.repaidAmount);
+          final totalRepaid = allDebts.fold<int>(
+            0,
+            (s, d) => s + d.repaidAmount,
+          );
           return RefreshIndicator(
             color: AppTheme.secondary,
             backgroundColor: AppTheme.surfaceElevated,
@@ -103,7 +106,11 @@ class _DebtsContent extends StatelessWidget {
                       children: [
                         const Text(
                           'Total Pending',
-                          style: TextStyle(color: AppTheme.muted, fontSize: 13, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            color: AppTheme.muted,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         const SizedBox(height: 12),
                         Text(
@@ -117,9 +124,18 @@ class _DebtsContent extends StatelessWidget {
                         const SizedBox(height: 16),
                         Row(
                           children: [
-                            _HeroIndicator(label: 'Debtors', value: '${debts.length}', color: AppTheme.secondary),
+                            _HeroIndicator(
+                              label: 'Debtors',
+                              value: '${debts.length}',
+                              color: AppTheme.secondary,
+                            ),
                             const SizedBox(width: 16),
-                            _HeroIndicator(label: 'Overdue', value: '${debts.where((d) => d.isOverdue).length}', color: const Color(0xFFFF5252)),
+                            _HeroIndicator(
+                              label: 'Overdue',
+                              value:
+                                  '${debts.where((d) => d.isOverdue).length}',
+                              color: const Color(0xFFFF5252),
+                            ),
                           ],
                         ),
                       ],
@@ -134,16 +150,25 @@ class _DebtsContent extends StatelessWidget {
                         strokeWidth: 7,
                         child: Text(
                           '${(overallProgress * 100).toInt()}%',
-                          style: const TextStyle(color: AppTheme.secondary, fontWeight: FontWeight.w900, fontSize: 16),
+                          style: const TextStyle(
+                            color: AppTheme.secondary,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 16,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 6),
                       const Text(
                         'repaid',
-                        style: TextStyle(color: AppTheme.muted, fontSize: 10, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                          color: AppTheme.muted,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
-                  ),                ],
+                  ),
+                ],
               ),
             ),
           ),
@@ -198,7 +223,11 @@ class _DebtsContent extends StatelessWidget {
 }
 
 class _HeroIndicator extends StatelessWidget {
-  const _HeroIndicator({required this.label, required this.value, required this.color});
+  const _HeroIndicator({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
 
   final String label;
   final String value;
@@ -208,11 +237,19 @@ class _HeroIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
         const SizedBox(width: 6),
         Text(
           '$value $label',
-          style: const TextStyle(color: AppTheme.muted, fontSize: 11, fontWeight: FontWeight.w700),
+          style: const TextStyle(
+            color: AppTheme.muted,
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ],
     );
@@ -226,10 +263,17 @@ class _RoommateDebtCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final progress = record.totalAmount > 0 ? record.repaidAmount / record.totalAmount : 0.0;
-    
+    final progress = record.totalAmount > 0
+        ? record.repaidAmount / record.totalAmount
+        : 0.0;
+
     return GlassCard(
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => FriendDebtsScreen(groupedDebt: record))),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => FriendDebtsScreen(groupedDebt: record),
+        ),
+      ),
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
@@ -241,12 +285,18 @@ class _RoommateDebtCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.1),
+                  ),
                 ),
                 child: Center(
                   child: Text(
                     record.friendName.substring(0, 1).toUpperCase(),
-                    style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                 ),
               ),
@@ -255,9 +305,22 @@ class _RoommateDebtCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(record.friendName, style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w800)),
+                    Text(
+                      record.friendName,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    Text('${record.debts.length} pending items', style: const TextStyle(color: AppTheme.muted, fontSize: 12)),
+                    Text(
+                      '${record.debts.length} pending items',
+                      style: const TextStyle(
+                        color: AppTheme.muted,
+                        fontSize: 12,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -265,7 +328,14 @@ class _RoommateDebtCard extends StatelessWidget {
                 progress: progress,
                 size: 48,
                 strokeWidth: 4.5,
-                child: Text('${(progress * 100).toInt()}%', style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w900)),
+                child: Text(
+                  '${(progress * 100).toInt()}%',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
               ),
             ],
           ),
@@ -281,8 +351,17 @@ class _RoommateDebtCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _StatColumn(label: 'Total', value: '₹${record.totalAmount}'),
-                _StatColumn(label: 'Paid', value: '₹${record.repaidAmount}', color: AppTheme.secondary),
-                _StatColumn(label: 'Remaining', value: '₹${record.remainingAmount}', color: AppTheme.secondary, isBold: true),
+                _StatColumn(
+                  label: 'Paid',
+                  value: '₹${record.repaidAmount}',
+                  color: AppTheme.secondary,
+                ),
+                _StatColumn(
+                  label: 'Remaining',
+                  value: '₹${record.remainingAmount}',
+                  color: AppTheme.secondary,
+                  isBold: true,
+                ),
               ],
             ),
           ),
@@ -304,7 +383,12 @@ class _RoommateDebtCard extends StatelessWidget {
 }
 
 class _StatColumn extends StatelessWidget {
-  const _StatColumn({required this.label, required this.value, this.color, this.isBold = false});
+  const _StatColumn({
+    required this.label,
+    required this.value,
+    this.color,
+    this.isBold = false,
+  });
 
   final String label;
   final String value;
@@ -316,7 +400,14 @@ class _StatColumn extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: AppTheme.muted, fontSize: 10, fontWeight: FontWeight.w700)),
+        Text(
+          label,
+          style: const TextStyle(
+            color: AppTheme.muted,
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         const SizedBox(height: 6),
         Text(
           value,

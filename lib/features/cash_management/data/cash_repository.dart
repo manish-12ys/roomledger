@@ -15,14 +15,15 @@ class CashRepository {
 
   Future<void> updateEmergencyReserve(int amount) async {
     final database = await _db.database;
-    await database.update(
-      'wallet_settings',
-      {'emergency_reserve': amount},
-      where: 'id = 1',
-    );
+    await database.update('wallet_settings', {
+      'emergency_reserve': amount,
+    }, where: 'id = 1');
   }
 
-  Future<List<CashTransaction>> getCashTransactions({int? limit, int? offset}) async {
+  Future<List<CashTransaction>> getCashTransactions({
+    int? limit,
+    int? offset,
+  }) async {
     final database = await _db.database;
     final results = await database.query(
       'cash_transactions',
@@ -47,13 +48,17 @@ class CashRepository {
 
   Future<void> deleteTransaction(int id) async {
     final database = await _db.database;
-    await database.delete('cash_transactions', where: 'id = ?', whereArgs: [id]);
+    await database.delete(
+      'cash_transactions',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   Future<CashOverview> getCashOverview() async {
     final database = await _db.database;
     final reserve = await getEmergencyReserve();
-    
+
     // 1. Calculate balance via SQL
     final balanceResult = await database.rawQuery('''
       SELECT 
@@ -65,11 +70,14 @@ class CashRepository {
     // 2. Calculate monthly usage via SQL
     final now = DateTime.now();
     final firstDayOfMonth = DateTime(now.year, now.month, 1).toIso8601String();
-    final usageResult = await database.rawQuery('''
+    final usageResult = await database.rawQuery(
+      '''
       SELECT SUM(amount) as usage
       FROM cash_transactions
       WHERE type = 'OUT' AND created_at >= ?
-    ''', [firstDayOfMonth]);
+    ''',
+      [firstDayOfMonth],
+    );
     final monthlyUsage = (usageResult.first['usage'] as num?)?.toInt() ?? 0;
 
     // 3. Get recent 20 transactions for preview
