@@ -248,6 +248,25 @@ class _DebtItemCard extends StatelessWidget {
 
   final PendingDebtRecord debt;
 
+  String _getCategoryIcon(String category) {
+    switch (category) {
+      case 'Groceries': return '🛒';
+      case 'Vegetables': return '🥦';
+      case 'Auto / Fuel': return '🚗';
+      case 'Shopping': return '🛍';
+      case 'Bills': return '💡';
+      case 'Food': return '🍔';
+      case 'Entertainment': return '🎬';
+      case 'Medical': return '💊';
+      case 'Transport': return '🚕';
+      case 'Education': return '📚';
+      case 'Rent': return '🏠';
+      case 'Recharge': return '📱';
+      case 'Travel': return '✈';
+      default: return '🎁';
+    }
+  }
+
   StatusType get _statusType {
     if (debt.isFullySettled) return StatusType.paid;
     if (debt.repaidAmount > 0) return StatusType.partial;
@@ -273,23 +292,55 @@ class _DebtItemCard extends StatelessWidget {
         children: [
           Row(
             children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppTheme.secondary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppTheme.secondary.withValues(alpha: 0.15),
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    _getCategoryIcon(debt.category),
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      debt.note,
+                      debt.category,
                       style: const TextStyle(
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w800,
                         fontSize: 15,
+                        color: AppTheme.onSurface,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
+                    if (debt.note.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        debt.note,
+                        style: TextStyle(
+                          color: AppTheme.onSurface.withValues(alpha: 0.7),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                     const SizedBox(height: 4),
                     Text(
                       'Created ${_formatDate(debt.createdAt)}',
-                      style: TextStyle(color: AppTheme.muted, fontSize: 11),
+                      style: TextStyle(color: AppTheme.muted, fontSize: 10),
                     ),
                   ],
                 ),

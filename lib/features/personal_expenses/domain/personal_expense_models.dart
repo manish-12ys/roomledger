@@ -1,11 +1,11 @@
 enum ExpenseCategory {
   food('Food', '🍔'),
-  travel('Travel', '🚕'),
-  bills('Bills', '📄'),
+  travel('Travel', '✈️'),
+  bills('Bills', '💡'),
   entertainment('Entertainment', '🎬'),
   shopping('Shopping', '🛍️'),
   utilities('Utilities', '⚡'),
-  other('Other', '📌');
+  other('Other', '🎁');
 
   const ExpenseCategory(this.label, this.emoji);
 
