@@ -17,7 +17,7 @@ class AnalyticsRepository {
     final isShortRange = endDate.difference(startDate).inDays <= 31;
     final format = isShortRange ? '%Y-%m-%d' : '%Y-%m';
 
-    // 1. Get aggregated shared expenses (debts)
+    // 1. Get aggregated shared expenses (debts) - Total historical volume
     final sharedResults = await db.rawQuery(
       '''
       SELECT 
@@ -91,7 +91,7 @@ class AnalyticsRepository {
   }) async {
     final db = await database.database;
 
-    // Get shared expenses total
+    // Get shared expenses total - Total historical volume
     final debtResults = await db.rawQuery(
       'SELECT COALESCE(SUM(total_amount), 0) as total FROM debts WHERE created_at BETWEEN ? AND ?',
       [startDate.toIso8601String(), endDate.toIso8601String()],
@@ -176,12 +176,18 @@ class AnalyticsRepository {
     final results = await db.rawQuery(
       '''
       SELECT 
-        category, 
-        SUM(total_amount) as total, 
+        d.category, 
+        SUM(d.total_amount - COALESCE(s.repaid, 0)) as total, 
         COUNT(*) as total_count 
-      FROM debts 
-      WHERE created_at BETWEEN ? AND ? 
-      GROUP BY category
+      FROM debts d 
+      LEFT JOIN (
+        SELECT debt_id, SUM(amount) as repaid 
+        FROM settlements 
+        GROUP BY debt_id
+      ) s ON d.id = s.debt_id
+      WHERE d.created_at BETWEEN ? AND ? 
+      GROUP BY d.category
+      HAVING total > 0
       ORDER BY total DESC
     ''',
       [

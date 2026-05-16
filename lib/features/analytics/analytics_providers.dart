@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:roomledger/core/database/roomledger_database.dart';
 import 'data/analytics_repository.dart';
 import 'domain/analytics_models.dart';
+import '../../core/providers/app_providers.dart';
 
 // Database provider
 final roomLedgerDatabaseProvider = Provider<RoomLedgerDatabase>((ref) {
@@ -62,6 +63,7 @@ final analyticsReportProvider = FutureProvider.autoDispose<AnalyticsReport>((
 ) async {
   final repository = ref.watch(analyticsRepositoryProvider);
   final dateRange = ref.watch(dateRangeProvider);
+  ref.watch(appDataVersionProvider);
 
   return repository.getAnalyticsReport(
     startDate: dateRange.startDate,
@@ -74,6 +76,7 @@ final spendingTrendProvider =
     FutureProvider.autoDispose<List<SpendingTrendPoint>>((ref) async {
       final repository = ref.watch(analyticsRepositoryProvider);
       final dateRange = ref.watch(dateRangeProvider);
+      ref.watch(appDataVersionProvider);
 
       return repository.getSpendingTrend(
         startDate: dateRange.startDate,
@@ -86,6 +89,7 @@ final spendingBreakdownProvider = FutureProvider.autoDispose<SpendingBreakdown>(
   (ref) async {
     final repository = ref.watch(analyticsRepositoryProvider);
     final dateRange = ref.watch(dateRangeProvider);
+    ref.watch(appDataVersionProvider);
 
     return repository.getSpendingBreakdown(
       startDate: dateRange.startDate,
@@ -99,6 +103,7 @@ final categoryBreakdownProvider =
     FutureProvider.autoDispose<List<CategorySpending>>((ref) async {
       final repository = ref.watch(analyticsRepositoryProvider);
       final dateRange = ref.watch(dateRangeProvider);
+      ref.watch(appDataVersionProvider);
 
       return repository.getCategoryBreakdown(
         startDate: dateRange.startDate,
@@ -111,6 +116,7 @@ final sharedCategoryBreakdownProvider =
     FutureProvider.autoDispose<List<CategorySpending>>((ref) async {
       final repository = ref.watch(analyticsRepositoryProvider);
       final dateRange = ref.watch(dateRangeProvider);
+      ref.watch(appDataVersionProvider);
 
       return repository.getSharedCategoryBreakdown(
         startDate: dateRange.startDate,
@@ -123,6 +129,7 @@ final friendDebtComparisonProvider =
     FutureProvider.autoDispose<List<FriendDebtComparison>>((ref) async {
       final repository = ref.watch(analyticsRepositoryProvider);
       final dateRange = ref.watch(dateRangeProvider);
+      ref.watch(appDataVersionProvider);
 
       return repository.getFriendDebtComparison(
         startDate: dateRange.startDate,

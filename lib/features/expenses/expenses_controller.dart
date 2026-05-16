@@ -29,10 +29,15 @@ final groupedExpensesProvider = Provider<AsyncValue<GroupedExpenses>>((ref) {
     final todayItems = <ExpenseListItem>[];
     final yesterdayItems = <ExpenseListItem>[];
     final earlierItems = <ExpenseListItem>[];
+    int totalPending = 0;
+    int totalAmount = 0;
 
     for (final item in items) {
       // Hide settled expenses (fully repaid)
       if (item.repaidAmount >= item.totalAmount) continue;
+
+      totalPending += item.remainingAmount;
+      totalAmount += item.totalAmount;
 
       final itemDate = DateTime(
         item.createdAt.year,
@@ -47,9 +52,6 @@ final groupedExpensesProvider = Provider<AsyncValue<GroupedExpenses>>((ref) {
         earlierItems.add(item);
       }
     }
-
-    final totalPending = items.fold<int>(0, (s, e) => s + e.remainingAmount);
-    final totalAmount = items.fold<int>(0, (s, e) => s + e.totalAmount);
 
     return GroupedExpenses(
       today: todayItems,

@@ -28,6 +28,7 @@ class DashboardRepository {
     final monthlySpending = sharedSpending + personalSpending;
 
     // 2. Calculate Pending Debt Totals and Debtor Count via SQL
+    // We only include debts that are NOT fully settled to ensure consistency with the pending list
     final debtStatsResult = await database.rawQuery('''
       SELECT 
         COALESCE(SUM(d.total_amount), 0) as total_debt,
@@ -39,6 +40,7 @@ class DashboardRepository {
         FROM settlements 
         GROUP BY debt_id
       ) s_total ON s_total.debt_id = d.id
+      WHERE d.total_amount > COALESCE(s_total.repaid, 0)
     ''');
 
     final totalDebt =

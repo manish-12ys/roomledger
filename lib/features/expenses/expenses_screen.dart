@@ -9,6 +9,7 @@ import '../analytics/analytics_providers.dart';
 import '../debts/debt_detail_screen.dart';
 import '../debts/domain/debts_models.dart';
 import '../dashboard/dashboard_shell.dart';
+import '../../core/providers/app_providers.dart';
 import 'domain/expense_models.dart';
 import 'expenses_providers.dart';
 import 'expenses_controller.dart';
@@ -55,13 +56,13 @@ class ExpensesScreen extends ConsumerWidget {
           title: 'Ledger Unavailable',
           message: error.toString(),
           actionLabel: 'Retry',
-          onAction: () => ref.invalidate(expensesListProvider),
+          onAction: () => ref.read(appDataVersionProvider.notifier).state++,
         ),
         data: (grouped) => RefreshIndicator(
           color: AppTheme.secondary,
           backgroundColor: AppTheme.surfaceElevated,
           onRefresh: () async {
-            ref.invalidate(expensesListProvider);
+            ref.read(appDataVersionProvider.notifier).state++;
             await ref.read(expensesListProvider.future);
           },
           child:
@@ -94,7 +95,7 @@ class ExpensesScreen extends ConsumerWidget {
       backgroundColor: Colors.transparent,
       builder: (ctx) => AddFriendSheet(
         onCreated: () {
-          ref.invalidate(friendOptionsProvider);
+          ref.read(appDataVersionProvider.notifier).state++;
         },
       ),
     );
@@ -109,7 +110,7 @@ class ExpensesScreen extends ConsumerWidget {
       builder: (sheetContext) {
         return AddSharedExpenseSheet(
           onCreated: () {
-            ref.invalidate(expensesListProvider);
+            ref.read(appDataVersionProvider.notifier).state++;
           },
         );
       },
@@ -471,23 +472,64 @@ class _EmptyState extends ConsumerWidget {
   const _EmptyState();
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return AppStatusView(
-      icon: Icons.receipt_long_outlined,
-      title: 'Shared ledger empty',
-      message: 'Add shared expenses to track splits with roommates.',
-      actionLabel: 'Add Roommate',
-      onAction: () {
-        showModalBottomSheet<void>(
-          context: context,
-          isScrollControlled: true,
-          backgroundColor: Colors.transparent,
-          builder: (ctx) => AddFriendSheet(
-            onCreated: () {
-              ref.invalidate(friendOptionsProvider);
-            },
-          ),
+    final friendsAsync = ref.watch(friendOptionsProvider);
+
+    return friendsAsync.maybeWhen(
+      data: (friends) {
+        final hasFriends = friends.isNotEmpty;
+        return AppStatusView(
+          icon: hasFriends
+              ? Icons.receipt_long_outlined
+              : Icons.person_add_outlined,
+          title: 'Shared ledger empty',
+          message: hasFriends
+              ? 'Ready to split? Add your first shared expense now.'
+              : 'Add shared expenses to track splits with roommates.',
+          actionLabel: hasFriends ? 'Add Shared Expense' : 'Add Roommate',
+          onAction: () {
+            if (hasFriends) {
+              // Same as FAB action
+              _openAddExpenseSheet(context, ref);
+            } else {
+              _openAddFriendSheet(context, ref);
+            }
+          },
         );
       },
+      orElse: () => const AppStatusView(
+        icon: Icons.receipt_long_outlined,
+        title: 'Shared ledger empty',
+        message: 'Add shared expenses to track splits with roommates.',
+      ),
+    );
+  }
+
+  Future<void> _openAddExpenseSheet(BuildContext context, WidgetRef ref) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return AddSharedExpenseSheet(
+          onCreated: () {
+            ref.read(appDataVersionProvider.notifier).state++;
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _openAddFriendSheet(BuildContext context, WidgetRef ref) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => AddFriendSheet(
+        onCreated: () {
+          ref.read(appDataVersionProvider.notifier).state++;
+        },
+      ),
     );
   }
 }

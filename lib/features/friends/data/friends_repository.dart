@@ -31,10 +31,14 @@ class FriendsRepository {
         f.name,
         f.created_at,
         COALESCE(SUM(d.total_amount), 0) as total_debt,
-        COALESCE(SUM(s.amount), 0) as repaid_amount
+        COALESCE(SUM(s_total.repaid), 0) as repaid_amount
       FROM friends f
       LEFT JOIN debts d ON f.id = d.friend_id
-      LEFT JOIN settlements s ON d.id = s.debt_id
+      LEFT JOIN (
+        SELECT debt_id, SUM(amount) as repaid 
+        FROM settlements 
+        GROUP BY debt_id
+      ) s_total ON d.id = s_total.debt_id
       GROUP BY f.id
       ORDER BY f.created_at DESC
     ''');

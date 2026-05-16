@@ -5,6 +5,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/category_utils.dart';
 import '../../core/widgets/app_components.dart';
 import '../../core/widgets/app_states.dart';
+import '../../core/providers/app_providers.dart';
 import 'debt_detail_screen.dart';
 import 'debts_providers.dart';
 import 'domain/debts_models.dart';
@@ -158,6 +159,16 @@ class FriendDebtsScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
+                    const SizedBox(height: 16),
+                    // Bulk Action Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: NeumorphicButton(
+                        onPressed: () => _openQuickSettleSheet(context, ref, currentDebt),
+                        label: 'Bulk Repayment',
+                        icon: Icons.bolt_rounded,
+                      ),
+                    ),
                     const SizedBox(height: 12),
                     // Progress bar
                     ClipRRect(
@@ -227,6 +238,19 @@ class FriendDebtsScreen extends ConsumerWidget {
       ),
     );
   }
+
+  void _openQuickSettleSheet(
+    BuildContext context,
+    WidgetRef ref,
+    GroupedDebtRecord groupedDebt,
+  ) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (context) => _QuickSettleSheet(groupedDebt: groupedDebt),
+    );
+  }
 }
 
 class _Stat extends StatelessWidget {
@@ -280,8 +304,8 @@ class _DebtItemCard extends StatelessWidget {
 
   StatusType get _statusType {
     if (debt.isFullySettled) return StatusType.paid;
-    if (debt.repaidAmount > 0) return StatusType.partial;
     if (debt.isOverdue) return StatusType.overdue;
+    if (debt.repaidAmount > 0) return StatusType.partial;
     return StatusType.pending;
   }
 
@@ -292,13 +316,13 @@ class _DebtItemCard extends StatelessWidget {
         : 0.0;
 
     return GlassCard(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => DebtDetailScreen(debt: debt)),
-        );
-      },
-      padding: const EdgeInsets.all(14),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => DebtDetailScreen(debt: debt),
+        ),
+      ),
+      padding: const EdgeInsets.all(16),
       child: Column(
         children: [
           Row(
@@ -307,47 +331,33 @@ class _DebtItemCard extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: AppTheme.secondary.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(12),
+                  color: AppTheme.surfaceElevated,
+                  borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                    color: AppTheme.secondary.withValues(alpha: 0.15),
+                    color: AppTheme.onSurface.withValues(alpha: 0.05),
                   ),
                 ),
                 child: Center(
                   child: Text(
                     CategoryUtils.getIcon(debt.category),
-                    style: const TextStyle(fontSize: 20),
+                    style: const TextStyle(fontSize: 22),
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      debt.category,
+                      debt.note,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 15,
-                        color: AppTheme.onSurface,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                    if (debt.note.isNotEmpty) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        debt.note,
-                        style: TextStyle(
-                          color: AppTheme.onSurface.withValues(alpha: 0.7),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
                     const SizedBox(height: 4),
                     Text(
                       'Created ${_formatDate(debt.createdAt)}',
@@ -426,6 +436,169 @@ class _DebtItemCard extends StatelessWidget {
 
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
+  }
+}
+
+class _QuickSettleSheet extends ConsumerStatefulWidget {
+  const _QuickSettleSheet({required this.groupedDebt});
+
+  final GroupedDebtRecord groupedDebt;
+
+  @override
+  ConsumerState<_QuickSettleSheet> createState() => _QuickSettleSheetState();
+}
+
+class _QuickSettleSheetState extends ConsumerState<_QuickSettleSheet> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _amountController;
+  final _noteController = TextEditingController();
+  bool _submitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _amountController = TextEditingController(
+      text: widget.groupedDebt.remainingAmount.toString(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _submitting = true);
+
+    try {
+      final amount = int.parse(_amountController.text);
+      final note = _noteController.text.isNotEmpty
+          ? _noteController.text
+          : 'Bulk Repayment';
+
+      final repository = ref.read(debtsRepositoryProvider);
+      await repository.settleFriendDebts(
+        friendId: widget.groupedDebt.friendId,
+        amount: amount,
+        note: note,
+      );
+
+      // Signal that app data has changed to trigger global reactive updates
+      ref.read(appDataVersionProvider.notifier).state++;
+
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Processed \u20b9$amount repayment for ${widget.groupedDebt.friendName}'),
+            backgroundColor: AppTheme.secondary,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: AppTheme.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _submitting = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Quick Settlement',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      Text(
+                        'Paying to ${widget.groupedDebt.friendName}',
+                        style: TextStyle(
+                          color: AppTheme.onSurfaceVariant,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              TextFormField(
+                controller: _amountController,
+                decoration: const InputDecoration(
+                  labelText: 'Amount to Pay',
+                  hintText: '0',
+                  prefixIcon: Icon(Icons.currency_rupee_rounded),
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) return 'Enter amount';
+                  final amount = int.tryParse(value);
+                  if (amount == null || amount <= 0) return 'Invalid amount';
+                  if (amount > widget.groupedDebt.remainingAmount) {
+                    return 'Exceeds total debt (\u20b9${widget.groupedDebt.remainingAmount})';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _noteController,
+                decoration: const InputDecoration(
+                  labelText: 'Note (Optional)',
+                  hintText: 'Bulk Repayment',
+                  prefixIcon: Icon(Icons.notes_rounded),
+                ),
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: NeumorphicButton(
+                  onPressed: _submitting ? () {} : () => _submitForm(),
+                  label: _submitting ? 'Processing...' : 'Confirm Repayment',
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

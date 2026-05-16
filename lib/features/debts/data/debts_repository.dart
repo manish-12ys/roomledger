@@ -107,7 +107,63 @@ class DebtsRepository {
       'created_at': now.toIso8601String(),
     });
 
+    // Check if fully settled
+    final remaining = await getRemainingAmount(debtId);
+    if (remaining <= 0) {
+      // Delete everything related to this debt as requested by user
+      await db.transaction((txn) async {
+        await txn.delete('settlements', where: 'debt_id = ?', whereArgs: [debtId]);
+        await txn.delete('debts', where: 'id = ?', whereArgs: [debtId]);
+      });
+    }
+
     return id;
+  }
+
+  Future<void> settleFriendDebts({
+    required int friendId,
+    required int amount,
+    required String note,
+  }) async {
+    final db = await database.database;
+    final allDebts = await getPendingDebts();
+    final friendDebts = allDebts.where((d) => d.friendId == friendId).toList();
+
+    // Sort by date (oldest first) to settle logically
+    friendDebts.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+
+    int remainingToSettle = amount;
+
+    await db.transaction((txn) async {
+      for (final debt in friendDebts) {
+        if (remainingToSettle <= 0) break;
+
+        final debtRemaining = debt.totalAmount - debt.repaidAmount;
+        final settleAmount = remainingToSettle >= debtRemaining
+            ? debtRemaining
+            : remainingToSettle;
+
+        if (settleAmount > 0) {
+          final now = DateTime.now();
+          await txn.insert('settlements', {
+            'debt_id': debt.debtId,
+            'amount': settleAmount,
+            'note': note,
+            'created_at': now.toIso8601String(),
+          });
+
+          remainingToSettle -= settleAmount;
+
+          // If now fully settled, delete as per user's "completly" requirement
+          if (settleAmount >= debtRemaining) {
+            await txn.delete('settlements',
+                where: 'debt_id = ?', whereArgs: [debt.debtId]);
+            await txn.delete('debts',
+                where: 'id = ?', whereArgs: [debt.debtId]);
+          }
+        }
+      }
+    });
   }
 
   Future<int> getRemainingAmount(int debtId) async {

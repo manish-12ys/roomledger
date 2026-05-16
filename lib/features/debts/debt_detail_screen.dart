@@ -5,9 +5,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/category_utils.dart';
 import '../../core/widgets/app_components.dart';
 import '../dashboard/dashboard_providers.dart';
-import '../expenses/expenses_providers.dart';
-import '../expenses/expenses_controller.dart';
-import '../analytics/analytics_providers.dart';
+import '../../core/providers/app_providers.dart';
 import 'debts_providers.dart';
 import 'domain/debts_models.dart';
 
@@ -758,6 +756,8 @@ class _RecordSettlementSheetState
           ? _noteController.text
           : 'Payment recorded';
 
+      final isFinalPayment = amount >= widget.debt.remainingAmount;
+
       final repository = ref.read(debtsRepositoryProvider);
       await repository.addSettlement(
         debtId: widget.debt.debtId,
@@ -765,19 +765,16 @@ class _RecordSettlementSheetState
         note: note,
       );
 
-      // Invalidate providers to force immediate UI refresh
-      ref.invalidate(settlementsForDebtProvider(widget.debt.debtId));
-      ref.invalidate(expensesListProvider);
-      ref.invalidate(groupedExpensesProvider);
-      ref.invalidate(pendingDebtsProvider);
-      ref.invalidate(groupedDebtsProvider);
-      ref.invalidate(dashboardOverviewProvider);
-      // Invalidate analytics as well
-      ref.invalidate(sharedCategoryBreakdownProvider);
+      // Signal that app data has changed to trigger global reactive updates
+      ref.read(appDataVersionProvider.notifier).state++;
 
       if (mounted) {
-        Navigator.pop(context);
-        widget.onCreated();
+        Navigator.pop(context); // Pop the bottom sheet
+        if (isFinalPayment) {
+          Navigator.pop(context); // Pop the detail screen since debt is deleted
+        } else {
+          widget.onCreated();
+        }
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
