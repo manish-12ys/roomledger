@@ -24,7 +24,7 @@ class RoomLedgerDatabase {
 
     final openedDatabase = await openDatabase(
       databasePath,
-      version: 5,
+      version: 6,
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON;');
       },
@@ -81,6 +81,33 @@ class RoomLedgerDatabase {
             );
           } catch (e) {
             // Column might already exist
+          }
+        }
+        if (oldVersion < 6) {
+          try {
+            await db.execute(
+              'ALTER TABLE friends ADD COLUMN phone_number TEXT',
+            );
+          } catch (e) {
+            // Column might already exist
+          }
+          try {
+            await db.execute('''
+              CREATE TABLE IF NOT EXISTS reminder_settings (
+                id INTEGER PRIMARY KEY,
+                auto_send_enabled INTEGER NOT NULL DEFAULT 1,
+                dispatch_interval_days INTEGER NOT NULL DEFAULT 5,
+                sender_name TEXT NOT NULL DEFAULT 'User'
+              )
+            ''');
+            await db.insert('reminder_settings', {
+              'id': 1,
+              'auto_send_enabled': 1,
+              'dispatch_interval_days': 5,
+              'sender_name': 'User',
+            });
+          } catch (e) {
+            // Table/Row might already exist
           }
         }
       },
@@ -182,6 +209,7 @@ class RoomLedgerDatabase {
       CREATE TABLE friends (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
+        phone_number TEXT,
         created_at TEXT NOT NULL
       )
     ''');

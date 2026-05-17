@@ -23,12 +23,12 @@ class ExpensesRepository {
   }
 
   Future<List<ExpenseListItem>> loadExpenses({
-    int limit = 50,
-    int offset = 0,
+    int? limit,
+    int? offset,
   }) async {
     final database = await _database.database;
-    final rows = await database.rawQuery(
-      '''
+    
+    var query = '''
       SELECT
         debts.id AS debt_id,
         debts.friend_id AS friend_id,
@@ -43,10 +43,19 @@ class ExpensesRepository {
       LEFT JOIN settlements ON settlements.debt_id = debts.id
       GROUP BY debts.id
       ORDER BY datetime(debts.created_at) DESC
-      LIMIT ? OFFSET ?
-    ''',
-      [limit, offset],
-    );
+    ''';
+    
+    final List<Object?> args = [];
+    if (limit != null) {
+      query += ' LIMIT ?';
+      args.add(limit);
+    }
+    if (offset != null) {
+      query += ' OFFSET ?';
+      args.add(offset);
+    }
+
+    final rows = await database.rawQuery(query, args);
 
     return rows
         .map(
