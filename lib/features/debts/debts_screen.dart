@@ -65,12 +65,12 @@ class _DebtsContent extends StatelessWidget {
   });
 
   final List<GroupedDebtRecord> debts;
-  final int totalDebt;
-  final int totalRepaid;
+  final num totalDebt;
+  final num totalRepaid;
 
   @override
   Widget build(BuildContext context) {
-    final totalPending = debts.fold<int>(0, (s, d) => s + d.remainingAmount);
+    final totalPending = debts.fold<num>(0, (s, d) => s + d.remainingAmount);
     final overallProgress = totalDebt > 0 ? totalRepaid / totalDebt : 0.0;
 
     return CustomScrollView(
@@ -114,7 +114,7 @@ class _DebtsContent extends StatelessWidget {
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          '₹$totalPending',
+                          _formatCurrency(totalPending),
                           style: const TextStyle(
                             fontSize: 34,
                             fontWeight: FontWeight.w900,
@@ -350,15 +350,15 @@ class _RoommateDebtCard extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _StatColumn(label: 'Total', value: '₹${record.totalAmount}'),
+                _StatColumn(label: 'Total', value: _formatCurrency(record.totalAmount)),
                 _StatColumn(
                   label: 'Paid',
-                  value: '₹${record.repaidAmount}',
+                  value: _formatCurrency(record.repaidAmount),
                   color: AppTheme.secondary,
                 ),
                 _StatColumn(
                   label: 'Remaining',
-                  value: '₹${record.remainingAmount}',
+                  value: _formatCurrency(record.remainingAmount),
                   color: AppTheme.secondary,
                   isBold: true,
                 ),
@@ -433,4 +433,8 @@ class _EmptyState extends StatelessWidget {
       message: 'No pending debts at the moment.',
     );
   }
+}
+
+String _formatCurrency(num amount) {
+  return '₹$amount';
 }

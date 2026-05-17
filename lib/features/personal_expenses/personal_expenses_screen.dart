@@ -282,7 +282,7 @@ class _HeroCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  '₹${summary.totalSpending}',
+                  _formatCurrency(summary.totalSpending),
                   style: const TextStyle(
                     fontSize: 34,
                     fontWeight: FontWeight.w900,
@@ -424,7 +424,7 @@ class _CategoryBreakdownCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '₹${entry.value}',
+                      _formatCurrency(entry.value),
                       style: TextStyle(
                         fontWeight: FontWeight.w900,
                         fontSize: 14,
@@ -509,7 +509,7 @@ class _ExpenseItemCard extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Text(
-            '₹${expense.amount}',
+            _formatCurrency(expense.amount),
             style: TextStyle(
               color: color,
               fontWeight: FontWeight.w900,
@@ -727,4 +727,8 @@ String _formatDate(DateTime date) {
   if (diff.inDays == 0) return 'Today';
   if (diff.inDays == 1) return 'Yesterday';
   return '${date.day}/${date.month}/${date.year}';
+}
+
+String _formatCurrency(num amount) {
+  return '₹$amount';
 }

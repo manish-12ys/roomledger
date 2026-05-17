@@ -14,8 +14,8 @@ class GroupedExpenses {
   final List<ExpenseListItem> today;
   final List<ExpenseListItem> yesterday;
   final List<ExpenseListItem> earlier;
-  final int totalPending;
-  final int totalAmount;
+  final num totalPending;
+  final num totalAmount;
 }
 
 final groupedExpensesProvider = Provider<AsyncValue<GroupedExpenses>>((ref) {
@@ -57,8 +57,8 @@ final groupedExpensesProvider = Provider<AsyncValue<GroupedExpenses>>((ref) {
       today: todayItems,
       yesterday: yesterdayItems,
       earlier: earlierItems,
-      totalPending: totalPending,
-      totalAmount: totalAmount,
+      totalPending: totalPending.toInt(),
+      totalAmount: totalAmount.toInt(),
     );
   });
 });

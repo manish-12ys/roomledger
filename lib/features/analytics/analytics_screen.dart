@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_states.dart';
+import '../../core/widgets/app_components.dart';
 import 'analytics_providers.dart';
 import 'domain/analytics_models.dart';
 import 'widgets/analytics_widgets.dart';
@@ -278,6 +279,11 @@ class _AnalyticsBody extends StatelessWidget {
           FriendDebtChart(friends: report.friendDebtComparison),
           const SizedBox(height: 24),
         ],
+
+        // ─── Shared Analytics (All Past History) ───
+        const SectionTitle(title: 'SHARED LEDGER (ALL PAST HISTORY)'),
+        const SizedBox(height: 14),
+        _SharedHistoryCard(report: report),
       ],
     );
   }
@@ -311,6 +317,191 @@ class _KpiRow extends StatelessWidget {
           icon: Icons.person_outline_rounded,
           color: AppTheme.warning,
         ),
+      ],
+    );
+  }
+}
+
+class _SharedHistoryCard extends StatelessWidget {
+  const _SharedHistoryCard({required this.report});
+  final AnalyticsReport report;
+
+  @override
+  Widget build(BuildContext context) {
+    final total = report.historicalSharedTotal;
+    final repaid = report.historicalSharedRepaid;
+    final outstanding = total - repaid;
+    final progress = total > 0 ? repaid / total : 0.0;
+    final pct = (progress * 100).toInt();
+
+    final hasData = total > 0;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GlassCard(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'HISTORICAL TOTAL SPENDING',
+                        style: TextStyle(
+                          color: AppTheme.muted,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        '₹$total',
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w900,
+                          color: AppTheme.onSurface,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppTheme.secondary.withValues(alpha: 0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.history_rounded,
+                      color: AppTheme.secondary,
+                      size: 24,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'REPAID',
+                          style: TextStyle(
+                            color: AppTheme.muted,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '₹$repaid',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                            color: AppTheme.secondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'OUTSTANDING',
+                          style: TextStyle(
+                            color: AppTheme.muted,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '₹$outstanding',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                            color: outstanding > 0 ? AppTheme.error : AppTheme.secondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Settlement Progress',
+                        style: TextStyle(
+                          color: AppTheme.onSurfaceVariant,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        '$pct%',
+                        style: const TextStyle(
+                          color: AppTheme.secondary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: LinearProgressIndicator(
+                      value: progress.clamp(0.0, 1.0),
+                      minHeight: 8,
+                      backgroundColor: AppTheme.surfaceElevated,
+                      valueColor: const AlwaysStoppedAnimation(AppTheme.secondary),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        if (!hasData) ...[
+          const SizedBox(height: 12),
+          const GlassCard(
+            padding: EdgeInsets.all(20),
+            child: Center(
+              child: Text(
+                'No historical shared spending found in ledger.',
+                style: TextStyle(color: AppTheme.muted, fontSize: 13),
+              ),
+            ),
+          ),
+        ] else ...[
+          if (report.historicalSharedCategoryBreakdown.isNotEmpty) ...[
+            const SizedBox(height: 24),
+            const SectionTitle(title: 'HISTORICAL CATEGORY BREAKDOWN'),
+            const SizedBox(height: 14),
+            CategoryBarChart(categories: report.historicalSharedCategoryBreakdown),
+          ],
+          if (report.historicalFriendComparison.isNotEmpty) ...[
+            const SizedBox(height: 24),
+            const SectionTitle(title: 'HISTORICAL ROOMMATE OVERVIEW'),
+            const SizedBox(height: 14),
+            FriendDebtChart(friends: report.historicalFriendComparison),
+          ],
+        ],
       ],
     );
   }

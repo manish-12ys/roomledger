@@ -1,0 +1,83 @@
+Analyzing roomledger...                                         
+
+  error • The returned type 'num' isn't returnable from a 'double' function, as required by the closure's context • lib/features/analytics/widgets/analytics_widgets.dart:159:50 • return_of_invalid_type_from_closure
+  error • The argument type 'int' can't be assigned to the parameter type 'double'.  • lib/features/analytics/widgets/analytics_widgets.dart:163:39 • argument_type_not_assignable
+  error • The argument type 'int' can't be assigned to the parameter type 'double'.  • lib/features/analytics/widgets/analytics_widgets.dart:167:39 • argument_type_not_assignable
+  error • The argument type 'int' can't be assigned to the parameter type 'double?'.  • lib/features/analytics/widgets/analytics_widgets.dart:345:22 • argument_type_not_assignable
+  error • The argument type 'int' can't be assigned to the parameter type 'double?'.  • lib/features/analytics/widgets/analytics_widgets.dart:352:22 • argument_type_not_assignable
+  error • The argument type 'int' can't be assigned to the parameter type 'double'.  • lib/features/analytics/widgets/analytics_widgets.dart:424:27 • argument_type_not_assignable
+  error • The argument type 'int' can't be assigned to the parameter type 'double'.  • lib/features/analytics/widgets/analytics_widgets.dart:431:27 • argument_type_not_assignable
+  error • The returned type 'num' isn't returnable from a 'double' function, as required by the closure's context • lib/features/analytics/widgets/analytics_widgets.dart:509:17 • return_of_invalid_type_from_closure
+  error • The returned type 'num' isn't returnable from a 'double' function, as required by the closure's context • lib/features/analytics/widgets/analytics_widgets.dart:594:17 • return_of_invalid_type_from_closure
+  error • The argument type 'int' can't be assigned to the parameter type 'double'.  • lib/features/analytics/widgets/analytics_widgets.dart:605:18 • argument_type_not_assignable
+  error • The argument type 'int' can't be assigned to the parameter type 'double'.  • lib/features/analytics/widgets/analytics_widgets.dart:615:18 • argument_type_not_assignable
+  error • The returned type 'MapEntry<ExpenseCategory, num>' isn't returnable from a 'MapEntry<ExpenseCategory, double>?' function, as required by the closure's context • lib/features/personal_expenses/personal_expenses_screen.dart:257:24 • return_of_invalid_type_from_closure
+  error • The argument type 'int' can't be assigned to the parameter type 'double'.  • lib/features/personal_expenses/personal_expenses_screen.dart:285:35 • argument_type_not_assignable
+  error • The argument type 'int' can't be assigned to the parameter type 'double'.  • lib/features/personal_expenses/personal_expenses_screen.dart:427:39 • argument_type_not_assignable
+  error • The argument type 'int' can't be assigned to the parameter type 'double'.  • lib/features/personal_expenses/personal_expenses_screen.dart:512:29 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • lib/features/personal_expenses/personal_expenses_screen.dart:710:17 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/dashboard/dashboard_screen_test.dart:50:23 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/dashboard/dashboard_screen_test.dart:51:20 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/dashboard/dashboard_screen_test.dart:52:22 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/dashboard/dashboard_screen_test.dart:54:26 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/dashboard/dashboard_screen_test.dart:55:25 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/dashboard/dashboard_screen_test.dart:56:27 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/dashboard/dashboard_screen_test.dart:62:26 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/dashboard/dashboard_screen_test.dart:63:27 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/dashboard/dashboard_screen_test.dart:71:21 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/dashboard/dashboard_screen_test.dart:76:22 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/dashboard/dashboard_screen_test.dart:77:27 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/debts/domain/debts_models_test.dart:13:22 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/debts/domain/debts_models_test.dart:14:23 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/debts/domain/debts_models_test.dart:28:22 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/debts/domain/debts_models_test.dart:29:23 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/debts/domain/debts_models_test.dart:43:22 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/debts/domain/debts_models_test.dart:44:23 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/debts/domain/debts_models_test.dart:60:24 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/debts/domain/debts_models_test.dart:61:25 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/debts/domain/debts_models_test.dart:76:22 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/debts/domain/debts_models_test.dart:77:23 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/debts/domain/debts_models_test.dart:91:22 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/debts/domain/debts_models_test.dart:92:23 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/debts/domain/debts_models_test.dart:105:17 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:10:22 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:25:22 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:40:22 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:54:22 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:69:22 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:81:22 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:93:22 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:105:22 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:117:22 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:132:22 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:150:17 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:164:22 • argument_type_not_assignable
+  error • A value of type 'double' can't be assigned to a parameter of type 'int' in a const constructor • test/features/expenses/domain/expense_models_test.dart:166:40 • const_constructor_param_type_mismatch
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:166:48 • argument_type_not_assignable
+  error • A value of type 'double' can't be assigned to a parameter of type 'int' in a const constructor • test/features/expenses/domain/expense_models_test.dart:167:40 • const_constructor_param_type_mismatch
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:167:48 • argument_type_not_assignable
+  error • A value of type 'double' can't be assigned to a parameter of type 'int' in a const constructor • test/features/expenses/domain/expense_models_test.dart:168:40 • const_constructor_param_type_mismatch
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:168:48 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:181:22 • argument_type_not_assignable
+  error • A value of type 'double' can't be assigned to a parameter of type 'int' in a const constructor • test/features/expenses/domain/expense_models_test.dart:183:40 • const_constructor_param_type_mismatch
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:183:48 • argument_type_not_assignable
+  error • A value of type 'double' can't be assigned to a parameter of type 'int' in a const constructor • test/features/expenses/domain/expense_models_test.dart:184:40 • const_constructor_param_type_mismatch
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:184:48 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:196:22 • argument_type_not_assignable
+  error • A value of type 'double' can't be assigned to a parameter of type 'int' in a const constructor • test/features/expenses/domain/expense_models_test.dart:198:40 • const_constructor_param_type_mismatch
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:198:48 • argument_type_not_assignable
+  error • A value of type 'double' can't be assigned to a parameter of type 'int' in a const constructor • test/features/expenses/domain/expense_models_test.dart:199:40 • const_constructor_param_type_mismatch
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:199:48 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:210:22 • argument_type_not_assignable
+  error • A value of type 'double' can't be assigned to a parameter of type 'int' in a const constructor • test/features/expenses/domain/expense_models_test.dart:212:40 • const_constructor_param_type_mismatch
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:212:48 • argument_type_not_assignable
+  error • A value of type 'double' can't be assigned to a parameter of type 'int' in a const constructor • test/features/expenses/domain/expense_models_test.dart:213:40 • const_constructor_param_type_mismatch
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:213:48 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:226:22 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:245:24 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:262:22 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:276:22 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:292:22 • argument_type_not_assignable
+  error • The argument type 'double' can't be assigned to the parameter type 'int'.  • test/features/expenses/domain/expense_models_test.dart:309:22 • argument_type_not_assignable
+
+79 issues found. (ran in 8.0s)

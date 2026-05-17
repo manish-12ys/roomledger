@@ -64,15 +64,17 @@ class AddSplitExpenseInput {
 
   int get participantCount => participantIds.length + (splitWithSelf ? 1 : 0);
 
-  int get sharePerPerson => totalAmount ~/ participantCount;
-
-  int get remainder => totalAmount % participantCount;
+  int get sharePerPerson => participantCount > 0 ? totalAmount ~/ participantCount : 0;
 
   List<int> calculateShares() {
+    if (participantCount == 0) return [];
+    
+    final share = totalAmount ~/ participantCount;
+    final remainder = totalAmount % participantCount;
+    
     final shares = <int>[];
     for (int i = 0; i < participantCount; i++) {
-      final share = sharePerPerson + (i < remainder ? 1 : 0);
-      shares.add(share);
+      shares.add(share + (i < remainder ? 1 : 0));
     }
     return shares;
   }
@@ -111,8 +113,6 @@ class AddCustomSplitExpenseInput {
 
   int get allocatedAmount =>
       allocations.fold<int>(0, (sum, allocation) => sum + allocation.amount);
-
-  int get remainder => totalAmount - allocatedAmount;
 
   bool isValid() {
     if (participantCount == 0) {
@@ -185,13 +185,13 @@ class AddPercentageSplitExpenseInput {
 
   List<int> calculateShares() {
     final rawShares = <_WeightedShare>[];
-    var total = 0;
+    var totalAllocated = 0;
 
     for (var index = 0; index < allocations.length; index++) {
       final allocation = allocations[index];
-      final exactShare = totalAmount * allocation.percentage / 100;
+      final exactShare = totalAmount * allocation.percentage / 100.0;
       final share = exactShare.floor();
-      total += share;
+      totalAllocated += share;
       rawShares.add(
         _WeightedShare(
           index: index,
@@ -201,7 +201,8 @@ class AddPercentageSplitExpenseInput {
       );
     }
 
-    var remainder = totalAmount - total;
+    var remainder = totalAmount - totalAllocated;
+    // Distribute remainder based on fractional parts (highest first)
     rawShares.sort((a, b) {
       final comparison = b.fractionalPart.compareTo(a.fractionalPart);
       if (comparison != 0) return comparison;
@@ -264,13 +265,13 @@ class AddQuantitySplitExpenseInput {
 
   List<int> calculateShares() {
     final rawShares = <_WeightedShare>[];
-    var total = 0;
+    var totalAllocated = 0;
 
     for (var index = 0; index < allocations.length; index++) {
       final allocation = allocations[index];
       final exactShare = totalAmount * allocation.quantity / totalQuantity;
       final share = exactShare.floor();
-      total += share;
+      totalAllocated += share;
       rawShares.add(
         _WeightedShare(
           index: index,
@@ -280,7 +281,7 @@ class AddQuantitySplitExpenseInput {
       );
     }
 
-    var remainder = totalAmount - total;
+    var remainder = totalAmount - totalAllocated;
     rawShares.sort((a, b) {
       final comparison = b.fractionalPart.compareTo(a.fractionalPart);
       if (comparison != 0) return comparison;

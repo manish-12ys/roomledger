@@ -137,7 +137,7 @@ class _CashContent extends ConsumerWidget {
                         style: TextStyle(fontWeight: FontWeight.w700),
                       ),
                       Text(
-                        '₹${overview.emergencyReserve}',
+                        _formatCurrency(overview.emergencyReserve),
                         style: const TextStyle(
                           color: AppTheme.onSurfaceVariant,
                         ),
@@ -262,7 +262,7 @@ class _BalanceCard extends StatelessWidget {
                   ).textTheme.bodySmall?.copyWith(color: AppTheme.muted),
                 ),
                 Text(
-                  '₹${overview.monthlyUsage}',
+                  _formatCurrency(overview.monthlyUsage),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppTheme.onSurface,
                     fontWeight: FontWeight.w700,
@@ -326,7 +326,7 @@ class _TransactionTile extends ConsumerWidget {
             ),
           ),
           Text(
-            '${isOut ? '-' : '+'}₹${tx.amount}',
+            '${isOut ? '-' : '+'}${_formatCurrency(tx.amount)}',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w900,
               color: isOut ? AppTheme.error : AppTheme.success,
@@ -439,4 +439,8 @@ class _TransactionFormState extends ConsumerState<_TransactionForm> {
       ),
     );
   }
+}
+
+String _formatCurrency(num amount) {
+  return '₹$amount';
 }

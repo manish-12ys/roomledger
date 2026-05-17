@@ -86,7 +86,7 @@ void main() {
       expect(input.isValid(), false);
     });
 
-    test('sharePerPerson calculates correct base share', () {
+    test('sharePerPerson calculates correct floor base share', () {
       final input = AddSplitExpenseInput(
         note: 'Dinner',
         category: 'Food',
@@ -96,18 +96,6 @@ void main() {
       );
 
       expect(input.sharePerPerson, 108);
-    });
-
-    test('remainder property returns correct value', () {
-      final input = AddSplitExpenseInput(
-        note: 'Dinner',
-        category: 'Food',
-        totalAmount: 325,
-        participantIds: [1, 2, 3],
-        splitWithSelf: false,
-      );
-
-      expect(input.remainder, 1);
     });
 
     test('participantCount returns correct count', () {
@@ -183,7 +171,6 @@ void main() {
 
       expect(input.isValid(), true);
       expect(input.allocatedAmount, 1000);
-      expect(input.remainder, 0);
       expect(input.participantCount, 3);
     });
 
@@ -199,7 +186,7 @@ void main() {
       );
 
       expect(input.isValid(), false);
-      expect(input.remainder, 300);
+      expect(input.allocatedAmount, 700);
     });
 
     test('isValid returns false for duplicate participant ids', () {
@@ -250,7 +237,7 @@ void main() {
     });
 
     test(
-      'calculateShares distributes rounding remainder by fractional part',
+      'calculateShares distributes rounding remainder by largest share',
       () {
         final input = AddPercentageSplitExpenseInput(
           note: 'Trip',
@@ -263,6 +250,11 @@ void main() {
           ],
         );
 
+        // 1001 * 0.5 = 500.5 -> 500
+        // 1001 * 0.3 = 300.3 -> 300
+        // 1001 * 0.2 = 200.2 -> 200
+        // Total = 1000. Remainder = 1.
+        // Distributed to first participant (50%)
         expect(input.calculateShares(), [501, 300, 200]);
         expect(input.calculateShares().fold<int>(0, (a, b) => a + b), 1001);
       },
@@ -327,6 +319,12 @@ void main() {
         ],
       );
 
+      // Total Quantity = 6
+      // 1000 * 1 / 6 = 166.66 -> 166
+      // 1000 * 2 / 6 = 333.33 -> 333
+      // 1000 * 3 / 6 = 500 -> 500
+      // Sum = 999. Remainder = 1.
+      // Distributed to first participant
       expect(input.calculateShares(), [167, 333, 500]);
       expect(input.calculateShares().fold<int>(0, (a, b) => a + b), 1000);
     });

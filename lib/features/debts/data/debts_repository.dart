@@ -110,7 +110,7 @@ class DebtsRepository {
     // Check if fully settled
     final remaining = await getRemainingAmount(debtId);
     if (remaining <= 0) {
-      // Delete everything related to this debt as requested by user
+      // Delete settlements first to prevent any potential foreign key constraint violations
       await db.transaction((txn) async {
         await txn.delete('settlements', where: 'debt_id = ?', whereArgs: [debtId]);
         await txn.delete('debts', where: 'id = ?', whereArgs: [debtId]);
@@ -154,14 +154,23 @@ class DebtsRepository {
 
           remainingToSettle -= settleAmount;
 
-          // If now fully settled, delete as per user's "completly" requirement
+          // If now fully settled, delete (settlements will cascade)
           if (settleAmount >= debtRemaining) {
-            await txn.delete('settlements',
-                where: 'debt_id = ?', whereArgs: [debt.debtId]);
-            await txn.delete('debts',
-                where: 'id = ?', whereArgs: [debt.debtId]);
+            await txn.delete('settlements', where: 'debt_id = ?', whereArgs: [debt.debtId]);
+            await txn.delete('debts', where: 'id = ?', whereArgs: [debt.debtId]);
           }
         }
+      }
+
+      // Bug #2: Handle overpayment by recording a credit balance
+      if (remainingToSettle > 0) {
+        await txn.insert('debts', {
+          'friend_id': friendId,
+          'note': 'Credit from overpayment: $note',
+          'category': 'Others',
+          'total_amount': -remainingToSettle,
+          'created_at': DateTime.now().toIso8601String(),
+        });
       }
     });
   }

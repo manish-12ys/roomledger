@@ -186,6 +186,7 @@ class ExpensesRepository {
     required int debtId,
     required int friendId,
     required String note,
+    required String category,
     required int amount,
     required DateTime date,
   }) async {
@@ -195,7 +196,7 @@ class ExpensesRepository {
       {
         'friend_id': friendId,
         'note': note,
-        'category': 'Others', // Assuming default for updates if not provided
+        'category': category,
         'total_amount': amount,
         'created_at': date.toIso8601String(),
       },
@@ -216,13 +217,9 @@ class ExpensesRepository {
 
   Future<void> deleteExpense({required int debtId}) async {
     final database = await _database.database;
-    // Delete related settlements first
-    await database.delete(
-      'settlements',
-      where: 'debt_id = ?',
-      whereArgs: [debtId],
-    );
-    // Then delete the debt
-    await database.delete('debts', where: 'id = ?', whereArgs: [debtId]);
+    await database.transaction((txn) async {
+      await txn.delete('settlements', where: 'debt_id = ?', whereArgs: [debtId]);
+      await txn.delete('debts', where: 'id = ?', whereArgs: [debtId]);
+    });
   }
 }

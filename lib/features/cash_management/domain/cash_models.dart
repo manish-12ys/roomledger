@@ -17,7 +17,7 @@ class CashTransaction {
     return CashTransaction(
       id: map['id'] as int,
       type: map['type'] as String,
-      amount: map['amount'] as int,
+      amount: (map['amount'] as num?)?.toInt() ?? 0,
       note: map['note'] as String,
       createdAt: DateTime.parse(map['created_at'] as String),
     );

@@ -389,19 +389,19 @@ class AnimatedCounterText extends StatelessWidget {
     this.duration = const Duration(milliseconds: 1200),
   });
 
-  final int value;
+  final num value;
   final String prefix;
   final TextStyle? style;
   final Duration duration;
 
   @override
   Widget build(BuildContext context) {
-    return TweenAnimationBuilder<int>(
-      tween: IntTween(begin: 0, end: value),
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0, end: value.toDouble()),
       duration: duration,
       curve: Curves.easeOutExpo,
       builder: (context, currentValue, child) {
-        return Text('$prefix$currentValue', style: style);
+        return Text('$prefix${currentValue.toInt()}', style: style);
       },
     );
   }

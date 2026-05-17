@@ -11,11 +11,11 @@ class GroupedDebtRecord {
   final String friendName;
   final List<PendingDebtRecord> debts;
 
-  int get totalAmount => debts.fold(0, (sum, debt) => sum + debt.totalAmount);
-  int get repaidAmount => debts.fold(0, (sum, debt) => sum + debt.repaidAmount);
-  int get remainingAmount => totalAmount - repaidAmount;
+  num get totalAmount => debts.fold<num>(0, (sum, debt) => sum + debt.totalAmount);
+  num get repaidAmount => debts.fold<num>(0, (sum, debt) => sum + debt.repaidAmount);
+  num get remainingAmount => totalAmount - repaidAmount;
 
-  bool get isFullySettled => remainingAmount == 0;
+  bool get isFullySettled => remainingAmount <= 0;
 
   bool get isOverdue => debts.any((debt) => debt.isOverdue);
 

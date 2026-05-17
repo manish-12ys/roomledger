@@ -567,15 +567,15 @@ class _QuickSettleSheetState extends ConsumerState<_QuickSettleSheet> {
                   prefixIcon: Icon(Icons.currency_rupee_rounded),
                 ),
                 keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) return 'Enter amount';
-                  final amount = int.tryParse(value);
-                  if (amount == null || amount <= 0) return 'Invalid amount';
-                  if (amount > widget.groupedDebt.remainingAmount) {
-                    return 'Exceeds total debt (\u20b9${widget.groupedDebt.remainingAmount})';
-                  }
-                  return null;
-                },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return 'Enter amount';
+                    final amount = int.tryParse(value);
+                    if (amount == null || amount <= 0) return 'Invalid amount';
+                    if (amount > widget.groupedDebt.remainingAmount) {
+                      return 'Exceeds total debt (\u20b9${widget.groupedDebt.remainingAmount})';
+                    }
+                    return null;
+                  },
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -602,6 +602,6 @@ class _QuickSettleSheetState extends ConsumerState<_QuickSettleSheet> {
   }
 }
 
-String _formatCurrency(int amount) {
-  return '\u20b9${amount.toStringAsFixed(0)}';
+String _formatCurrency(num amount) {
+  return '\u20b9$amount';
 }

@@ -30,9 +30,9 @@ class DebtDetailScreen extends ConsumerWidget {
         ),
         data: (settlements) {
           // Calculate actual repaid amount from settlements list for real-time updates
-          final actualRepaidAmount = settlements.fold<int>(
+          final settledAmount = settlements.fold<int>(
             0,
-            (sum, s) => sum + s.amount,
+            (sum, item) => sum + item.amount,
           );
 
           final liveDebt = PendingDebtRecord(
@@ -42,7 +42,7 @@ class DebtDetailScreen extends ConsumerWidget {
             note: debt.note,
             category: debt.category,
             totalAmount: debt.totalAmount,
-            repaidAmount: actualRepaidAmount,
+            repaidAmount: settledAmount,
             createdAt: debt.createdAt,
           );
 
@@ -702,14 +702,14 @@ class _RecordSettlementSheetState
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter an amount';
+                    return 'Enter amount';
                   }
                   final amount = int.tryParse(value);
                   if (amount == null || amount <= 0) {
-                    return 'Enter a valid amount';
+                    return 'Invalid amount';
                   }
                   if (amount > widget.debt.remainingAmount) {
-                    return 'Cannot exceed remaining amount (\u20b9${widget.debt.remainingAmount})';
+                    return 'Cannot exceed remaining balance';
                   }
                   return null;
                 },
@@ -848,8 +848,8 @@ class _ErrorState extends StatelessWidget {
   }
 }
 
-String _formatCurrency(int amount) {
-  return '\u20b9${amount.toStringAsFixed(0)}';
+String _formatCurrency(num amount) {
+  return '₹$amount';
 }
 
 String _formatDate(DateTime date) {

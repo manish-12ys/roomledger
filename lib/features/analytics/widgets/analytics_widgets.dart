@@ -156,15 +156,15 @@ class SpendingLineChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final maxY = trend.fold<double>(0, (m, p) => p.amount > m ? p.amount : m);
+    final maxY = trend.fold<int>(0, (m, p) => p.amount > m ? p.amount : m).toDouble();
     final safeMax = maxY == 0 ? 100.0 : maxY * 1.2;
 
     final sharedSpots = trend.asMap().entries.map((e) {
-      return FlSpot(e.key.toDouble(), e.value.sharedAmount);
+      return FlSpot(e.key.toDouble(), e.value.sharedAmount.toDouble());
     }).toList();
 
     final personalSpots = trend.asMap().entries.map((e) {
-      return FlSpot(e.key.toDouble(), e.value.personalAmount);
+      return FlSpot(e.key.toDouble(), e.value.personalAmount.toDouble());
     }).toList();
 
     return Container(
@@ -342,14 +342,14 @@ class SharedVsPersonalDonut extends StatelessWidget {
     final sections = hasData
         ? [
             PieChartSectionData(
-              value: breakdown.sharedTotal,
+              value: breakdown.sharedTotal.toDouble(),
               color: AppTheme.secondary,
               radius: 36,
               title: '',
               showTitle: false,
             ),
             PieChartSectionData(
-              value: breakdown.personalTotal,
+              value: breakdown.personalTotal.toDouble(),
               color: AppTheme.warning,
               radius: 36,
               title: '',
@@ -449,7 +449,7 @@ class _DonutLegendRow extends StatelessWidget {
   });
   final Color color;
   final String label;
-  final double amount;
+  final int amount;
   final double pct;
 
   @override
@@ -504,10 +504,10 @@ class CategoryBarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final maxVal = categories.fold<double>(
+    final maxVal = categories.fold<int>(
       0,
       (m, c) => c.amount > m ? c.amount : m,
-    );
+    ).toDouble();
     final top = categories.take(6).toList();
 
     return Container(
@@ -589,10 +589,10 @@ class FriendDebtChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final maxVal = friends.fold<double>(
+    final maxVal = friends.fold<int>(
       0,
       (m, f) => f.totalDebt > m ? f.totalDebt : m,
-    );
+    ).toDouble();
 
     final groups = friends.asMap().entries.map((entry) {
       final i = entry.key;
@@ -602,7 +602,7 @@ class FriendDebtChart extends StatelessWidget {
         x: i,
         barRods: [
           BarChartRodData(
-            toY: f.totalDebt,
+            toY: f.totalDebt.toDouble(),
             width: 14,
             borderRadius: BorderRadius.circular(4),
             gradient: LinearGradient(
@@ -612,7 +612,7 @@ class FriendDebtChart extends StatelessWidget {
             ),
           ),
           BarChartRodData(
-            toY: f.totalSettled,
+            toY: f.totalSettled.toDouble(),
             width: 14,
             borderRadius: BorderRadius.circular(4),
             gradient: LinearGradient(

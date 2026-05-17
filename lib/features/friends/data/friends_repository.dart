@@ -48,8 +48,8 @@ class FriendsRepository {
           (row) => FriendSummary(
             id: row['id'] as int,
             name: row['name'] as String,
-            totalDebt: row['total_debt'] as int,
-            repaidAmount: row['repaid_amount'] as int,
+            totalDebt: (row['total_debt'] as num?)?.toInt() ?? 0,
+            repaidAmount: (row['repaid_amount'] as num?)?.toInt() ?? 0,
             createdAt: DateTime.parse(row['created_at'] as String),
           ),
         )
@@ -94,6 +94,17 @@ class FriendsRepository {
   Future<void> deleteFriend({required int friendId}) async {
     final db = await database.database;
 
-    await db.delete('friends', where: 'id = ?', whereArgs: [friendId]);
+    await db.transaction((txn) async {
+      // 1. Delete settlements of debts belonging to this friend
+      await txn.delete(
+        'settlements',
+        where: 'debt_id IN (SELECT id FROM debts WHERE friend_id = ?)',
+        whereArgs: [friendId],
+      );
+      // 2. Delete debts belonging to this friend
+      await txn.delete('debts', where: 'friend_id = ?', whereArgs: [friendId]);
+      // 3. Delete the friend
+      await txn.delete('friends', where: 'id = ?', whereArgs: [friendId]);
+    });
   }
 }

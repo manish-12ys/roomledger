@@ -10,7 +10,7 @@ class CashRepository {
     final database = await _db.database;
     final results = await database.query('wallet_settings', where: 'id = 1');
     if (results.isEmpty) return 0;
-    return results.first['emergency_reserve'] as int;
+    return (results.first['emergency_reserve'] as num?)?.toInt() ?? 0;
   }
 
   Future<void> updateEmergencyReserve(int amount) async {

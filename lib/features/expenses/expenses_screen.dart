@@ -228,9 +228,9 @@ class _ExpensesSummaryHero extends StatelessWidget {
     required this.count,
     required this.totalAmount,
   });
-  final int totalPending;
+  final num totalPending;
   final int count;
-  final int totalAmount;
+  final num totalAmount;
 
   @override
   Widget build(BuildContext context) {
@@ -257,7 +257,7 @@ class _ExpensesSummaryHero extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  '₹$totalPending',
+                  _formatCurrency(totalPending),
                   style: const TextStyle(
                     fontSize: 34,
                     fontWeight: FontWeight.w900,
@@ -414,15 +414,15 @@ class _ExpenseCard extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _MetricItem(label: 'TOTAL', value: '₹${item.totalAmount}'),
+              _MetricItem(label: 'TOTAL', value: _formatCurrency(item.totalAmount)),
               _MetricItem(
                 label: 'PAID',
-                value: '₹${item.repaidAmount}',
+                value: _formatCurrency(item.repaidAmount),
                 color: AppTheme.secondary,
               ),
               _MetricItem(
                 label: 'REMAINING',
-                value: '₹${item.remainingAmount}',
+                value: _formatCurrency(item.remainingAmount),
                 color: isSettled
                     ? AppTheme.secondary
                     : AppTheme.onSurfaceVariant,
@@ -546,9 +546,9 @@ class _SharedCategoryBreakdown extends ConsumerWidget {
       data: (breakdown) {
         if (breakdown.isEmpty) return const SizedBox.shrink();
 
-        final totalAmount = breakdown.fold<double>(
+        final totalAmount = breakdown.fold<int>(
           0,
-          (sum, item) => sum + item.amount,
+          (sum, item) => sum + item.amount.toInt(),
         );
 
         return GlassCard(
@@ -582,7 +582,7 @@ class _SharedCategoryBreakdown extends ConsumerWidget {
                           ),
                         ),
                         Text(
-                          '₹${item.amount.toInt()}',
+                          _formatCurrency(item.amount),
                           style: TextStyle(
                             fontWeight: FontWeight.w900,
                             fontSize: 14,
@@ -610,4 +610,8 @@ class _SharedCategoryBreakdown extends ConsumerWidget {
       },
     );
   }
+}
+
+String _formatCurrency(num amount) {
+  return '₹$amount';
 }

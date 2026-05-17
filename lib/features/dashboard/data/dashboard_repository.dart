@@ -28,7 +28,6 @@ class DashboardRepository {
     final monthlySpending = sharedSpending + personalSpending;
 
     // 2. Calculate Pending Debt Totals and Debtor Count via SQL
-    // We only include debts that are NOT fully settled to ensure consistency with the pending list
     final debtStatsResult = await database.rawQuery('''
       SELECT 
         COALESCE(SUM(d.total_amount), 0) as total_debt,
@@ -101,14 +100,14 @@ class DashboardRepository {
             ?.toInt() ??
         0;
 
-    // 5. Calculate Overdue Count (simplified check for demo/context)
+    // 5. Calculate Overdue Count
     final overdueCount = pendingDebts.where((debt) => debt.isOverdue).length;
 
-    // 6. Recent Activities (Unified via UNION for performance)
+    // 6. Recent Activities
     final activityRows = await database.rawQuery('''
       SELECT * FROM (
         SELECT 
-          friends.name || ' owes ' || debts.total_amount as title,
+          friends.name || ' owes ' || CAST(debts.total_amount AS INTEGER) as title,
           debts.note as subtitle,
           debts.total_amount as amount,
           debts.created_at as created_at,
@@ -159,18 +158,18 @@ class DashboardRepository {
         .toList();
 
     return DashboardOverview(
-      totalPending: totalPending,
-      totalDebt: totalDebt,
-      totalRepaid: totalRepaid,
-      debtorCount: debtorCount,
-      monthlySpending: monthlySpending,
-      sharedSpending: sharedSpending,
-      personalSpending: personalSpending,
-      overdueCount: overdueCount,
+      totalPending: totalPending.toInt(),
+      totalDebt: totalDebt.toInt(),
+      totalRepaid: totalRepaid.toInt(),
+      debtorCount: debtorCount.toInt(),
+      monthlySpending: monthlySpending.toInt(),
+      sharedSpending: sharedSpending.toInt(),
+      personalSpending: personalSpending.toInt(),
+      overdueCount: overdueCount.toInt(),
       pendingDebts: pendingDebts,
       recentActivities: recentActivities,
-      cashBalance: cashBalance,
-      emergencyReserve: emergencyReserve,
+      cashBalance: cashBalance.toInt(),
+      emergencyReserve: emergencyReserve.toInt(),
     );
   }
 }

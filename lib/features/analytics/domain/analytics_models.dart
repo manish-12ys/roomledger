@@ -4,9 +4,9 @@ import 'package:flutter/foundation.dart';
 /// Represents a single data point for spending trend
 class SpendingTrendPoint {
   final DateTime month;
-  final double amount;
-  final double sharedAmount;
-  final double personalAmount;
+  final int amount;
+  final int sharedAmount;
+  final int personalAmount;
 
   SpendingTrendPoint({
     required this.month,
@@ -17,9 +17,9 @@ class SpendingTrendPoint {
 
   SpendingTrendPoint copyWith({
     DateTime? month,
-    double? amount,
-    double? sharedAmount,
-    double? personalAmount,
+    int? amount,
+    int? sharedAmount,
+    int? personalAmount,
   }) {
     return SpendingTrendPoint(
       month: month ?? this.month,
@@ -49,9 +49,9 @@ class SpendingTrendPoint {
 
 /// Represents spending breakdown data
 class SpendingBreakdown {
-  final double sharedTotal;
-  final double personalTotal;
-  final double totalSpending;
+  final int sharedTotal;
+  final int personalTotal;
+  final int totalSpending;
 
   SpendingBreakdown({required this.sharedTotal, required this.personalTotal})
     : totalSpending = sharedTotal + personalTotal;
@@ -76,7 +76,7 @@ class SpendingBreakdown {
 /// Represents category spending data
 class CategorySpending {
   final String category;
-  final double amount;
+  final int amount;
   final int count; // number of expenses
 
   CategorySpending({
@@ -85,7 +85,7 @@ class CategorySpending {
     required this.count,
   });
 
-  CategorySpending copyWith({String? category, double? amount, int? count}) {
+  CategorySpending copyWith({String? category, int? amount, int? count}) {
     return CategorySpending(
       category: category ?? this.category,
       amount: amount ?? this.amount,
@@ -110,9 +110,9 @@ class CategorySpending {
 class FriendDebtComparison {
   final String friendName;
   final String friendId;
-  final double totalDebt;
-  final double totalSettled;
-  final double pendingAmount;
+  final int totalDebt;
+  final int totalSettled;
+  final int pendingAmount;
 
   FriendDebtComparison({
     required this.friendName,
@@ -125,9 +125,9 @@ class FriendDebtComparison {
   FriendDebtComparison copyWith({
     String? friendName,
     String? friendId,
-    double? totalDebt,
-    double? totalSettled,
-    double? pendingAmount,
+    int? totalDebt,
+    int? totalSettled,
+    int? pendingAmount,
   }) {
     return FriendDebtComparison(
       friendName: friendName ?? this.friendName,
@@ -167,6 +167,12 @@ class AnalyticsReport {
   final List<CategorySpending> categoryBreakdown;
   final List<FriendDebtComparison> friendDebtComparison;
 
+  // Historical (All-Time) Shared Ledger Fields
+  final List<CategorySpending> historicalSharedCategoryBreakdown;
+  final List<FriendDebtComparison> historicalFriendComparison;
+  final int historicalSharedTotal;
+  final int historicalSharedRepaid;
+
   AnalyticsReport({
     required this.startDate,
     required this.endDate,
@@ -174,6 +180,10 @@ class AnalyticsReport {
     required this.breakdown,
     required this.categoryBreakdown,
     required this.friendDebtComparison,
+    required this.historicalSharedCategoryBreakdown,
+    required this.historicalFriendComparison,
+    required this.historicalSharedTotal,
+    required this.historicalSharedRepaid,
   });
 
   AnalyticsReport copyWith({
@@ -183,6 +193,10 @@ class AnalyticsReport {
     SpendingBreakdown? breakdown,
     List<CategorySpending>? categoryBreakdown,
     List<FriendDebtComparison>? friendDebtComparison,
+    List<CategorySpending>? historicalSharedCategoryBreakdown,
+    List<FriendDebtComparison>? historicalFriendComparison,
+    int? historicalSharedTotal,
+    int? historicalSharedRepaid,
   }) {
     return AnalyticsReport(
       startDate: startDate ?? this.startDate,
@@ -191,6 +205,12 @@ class AnalyticsReport {
       breakdown: breakdown ?? this.breakdown,
       categoryBreakdown: categoryBreakdown ?? this.categoryBreakdown,
       friendDebtComparison: friendDebtComparison ?? this.friendDebtComparison,
+      historicalSharedCategoryBreakdown:
+          historicalSharedCategoryBreakdown ?? this.historicalSharedCategoryBreakdown,
+      historicalFriendComparison:
+          historicalFriendComparison ?? this.historicalFriendComparison,
+      historicalSharedTotal: historicalSharedTotal ?? this.historicalSharedTotal,
+      historicalSharedRepaid: historicalSharedRepaid ?? this.historicalSharedRepaid,
     );
   }
 
@@ -204,7 +224,11 @@ class AnalyticsReport {
           listEquals(spendingTrend, other.spendingTrend) &&
           breakdown == other.breakdown &&
           listEquals(categoryBreakdown, other.categoryBreakdown) &&
-          listEquals(friendDebtComparison, other.friendDebtComparison);
+          listEquals(friendDebtComparison, other.friendDebtComparison) &&
+          listEquals(historicalSharedCategoryBreakdown, other.historicalSharedCategoryBreakdown) &&
+          listEquals(historicalFriendComparison, other.historicalFriendComparison) &&
+          historicalSharedTotal == other.historicalSharedTotal &&
+          historicalSharedRepaid == other.historicalSharedRepaid;
 
   @override
   int get hashCode =>
@@ -213,5 +237,9 @@ class AnalyticsReport {
       spendingTrend.hashCode ^
       breakdown.hashCode ^
       categoryBreakdown.hashCode ^
-      friendDebtComparison.hashCode;
+      friendDebtComparison.hashCode ^
+      historicalSharedCategoryBreakdown.hashCode ^
+      historicalFriendComparison.hashCode ^
+      historicalSharedTotal.hashCode ^
+      historicalSharedRepaid.hashCode;
 }

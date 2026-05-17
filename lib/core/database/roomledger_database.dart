@@ -85,12 +85,7 @@ class RoomLedgerDatabase {
         }
       },
       onOpen: (db) async {
-        // Safety check to ensure category column exists in debts table
-        final tableInfo = await db.rawQuery('PRAGMA table_info(debts)');
-        final hasCategory = tableInfo.any((column) => column['name'] == 'category');
-        if (!hasCategory) {
-          await db.execute('ALTER TABLE debts ADD COLUMN category TEXT NOT NULL DEFAULT "Others"');
-        }
+        // foreign_keys is already enabled in onConfigure
       },
     );
     _database = openedDatabase;
@@ -199,7 +194,7 @@ class RoomLedgerDatabase {
         category TEXT NOT NULL,
         total_amount INTEGER NOT NULL,
         created_at TEXT NOT NULL,
-        FOREIGN KEY(friend_id) REFERENCES friends(id)
+        FOREIGN KEY(friend_id) REFERENCES friends(id) ON DELETE CASCADE
       )
     ''');
 
@@ -210,7 +205,7 @@ class RoomLedgerDatabase {
         note TEXT NOT NULL,
         amount INTEGER NOT NULL,
         created_at TEXT NOT NULL,
-        FOREIGN KEY(debt_id) REFERENCES debts(id)
+        FOREIGN KEY(debt_id) REFERENCES debts(id) ON DELETE CASCADE
       )
     ''');
 

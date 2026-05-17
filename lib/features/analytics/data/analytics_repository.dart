@@ -51,7 +51,7 @@ class AnalyticsRepository {
     for (final row in sharedResults) {
       final key = row['key'] as String;
       final date = DateTime.parse(row['raw_date'] as String);
-      final amount = (row['amount'] as num).toDouble();
+      final amount = (row['amount'] as num).toInt();
 
       aggregatedData[key] = _Aggregate(date: date)..sharedAmount = amount;
     }
@@ -59,7 +59,7 @@ class AnalyticsRepository {
     for (final row in personalResults) {
       final key = row['key'] as String;
       final date = DateTime.parse(row['raw_date'] as String);
-      final amount = (row['amount'] as num).toDouble();
+      final amount = (row['amount'] as num).toInt();
 
       if (aggregatedData.containsKey(key)) {
         aggregatedData[key]!.personalAmount = amount;
@@ -96,7 +96,7 @@ class AnalyticsRepository {
       'SELECT COALESCE(SUM(total_amount), 0) as total FROM debts WHERE created_at BETWEEN ? AND ?',
       [startDate.toIso8601String(), endDate.toIso8601String()],
     );
-    final sharedTotal = (debtResults.first['total'] as num?)?.toDouble() ?? 0.0;
+    final sharedTotal = (debtResults.first['total'] as num?)?.toInt() ?? 0;
 
     // Get personal expenses total
     final personalResults = await db.rawQuery(
@@ -104,7 +104,7 @@ class AnalyticsRepository {
       [startDate.toIso8601String(), endDate.toIso8601String()],
     );
     final personalTotal =
-        (personalResults.first['total'] as num?)?.toDouble() ?? 0.0;
+        (personalResults.first['total'] as num?)?.toInt() ?? 0;
 
     return SpendingBreakdown(
       sharedTotal: sharedTotal,
@@ -159,7 +159,7 @@ class AnalyticsRepository {
         .map(
           (row) => CategorySpending(
             category: row['category'] as String? ?? 'Others',
-            amount: (row['total'] as num?)?.toDouble() ?? 0.0,
+            amount: (row['total'] as num?)?.toInt() ?? 0,
             count: (row['total_count'] as num?)?.toInt() ?? 0,
           ),
         )
@@ -200,7 +200,7 @@ class AnalyticsRepository {
         .map(
           (row) => CategorySpending(
             category: row['category'] as String? ?? 'Others',
-            amount: (row['total'] as num?)?.toDouble() ?? 0.0,
+            amount: (row['total'] as num?)?.toInt() ?? 0,
             count: (row['total_count'] as num?)?.toInt() ?? 0,
           ),
         )
@@ -214,8 +214,6 @@ class AnalyticsRepository {
   }) async {
     final db = await database.database;
 
-    // We use subqueries to avoid the Cartesian product duplication of total_debt
-    // when a debt has multiple settlements.
     final results = await db.rawQuery(
       '''
       SELECT 
@@ -231,10 +229,21 @@ class AnalyticsRepository {
           FROM settlements s 
           JOIN debts d ON s.debt_id = d.id 
           WHERE d.friend_id = f.id AND s.created_at BETWEEN ? AND ?
-        ) as total_settled
+        ) as total_settled,
+        (
+          SELECT 
+            COALESCE(SUM(d.total_amount), 0) - COALESCE((
+              SELECT SUM(s2.amount) 
+              FROM settlements s2 
+              JOIN debts d2 ON s2.debt_id = d2.id 
+              WHERE d2.friend_id = f.id AND s2.created_at <= ?
+            ), 0)
+          FROM debts d
+          WHERE d.friend_id = f.id AND d.created_at <= ?
+        ) as pending_amount
       FROM friends f
       GROUP BY f.id, f.name
-      HAVING total_debt > 0 OR total_settled > 0
+      HAVING total_debt > 0 OR total_settled > 0 OR pending_amount > 0
       ORDER BY total_debt DESC
     ''',
       [
@@ -242,20 +251,125 @@ class AnalyticsRepository {
         endDate.toIso8601String(),
         startDate.toIso8601String(),
         endDate.toIso8601String(),
+        endDate.toIso8601String(),
+        endDate.toIso8601String(),
       ],
     );
 
     return results.map((row) {
-      final totalDebt = (row['total_debt'] as num).toDouble();
-      final totalSettled = (row['total_settled'] as num).toDouble();
+      final totalDebt = (row['total_debt'] as num).toInt();
+      final totalSettled = (row['total_settled'] as num).toInt();
+      final pendingAmount = (row['pending_amount'] as num).toInt();
       return FriendDebtComparison(
         friendId: (row['id'] as int).toString(),
         friendName: row['name'] as String,
         totalDebt: totalDebt,
         totalSettled: totalSettled,
-        pendingAmount: totalDebt - totalSettled,
+        pendingAmount: pendingAmount,
       );
     }).toList();
+  }
+
+  /// Get category breakdown for shared expenses (debts table) for all time
+  Future<List<CategorySpending>> getHistoricalSharedCategoryBreakdown() async {
+    final db = await database.database;
+
+    final results = await db.rawQuery(
+      '''
+      SELECT 
+        d.category, 
+        SUM(d.total_amount) as total, 
+        COUNT(*) as total_count 
+      FROM debts d 
+      GROUP BY d.category
+      HAVING total > 0
+      ORDER BY total DESC
+    '''
+    );
+
+    return results
+        .map(
+          (row) => CategorySpending(
+            category: row['category'] as String? ?? 'Others',
+            amount: (row['total'] as num?)?.toInt() ?? 0,
+            count: (row['total_count'] as num?)?.toInt() ?? 0,
+          ),
+        )
+        .toList();
+  }
+
+  /// Get friend debt comparison for all time
+  Future<List<FriendDebtComparison>> getHistoricalFriendDebtComparison() async {
+    final db = await database.database;
+
+    final results = await db.rawQuery(
+      '''
+      SELECT 
+        f.id,
+        f.name,
+        (
+          SELECT COALESCE(SUM(total_amount), 0) 
+          FROM debts 
+          WHERE friend_id = f.id
+        ) as total_debt,
+        (
+          SELECT COALESCE(SUM(s.amount), 0) 
+          FROM settlements s 
+          JOIN debts d ON s.debt_id = d.id 
+          WHERE d.friend_id = f.id
+        ) as total_settled,
+        (
+          SELECT 
+            COALESCE(SUM(d.total_amount), 0) - COALESCE((
+              SELECT SUM(s2.amount) 
+              FROM settlements s2 
+              JOIN debts d2 ON s2.debt_id = d2.id 
+              WHERE d2.friend_id = f.id
+            ), 0)
+          FROM debts d
+          WHERE d.friend_id = f.id
+        ) as pending_amount
+      FROM friends f
+      GROUP BY f.id, f.name
+      HAVING total_debt > 0 OR total_settled > 0 OR pending_amount > 0
+      ORDER BY total_debt DESC
+    '''
+    );
+
+    return results.map((row) {
+      final totalDebt = (row['total_debt'] as num).toInt();
+      final totalSettled = (row['total_settled'] as num).toInt();
+      final pendingAmount = (row['pending_amount'] as num).toInt();
+      return FriendDebtComparison(
+        friendId: (row['id'] as int).toString(),
+        friendName: row['name'] as String,
+        totalDebt: totalDebt,
+        totalSettled: totalSettled,
+        pendingAmount: pendingAmount,
+      );
+    }).toList();
+  }
+
+  /// Get historical shared spending and repayment totals
+  Future<Map<String, int>> getHistoricalSharedTotals() async {
+    final db = await database.database;
+
+    final results = await db.rawQuery(
+      '''
+      SELECT 
+        (SELECT COALESCE(SUM(total_amount), 0) FROM debts) as total_spending,
+        (SELECT COALESCE(SUM(amount), 0) FROM settlements) as total_repaid
+      '''
+    );
+
+    if (results.isEmpty) {
+      return {'total_spending': 0, 'total_repaid': 0};
+    }
+
+    return {
+      'total_spending': (results.first['total_spending'] as num?)?.toInt() ?? 0,
+      'total_repaid': (results.first['total_repaid'] as num?)?.toInt() ?? 0,
+    };
   }
 
   /// Get complete analytics report for a date range
@@ -279,6 +393,10 @@ class AnalyticsRepository {
       startDate: startDate,
       endDate: endDate,
     );
+    
+    final histSharedCategory = await getHistoricalSharedCategoryBreakdown();
+    final histFriendComparison = await getHistoricalFriendDebtComparison();
+    final histTotals = await getHistoricalSharedTotals();
 
     return AnalyticsReport(
       startDate: startDate,
@@ -287,6 +405,10 @@ class AnalyticsRepository {
       breakdown: breakdown,
       categoryBreakdown: categoryBreakdown,
       friendDebtComparison: friendComparison,
+      historicalSharedCategoryBreakdown: histSharedCategory,
+      historicalFriendComparison: histFriendComparison,
+      historicalSharedTotal: histTotals['total_spending'] ?? 0,
+      historicalSharedRepaid: histTotals['total_repaid'] ?? 0,
     );
   }
 
@@ -321,8 +443,8 @@ class _Aggregate {
   _Aggregate({required this.date});
 
   final DateTime date;
-  double sharedAmount = 0;
-  double personalAmount = 0;
+  int sharedAmount = 0;
+  int personalAmount = 0;
 
-  double get totalAmount => sharedAmount + personalAmount;
+  int get totalAmount => sharedAmount + personalAmount;
 }

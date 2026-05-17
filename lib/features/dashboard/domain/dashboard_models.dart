@@ -14,18 +14,18 @@ class DashboardOverview {
     required this.emergencyReserve,
   });
 
-  final int totalPending;
-  final int totalDebt;
-  final int totalRepaid;
+  final num totalPending;
+  final num totalDebt;
+  final num totalRepaid;
   final int debtorCount;
-  final int monthlySpending;
-  final int sharedSpending;
-  final int personalSpending;
+  final num monthlySpending;
+  final num sharedSpending;
+  final num personalSpending;
   final int overdueCount;
   final List<PendingDebtItem> pendingDebts;
   final List<DashboardActivity> recentActivities;
-  final int cashBalance;
-  final int emergencyReserve;
+  final num cashBalance;
+  final num emergencyReserve;
 }
 
 class PendingDebtItem {
