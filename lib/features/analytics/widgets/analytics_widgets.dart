@@ -156,7 +156,9 @@ class SpendingLineChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final maxY = trend.fold<int>(0, (m, p) => p.amount > m ? p.amount : m).toDouble();
+    final maxY = trend
+        .fold<int>(0, (m, p) => p.amount > m ? p.amount : m)
+        .toDouble();
     final safeMax = maxY == 0 ? 100.0 : maxY * 1.2;
 
     final sharedSpots = trend.asMap().entries.map((e) {
@@ -504,10 +506,9 @@ class CategoryBarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final maxVal = categories.fold<int>(
-      0,
-      (m, c) => c.amount > m ? c.amount : m,
-    ).toDouble();
+    final maxVal = categories
+        .fold<int>(0, (m, c) => c.amount > m ? c.amount : m)
+        .toDouble();
     final top = categories.take(6).toList();
 
     return Container(
@@ -589,10 +590,9 @@ class FriendDebtChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final maxVal = friends.fold<int>(
-      0,
-      (m, f) => f.totalDebt > m ? f.totalDebt : m,
-    ).toDouble();
+    final maxVal = friends
+        .fold<int>(0, (m, f) => f.totalDebt > m ? f.totalDebt : m)
+        .toDouble();
 
     final groups = friends.asMap().entries.map((entry) {
       final i = entry.key;

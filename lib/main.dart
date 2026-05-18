@@ -18,9 +18,7 @@ void callbackDispatcher() {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  Workmanager().initialize(
-    callbackDispatcher,
-  );
+  Workmanager().initialize(callbackDispatcher);
 
   // Initialize notification service early to prevent crashes
   final notificationService = NotificationService();

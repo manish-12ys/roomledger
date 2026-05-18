@@ -414,7 +414,10 @@ class _ExpenseCard extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _MetricItem(label: 'TOTAL', value: _formatCurrency(item.totalAmount)),
+              _MetricItem(
+                label: 'TOTAL',
+                value: _formatCurrency(item.totalAmount),
+              ),
               _MetricItem(
                 label: 'PAID',
                 value: _formatCurrency(item.repaidAmount),
@@ -533,6 +536,7 @@ class _EmptyState extends ConsumerWidget {
     );
   }
 }
+
 class _SharedCategoryBreakdown extends ConsumerWidget {
   const _SharedCategoryBreakdown();
 

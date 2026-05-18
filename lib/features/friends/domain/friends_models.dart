@@ -1,7 +1,7 @@
 class Friend {
   const Friend({
-    required this.id, 
-    required this.name, 
+    required this.id,
+    required this.name,
     this.phoneNumber,
     required this.createdAt,
   });

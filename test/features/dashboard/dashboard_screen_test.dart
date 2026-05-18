@@ -41,7 +41,10 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.text('Unable to load your financial overview.'), findsOneWidget);
+      expect(
+        find.text('Unable to load your financial overview.'),
+        findsOneWidget,
+      );
       expect(find.text('Retry'), findsOneWidget);
     });
 

@@ -22,12 +22,9 @@ class ExpensesRepository {
         .toList();
   }
 
-  Future<List<ExpenseListItem>> loadExpenses({
-    int? limit,
-    int? offset,
-  }) async {
+  Future<List<ExpenseListItem>> loadExpenses({int? limit, int? offset}) async {
     final database = await _database.database;
-    
+
     var query = '''
       SELECT
         debts.id AS debt_id,
@@ -44,7 +41,7 @@ class ExpensesRepository {
       GROUP BY debts.id
       ORDER BY datetime(debts.created_at) DESC
     ''';
-    
+
     final List<Object?> args = [];
     if (limit != null) {
       query += ' LIMIT ?';
@@ -227,7 +224,11 @@ class ExpensesRepository {
   Future<void> deleteExpense({required int debtId}) async {
     final database = await _database.database;
     await database.transaction((txn) async {
-      await txn.delete('settlements', where: 'debt_id = ?', whereArgs: [debtId]);
+      await txn.delete(
+        'settlements',
+        where: 'debt_id = ?',
+        whereArgs: [debtId],
+      );
       await txn.delete('debts', where: 'id = ?', whereArgs: [debtId]);
     });
   }

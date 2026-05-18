@@ -32,7 +32,10 @@ class BackgroundReminderTask {
             '₹${record.remainingAmount} outstanding. You can pay me via UPI or Cash. Thank you! 😊';
 
         try {
-          String cleanPhone = record.phoneNumber!.replaceAll(RegExp(r'[^\d]'), '');
+          String cleanPhone = record.phoneNumber!.replaceAll(
+            RegExp(r'[^\d]'),
+            '',
+          );
           if (cleanPhone.startsWith('0') && cleanPhone.length == 11) {
             cleanPhone = cleanPhone.substring(1);
           }

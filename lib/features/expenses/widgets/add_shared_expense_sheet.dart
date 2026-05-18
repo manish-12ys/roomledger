@@ -237,7 +237,8 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
                 children: _categories.map((cat) {
                   final isSelected = _selectedCategory == cat['name'];
                   return GestureDetector(
-                    onTap: () => setState(() => _selectedCategory = cat['name']),
+                    onTap: () =>
+                        setState(() => _selectedCategory = cat['name']),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       padding: const EdgeInsets.symmetric(
@@ -258,10 +259,12 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
                         boxShadow: isSelected
                             ? [
                                 BoxShadow(
-                                  color: AppTheme.secondary.withValues(alpha: 0.2),
+                                  color: AppTheme.secondary.withValues(
+                                    alpha: 0.2,
+                                  ),
                                   blurRadius: 8,
                                   offset: const Offset(0, 2),
-                                )
+                                ),
                               ]
                             : null,
                       ),
@@ -277,8 +280,9 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
                             cat['name'],
                             style: TextStyle(
                               fontSize: 13,
-                              fontWeight:
-                                  isSelected ? FontWeight.w800 : FontWeight.w600,
+                              fontWeight: isSelected
+                                  ? FontWeight.w800
+                                  : FontWeight.w600,
                               color: isSelected
                                   ? AppTheme.secondary
                                   : AppTheme.onSurfaceVariant,
@@ -304,7 +308,10 @@ class _AddSharedExpenseSheetState extends ConsumerState<AddSharedExpenseSheet> {
                   labelText: 'Amount (₹)',
                   hintText: '0',
                   filled: true,
-                  prefixIcon: Icon(Icons.currency_rupee, color: AppTheme.secondary),
+                  prefixIcon: Icon(
+                    Icons.currency_rupee,
+                    color: AppTheme.secondary,
+                  ),
                 ),
                 keyboardType: TextInputType.number,
                 validator: (v) {

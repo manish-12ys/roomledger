@@ -429,7 +429,9 @@ class _SharedHistoryCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w900,
-                            color: outstanding > 0 ? AppTheme.error : AppTheme.secondary,
+                            color: outstanding > 0
+                                ? AppTheme.error
+                                : AppTheme.secondary,
                           ),
                         ),
                       ],
@@ -469,7 +471,9 @@ class _SharedHistoryCard extends StatelessWidget {
                       value: progress.clamp(0.0, 1.0),
                       minHeight: 8,
                       backgroundColor: AppTheme.surfaceElevated,
-                      valueColor: const AlwaysStoppedAnimation(AppTheme.secondary),
+                      valueColor: const AlwaysStoppedAnimation(
+                        AppTheme.secondary,
+                      ),
                     ),
                   ),
                 ],
@@ -493,7 +497,9 @@ class _SharedHistoryCard extends StatelessWidget {
             const SizedBox(height: 24),
             const SectionTitle(title: 'HISTORICAL CATEGORY BREAKDOWN'),
             const SizedBox(height: 14),
-            CategoryBarChart(categories: report.historicalSharedCategoryBreakdown),
+            CategoryBarChart(
+              categories: report.historicalSharedCategoryBreakdown,
+            ),
           ],
           if (report.historicalFriendComparison.isNotEmpty) ...[
             const SizedBox(height: 24),

@@ -35,12 +35,12 @@ class RemindersController extends StateNotifier<AsyncValue<void>> {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       await _repo.updateReminderSettings(settings);
-      
+
       // Update Workmanager schedule
       if (settings.autoSendEnabled == 1) {
         Workmanager().registerPeriodicTask(
-          "auto_sms_reminder_task", 
-          "send_sms_reminders", 
+          "auto_sms_reminder_task",
+          "send_sms_reminders",
           frequency: Duration(days: settings.dispatchIntervalDays),
           existingWorkPolicy: ExistingPeriodicWorkPolicy.replace,
         );

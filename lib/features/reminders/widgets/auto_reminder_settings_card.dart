@@ -81,7 +81,7 @@ class AutoReminderSettingsCard extends StatelessWidget {
                 const Text(
                   'Send Frequency Interval',
                   style: TextStyle(
-                    fontSize: 14, 
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                   ),

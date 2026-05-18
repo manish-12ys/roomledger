@@ -45,7 +45,14 @@ class DateRange {
   factory DateRange.lastMonths(int months) {
     final now = DateTime.now();
     final lastDay = DateTime(now.year, now.month + 1, 0);
-    final endDate = DateTime(lastDay.year, lastDay.month, lastDay.day, 23, 59, 59);
+    final endDate = DateTime(
+      lastDay.year,
+      lastDay.month,
+      lastDay.day,
+      23,
+      59,
+      59,
+    );
     final startDate = DateTime(now.year, now.month - months + 1, 1);
     return DateRange(startDate: startDate, endDate: endDate);
   }

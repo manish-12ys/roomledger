@@ -177,15 +177,19 @@ class _FriendCard extends ConsumerWidget {
                       label: 'Direct',
                       color: AppTheme.warning,
                       onTap: () {
-                        if (friend.phoneNumber == null || friend.phoneNumber!.isEmpty) {
+                        if (friend.phoneNumber == null ||
+                            friend.phoneNumber!.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: const Text('No phone number — tap ⋮ › Edit to add one'),
+                              content: const Text(
+                                'No phone number — tap ⋮ › Edit to add one',
+                              ),
                               backgroundColor: AppTheme.surfaceElevated,
                               action: SnackBarAction(
                                 label: 'Edit',
                                 textColor: AppTheme.secondary,
-                                onPressed: () => _openEditFriendSheet(context, ref),
+                                onPressed: () =>
+                                    _openEditFriendSheet(context, ref),
                               ),
                             ),
                           );
@@ -199,15 +203,19 @@ class _FriendCard extends ConsumerWidget {
                       label: 'SMS App',
                       color: AppTheme.info,
                       onTap: () {
-                        if (friend.phoneNumber == null || friend.phoneNumber!.isEmpty) {
+                        if (friend.phoneNumber == null ||
+                            friend.phoneNumber!.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: const Text('No phone number — tap ⋮ › Edit to add one'),
+                              content: const Text(
+                                'No phone number — tap ⋮ › Edit to add one',
+                              ),
                               backgroundColor: AppTheme.surfaceElevated,
                               action: SnackBarAction(
                                 label: 'Edit',
                                 textColor: AppTheme.secondary,
-                                onPressed: () => _openEditFriendSheet(context, ref),
+                                onPressed: () =>
+                                    _openEditFriendSheet(context, ref),
                               ),
                             ),
                           );
@@ -221,15 +229,19 @@ class _FriendCard extends ConsumerWidget {
                       label: 'WhatsApp',
                       color: const Color(0xFF25D366),
                       onTap: () {
-                        if (friend.phoneNumber == null || friend.phoneNumber!.isEmpty) {
+                        if (friend.phoneNumber == null ||
+                            friend.phoneNumber!.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: const Text('No phone number — tap ⋮ › Edit to add one'),
+                              content: const Text(
+                                'No phone number — tap ⋮ › Edit to add one',
+                              ),
                               backgroundColor: AppTheme.surfaceElevated,
                               action: SnackBarAction(
                                 label: 'Edit',
                                 textColor: AppTheme.secondary,
-                                onPressed: () => _openEditFriendSheet(context, ref),
+                                onPressed: () =>
+                                    _openEditFriendSheet(context, ref),
                               ),
                             ),
                           );
@@ -238,7 +250,8 @@ class _FriendCard extends ConsumerWidget {
                         }
                       },
                     ),
-                    if (friend.phoneNumber == null || friend.phoneNumber!.isEmpty) ...[
+                    if (friend.phoneNumber == null ||
+                        friend.phoneNumber!.isEmpty) ...[
                       const Tooltip(
                         message: 'Add phone number via Edit',
                         child: Padding(
@@ -397,7 +410,10 @@ class _AddFriendSheetState extends ConsumerState<_AddFriendSheet> {
 
     try {
       final repository = ref.read(friendsRepositoryProvider);
-      await repository.addFriend(name: name, phoneNumber: phone.isEmpty ? null : phone);
+      await repository.addFriend(
+        name: name,
+        phoneNumber: phone.isEmpty ? null : phone,
+      );
 
       if (mounted) {
         Navigator.pop(context);
@@ -531,7 +547,9 @@ class _EditFriendSheetState extends ConsumerState<_EditFriendSheet> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.friend.name);
-    _phoneController = TextEditingController(text: widget.friend.phoneNumber ?? '');
+    _phoneController = TextEditingController(
+      text: widget.friend.phoneNumber ?? '',
+    );
   }
 
   @override
@@ -551,7 +569,8 @@ class _EditFriendSheetState extends ConsumerState<_EditFriendSheet> {
       return;
     }
 
-    if (name == widget.friend.name && phone == (widget.friend.phoneNumber ?? '')) {
+    if (name == widget.friend.name &&
+        phone == (widget.friend.phoneNumber ?? '')) {
       Navigator.pop(context);
       return;
     }
@@ -561,7 +580,7 @@ class _EditFriendSheetState extends ConsumerState<_EditFriendSheet> {
     try {
       final repository = ref.read(friendsRepositoryProvider);
       await repository.updateFriend(
-        id: widget.friend.id, 
+        id: widget.friend.id,
         name: name,
         phoneNumber: phone.isEmpty ? null : phone,
       );
@@ -713,7 +732,9 @@ class _AutoReminderSettingsSection extends ConsumerWidget {
               dispatchIntervalDays: settings.dispatchIntervalDays,
               senderName: settings.senderName,
             );
-            ref.read(remindersControllerProvider.notifier).updateReminderSettings(updated);
+            ref
+                .read(remindersControllerProvider.notifier)
+                .updateReminderSettings(updated);
           },
           onIntervalChanged: (val) {
             final updated = ReminderSettings(
@@ -722,7 +743,9 @@ class _AutoReminderSettingsSection extends ConsumerWidget {
               dispatchIntervalDays: val,
               senderName: settings.senderName,
             );
-            ref.read(remindersControllerProvider.notifier).updateReminderSettings(updated);
+            ref
+                .read(remindersControllerProvider.notifier)
+                .updateReminderSettings(updated);
           },
           onSenderNameChanged: (val) {
             final updated = ReminderSettings(
@@ -731,7 +754,9 @@ class _AutoReminderSettingsSection extends ConsumerWidget {
               dispatchIntervalDays: settings.dispatchIntervalDays,
               senderName: val,
             );
-            ref.read(remindersControllerProvider.notifier).updateReminderSettings(updated);
+            ref
+                .read(remindersControllerProvider.notifier)
+                .updateReminderSettings(updated);
           },
         );
       },
@@ -800,7 +825,8 @@ String _formatPhoneNumber(String raw) {
 Future<void> _sendDirectSms(BuildContext context, FriendSummary friend) async {
   if (friend.phoneNumber == null) return;
   final formattedPhone = _formatPhoneNumber(friend.phoneNumber!);
-  final message = 'Hey ${friend.name}! You have a pending split balance of ₹${friend.remainingDebt} outstanding. Please pay when possible! Thank you! 😊';
+  final message =
+      'Hey ${friend.name}! You have a pending split balance of ₹${friend.remainingDebt} outstanding. Please pay when possible! Thank you! 😊';
   try {
     const smsChannel = MethodChannel('roomledger/sms');
     await smsChannel.invokeMethod('sendSms', {
@@ -830,7 +856,9 @@ Future<void> _sendDirectSms(BuildContext context, FriendSummary friend) async {
 Future<void> _launchSms(FriendSummary friend) async {
   if (friend.phoneNumber == null) return;
   final formattedPhone = _formatPhoneNumber(friend.phoneNumber!);
-  final message = Uri.encodeComponent('Hey ${friend.name}! You have a pending split balance of ₹${friend.remainingDebt} outstanding. Please pay when possible! Thank you! 😊');
+  final message = Uri.encodeComponent(
+    'Hey ${friend.name}! You have a pending split balance of ₹${friend.remainingDebt} outstanding. Please pay when possible! Thank you! 😊',
+  );
   final url = Uri.parse('sms:$formattedPhone?body=$message');
   try {
     if (await canLaunchUrl(url)) {
@@ -845,13 +873,17 @@ Future<void> _launchSms(FriendSummary friend) async {
 
 Future<void> _launchWhatsApp(FriendSummary friend) async {
   if (friend.phoneNumber == null) return;
-  
+
   final formattedPhone = _formatPhoneNumber(friend.phoneNumber!);
-  final message = Uri.encodeComponent('Hey ${friend.name}! You have a pending split balance of ₹${friend.remainingDebt} outstanding. Please pay when possible! Thank you! 😊');
-  
-  final whatsappUrl = Uri.parse('whatsapp://send?phone=$formattedPhone&text=$message');
+  final message = Uri.encodeComponent(
+    'Hey ${friend.name}! You have a pending split balance of ₹${friend.remainingDebt} outstanding. Please pay when possible! Thank you! 😊',
+  );
+
+  final whatsappUrl = Uri.parse(
+    'whatsapp://send?phone=$formattedPhone&text=$message',
+  );
   final webUrl = Uri.parse('https://wa.me/$formattedPhone?text=$message');
-  
+
   try {
     if (await canLaunchUrl(whatsappUrl)) {
       await launchUrl(whatsappUrl);

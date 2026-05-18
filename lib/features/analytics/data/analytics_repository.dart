@@ -190,10 +190,7 @@ class AnalyticsRepository {
       HAVING total > 0
       ORDER BY total DESC
     ''',
-      [
-        startDate.toIso8601String(),
-        endDate.toIso8601String(),
-      ],
+      [startDate.toIso8601String(), endDate.toIso8601String()],
     );
 
     return results
@@ -274,8 +271,7 @@ class AnalyticsRepository {
   Future<List<CategorySpending>> getHistoricalSharedCategoryBreakdown() async {
     final db = await database.database;
 
-    final results = await db.rawQuery(
-      '''
+    final results = await db.rawQuery('''
       SELECT 
         d.category, 
         SUM(d.total_amount) as total, 
@@ -284,8 +280,7 @@ class AnalyticsRepository {
       GROUP BY d.category
       HAVING total > 0
       ORDER BY total DESC
-    '''
-    );
+    ''');
 
     return results
         .map(
@@ -302,8 +297,7 @@ class AnalyticsRepository {
   Future<List<FriendDebtComparison>> getHistoricalFriendDebtComparison() async {
     final db = await database.database;
 
-    final results = await db.rawQuery(
-      '''
+    final results = await db.rawQuery('''
       SELECT 
         f.id,
         f.name,
@@ -333,8 +327,7 @@ class AnalyticsRepository {
       GROUP BY f.id, f.name
       HAVING total_debt > 0 OR total_settled > 0 OR pending_amount > 0
       ORDER BY total_debt DESC
-    '''
-    );
+    ''');
 
     return results.map((row) {
       final totalDebt = (row['total_debt'] as num).toInt();
@@ -354,13 +347,11 @@ class AnalyticsRepository {
   Future<Map<String, int>> getHistoricalSharedTotals() async {
     final db = await database.database;
 
-    final results = await db.rawQuery(
-      '''
+    final results = await db.rawQuery('''
       SELECT 
         (SELECT COALESCE(SUM(total_amount), 0) FROM debts) as total_spending,
         (SELECT COALESCE(SUM(amount), 0) FROM settlements) as total_repaid
-      '''
-    );
+      ''');
 
     if (results.isEmpty) {
       return {'total_spending': 0, 'total_repaid': 0};
@@ -393,7 +384,7 @@ class AnalyticsRepository {
       startDate: startDate,
       endDate: endDate,
     );
-    
+
     final histSharedCategory = await getHistoricalSharedCategoryBreakdown();
     final histFriendComparison = await getHistoricalFriendDebtComparison();
     final histTotals = await getHistoricalSharedTotals();

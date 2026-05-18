@@ -164,7 +164,8 @@ class FriendDebtsScreen extends ConsumerWidget {
                     SizedBox(
                       width: double.infinity,
                       child: NeumorphicButton(
-                        onPressed: () => _openQuickSettleSheet(context, ref, currentDebt),
+                        onPressed: () =>
+                            _openQuickSettleSheet(context, ref, currentDebt),
                         label: 'Bulk Repayment',
                         icon: Icons.bolt_rounded,
                       ),
@@ -318,9 +319,7 @@ class _DebtItemCard extends StatelessWidget {
     return GlassCard(
       onTap: () => Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (_) => DebtDetailScreen(debt: debt),
-        ),
+        MaterialPageRoute(builder: (_) => DebtDetailScreen(debt: debt)),
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -494,7 +493,9 @@ class _QuickSettleSheetState extends ConsumerState<_QuickSettleSheet> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Processed \u20b9$amount repayment for ${widget.groupedDebt.friendName}'),
+            content: Text(
+              'Processed \u20b9$amount repayment for ${widget.groupedDebt.friendName}',
+            ),
             backgroundColor: AppTheme.secondary,
           ),
         );
@@ -502,10 +503,7 @@ class _QuickSettleSheetState extends ConsumerState<_QuickSettleSheet> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: AppTheme.error,
-          ),
+          SnackBar(content: Text('Error: $e'), backgroundColor: AppTheme.error),
         );
       }
     } finally {
@@ -567,15 +565,15 @@ class _QuickSettleSheetState extends ConsumerState<_QuickSettleSheet> {
                   prefixIcon: Icon(Icons.currency_rupee_rounded),
                 ),
                 keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) return 'Enter amount';
-                    final amount = int.tryParse(value);
-                    if (amount == null || amount <= 0) return 'Invalid amount';
-                    if (amount > widget.groupedDebt.remainingAmount) {
-                      return 'Exceeds total debt (\u20b9${widget.groupedDebt.remainingAmount})';
-                    }
-                    return null;
-                  },
+                validator: (value) {
+                  if (value == null || value.isEmpty) return 'Enter amount';
+                  final amount = int.tryParse(value);
+                  if (amount == null || amount <= 0) return 'Invalid amount';
+                  if (amount > widget.groupedDebt.remainingAmount) {
+                    return 'Exceeds total debt (\u20b9${widget.groupedDebt.remainingAmount})';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
               TextFormField(

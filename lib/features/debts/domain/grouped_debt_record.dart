@@ -11,8 +11,10 @@ class GroupedDebtRecord {
   final String friendName;
   final List<PendingDebtRecord> debts;
 
-  num get totalAmount => debts.fold<num>(0, (sum, debt) => sum + debt.totalAmount);
-  num get repaidAmount => debts.fold<num>(0, (sum, debt) => sum + debt.repaidAmount);
+  num get totalAmount =>
+      debts.fold<num>(0, (sum, debt) => sum + debt.totalAmount);
+  num get repaidAmount =>
+      debts.fold<num>(0, (sum, debt) => sum + debt.repaidAmount);
   num get remainingAmount => totalAmount - repaidAmount;
 
   bool get isFullySettled => remainingAmount <= 0;

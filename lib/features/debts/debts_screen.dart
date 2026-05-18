@@ -350,7 +350,10 @@ class _RoommateDebtCard extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _StatColumn(label: 'Total', value: _formatCurrency(record.totalAmount)),
+                _StatColumn(
+                  label: 'Total',
+                  value: _formatCurrency(record.totalAmount),
+                ),
                 _StatColumn(
                   label: 'Paid',
                   value: _formatCurrency(record.repaidAmount),

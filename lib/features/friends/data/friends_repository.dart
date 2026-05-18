@@ -72,15 +72,16 @@ class FriendsRepository {
     return id;
   }
 
-  Future<void> updateFriend({required int id, required String name, String? phoneNumber}) async {
+  Future<void> updateFriend({
+    required int id,
+    required String name,
+    String? phoneNumber,
+  }) async {
     final db = await database.database;
 
     await db.update(
       'friends',
-      {
-        'name': name,
-        'phone_number': phoneNumber,
-      },
+      {'name': name, 'phone_number': phoneNumber},
       where: 'id = ?',
       whereArgs: [id],
     );

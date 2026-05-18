@@ -112,7 +112,11 @@ class DebtsRepository {
     if (remaining <= 0) {
       // Delete settlements first to prevent any potential foreign key constraint violations
       await db.transaction((txn) async {
-        await txn.delete('settlements', where: 'debt_id = ?', whereArgs: [debtId]);
+        await txn.delete(
+          'settlements',
+          where: 'debt_id = ?',
+          whereArgs: [debtId],
+        );
         await txn.delete('debts', where: 'id = ?', whereArgs: [debtId]);
       });
     }
@@ -156,8 +160,16 @@ class DebtsRepository {
 
           // If now fully settled, delete (settlements will cascade)
           if (settleAmount >= debtRemaining) {
-            await txn.delete('settlements', where: 'debt_id = ?', whereArgs: [debt.debtId]);
-            await txn.delete('debts', where: 'id = ?', whereArgs: [debt.debtId]);
+            await txn.delete(
+              'settlements',
+              where: 'debt_id = ?',
+              whereArgs: [debt.debtId],
+            );
+            await txn.delete(
+              'debts',
+              where: 'id = ?',
+              whereArgs: [debt.debtId],
+            );
           }
         }
       }

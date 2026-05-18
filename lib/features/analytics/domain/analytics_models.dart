@@ -206,11 +206,14 @@ class AnalyticsReport {
       categoryBreakdown: categoryBreakdown ?? this.categoryBreakdown,
       friendDebtComparison: friendDebtComparison ?? this.friendDebtComparison,
       historicalSharedCategoryBreakdown:
-          historicalSharedCategoryBreakdown ?? this.historicalSharedCategoryBreakdown,
+          historicalSharedCategoryBreakdown ??
+          this.historicalSharedCategoryBreakdown,
       historicalFriendComparison:
           historicalFriendComparison ?? this.historicalFriendComparison,
-      historicalSharedTotal: historicalSharedTotal ?? this.historicalSharedTotal,
-      historicalSharedRepaid: historicalSharedRepaid ?? this.historicalSharedRepaid,
+      historicalSharedTotal:
+          historicalSharedTotal ?? this.historicalSharedTotal,
+      historicalSharedRepaid:
+          historicalSharedRepaid ?? this.historicalSharedRepaid,
     );
   }
 
@@ -225,8 +228,14 @@ class AnalyticsReport {
           breakdown == other.breakdown &&
           listEquals(categoryBreakdown, other.categoryBreakdown) &&
           listEquals(friendDebtComparison, other.friendDebtComparison) &&
-          listEquals(historicalSharedCategoryBreakdown, other.historicalSharedCategoryBreakdown) &&
-          listEquals(historicalFriendComparison, other.historicalFriendComparison) &&
+          listEquals(
+            historicalSharedCategoryBreakdown,
+            other.historicalSharedCategoryBreakdown,
+          ) &&
+          listEquals(
+            historicalFriendComparison,
+            other.historicalFriendComparison,
+          ) &&
           historicalSharedTotal == other.historicalSharedTotal &&
           historicalSharedRepaid == other.historicalSharedRepaid;
 

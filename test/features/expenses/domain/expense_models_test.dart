@@ -236,29 +236,26 @@ void main() {
       expect(input.calculateShares(), [500, 300, 200]);
     });
 
-    test(
-      'calculateShares distributes rounding remainder by largest share',
-      () {
-        final input = AddPercentageSplitExpenseInput(
-          note: 'Trip',
-          category: 'Travel',
-          totalAmount: 1001,
-          allocations: const [
-            PercentageAllocation(friendId: 1, percentage: 50),
-            PercentageAllocation(friendId: 2, percentage: 30),
-            PercentageAllocation(friendId: 3, percentage: 20),
-          ],
-        );
+    test('calculateShares distributes rounding remainder by largest share', () {
+      final input = AddPercentageSplitExpenseInput(
+        note: 'Trip',
+        category: 'Travel',
+        totalAmount: 1001,
+        allocations: const [
+          PercentageAllocation(friendId: 1, percentage: 50),
+          PercentageAllocation(friendId: 2, percentage: 30),
+          PercentageAllocation(friendId: 3, percentage: 20),
+        ],
+      );
 
-        // 1001 * 0.5 = 500.5 -> 500
-        // 1001 * 0.3 = 300.3 -> 300
-        // 1001 * 0.2 = 200.2 -> 200
-        // Total = 1000. Remainder = 1.
-        // Distributed to first participant (50%)
-        expect(input.calculateShares(), [501, 300, 200]);
-        expect(input.calculateShares().fold<int>(0, (a, b) => a + b), 1001);
-      },
-    );
+      // 1001 * 0.5 = 500.5 -> 500
+      // 1001 * 0.3 = 300.3 -> 300
+      // 1001 * 0.2 = 200.2 -> 200
+      // Total = 1000. Remainder = 1.
+      // Distributed to first participant (50%)
+      expect(input.calculateShares(), [501, 300, 200]);
+      expect(input.calculateShares().fold<int>(0, (a, b) => a + b), 1001);
+    });
 
     test('isValid returns false when percentages do not total 100', () {
       final input = AddPercentageSplitExpenseInput(

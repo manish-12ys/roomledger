@@ -281,6 +281,5 @@ class RoomLedgerDatabase {
       INSERT OR IGNORE INTO reminder_settings (id, auto_send_enabled, dispatch_interval_days, sender_name) 
       VALUES (1, 1, 5, 'User')
     ''');
-
   }
 }

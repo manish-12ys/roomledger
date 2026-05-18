@@ -64,14 +64,15 @@ class AddSplitExpenseInput {
 
   int get participantCount => participantIds.length + (splitWithSelf ? 1 : 0);
 
-  int get sharePerPerson => participantCount > 0 ? totalAmount ~/ participantCount : 0;
+  int get sharePerPerson =>
+      participantCount > 0 ? totalAmount ~/ participantCount : 0;
 
   List<int> calculateShares() {
     if (participantCount == 0) return [];
-    
+
     final share = totalAmount ~/ participantCount;
     final remainder = totalAmount % participantCount;
-    
+
     final shares = <int>[];
     for (int i = 0; i < participantCount; i++) {
       shares.add(share + (i < remainder ? 1 : 0));
