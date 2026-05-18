@@ -1,6 +1,7 @@
 <div align="center">
 
-# 🟢 RoomLedger
+<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&height=220&color=0:000000,100:10B981&text=RoomLedger&fontColor=ffffff&fontSize=48&fontAlignY=40&animation=fadeIn" />
+
 
 ### Premium AMOLED Expense & Roommate Split Manager
 
@@ -21,7 +22,6 @@
 
 <br>
 
-<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&height=220&color=0:000000,100:10B981&text=RoomLedger&fontColor=ffffff&fontSize=48&fontAlignY=40&animation=fadeIn" />
 
 </div>
 
@@ -345,6 +345,6 @@ See the [LICENSE](LICENSE) file for more information.
 
 <br>
 
-<img src="https://capsule-render.vercel.app/api?type=waving&height=120&section=footer&color=0:10B981,100:000000" />
+<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&height=120&section=footer&color=0:10B981,100:000000" />
 
 </div>
