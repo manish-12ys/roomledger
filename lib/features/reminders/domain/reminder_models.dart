@@ -49,3 +49,38 @@ class Reminder {
     );
   }
 }
+
+class ReminderSettings {
+  const ReminderSettings({
+    required this.id,
+    required this.autoSendEnabled,
+    required this.dispatchIntervalDays,
+    required this.senderName,
+  });
+
+  final int id;
+  final int autoSendEnabled;
+  final int dispatchIntervalDays;
+  final String senderName;
+
+  factory ReminderSettings.fromMap(Map<String, dynamic> map) {
+    return ReminderSettings(
+      id: map['id'] as int,
+      autoSendEnabled: map['auto_send_enabled'] as int,
+      dispatchIntervalDays: map['dispatch_interval_days'] as int,
+      senderName: map['sender_name'] as String,
+    );
+  }
+}
+
+class PendingDebtRecord {
+  const PendingDebtRecord({
+    required this.friendName,
+    required this.remainingAmount,
+    this.phoneNumber,
+  });
+
+  final String friendName;
+  final int remainingAmount;
+  final String? phoneNumber;
+}

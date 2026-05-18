@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:workmanager/workmanager.dart';
 
 import '../../core/providers/app_providers.dart';
 import 'data/reminders_repository.dart';
@@ -18,6 +19,10 @@ final remindersProvider = FutureProvider<List<Reminder>>((ref) {
   return ref.watch(remindersRepositoryProvider).getReminders();
 });
 
+final reminderSettingsProvider = FutureProvider<ReminderSettings>((ref) {
+  return ref.watch(remindersRepositoryProvider).getReminderSettings();
+});
+
 class RemindersController extends StateNotifier<AsyncValue<void>> {
   RemindersController(this._repo, this._notifService, this._ref)
     : super(const AsyncData(null));
@@ -25,6 +30,27 @@ class RemindersController extends StateNotifier<AsyncValue<void>> {
   final RemindersRepository _repo;
   final NotificationService _notifService;
   final Ref _ref;
+
+  Future<void> updateReminderSettings(ReminderSettings settings) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      await _repo.updateReminderSettings(settings);
+      
+      // Update Workmanager schedule
+      if (settings.autoSendEnabled == 1) {
+        Workmanager().registerPeriodicTask(
+          "auto_sms_reminder_task", 
+          "send_sms_reminders", 
+          frequency: Duration(days: settings.dispatchIntervalDays),
+          existingWorkPolicy: ExistingPeriodicWorkPolicy.replace,
+        );
+      } else {
+        Workmanager().cancelByUniqueName("auto_sms_reminder_task");
+      }
+
+      _ref.invalidate(reminderSettingsProvider);
+    });
+  }
 
   Future<void> addReminder(String title, DateTime date, String type) async {
     state = const AsyncLoading();

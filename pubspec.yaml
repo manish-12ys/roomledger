@@ -45,6 +45,8 @@ dependencies:
   fl_chart: ^0.70.2
   share_plus: ^12.0.2
   file_picker: ^11.0.2
+  workmanager: ^0.9.0+3
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:

@@ -16,6 +16,7 @@ class FriendsRepository {
           (row) => Friend(
             id: row['id'] as int,
             name: row['name'] as String,
+            phoneNumber: row['phone_number'] as String?,
             createdAt: DateTime.parse(row['created_at'] as String),
           ),
         )
@@ -29,6 +30,7 @@ class FriendsRepository {
       SELECT 
         f.id,
         f.name,
+        f.phone_number,
         f.created_at,
         COALESCE(SUM(d.total_amount), 0) as total_debt,
         COALESCE(SUM(s_total.repaid), 0) as repaid_amount
@@ -48,6 +50,7 @@ class FriendsRepository {
           (row) => FriendSummary(
             id: row['id'] as int,
             name: row['name'] as String,
+            phoneNumber: row['phone_number'] as String?,
             totalDebt: (row['total_debt'] as num?)?.toInt() ?? 0,
             repaidAmount: (row['repaid_amount'] as num?)?.toInt() ?? 0,
             createdAt: DateTime.parse(row['created_at'] as String),
@@ -56,24 +59,28 @@ class FriendsRepository {
         .toList();
   }
 
-  Future<int> addFriend({required String name}) async {
+  Future<int> addFriend({required String name, String? phoneNumber}) async {
     final db = await database.database;
 
     final now = DateTime.now();
     final id = await db.insert('friends', {
       'name': name,
+      'phone_number': phoneNumber,
       'created_at': now.toIso8601String(),
     });
 
     return id;
   }
 
-  Future<void> updateFriend({required int id, required String name}) async {
+  Future<void> updateFriend({required int id, required String name, String? phoneNumber}) async {
     final db = await database.database;
 
     await db.update(
       'friends',
-      {'name': name},
+      {
+        'name': name,
+        'phone_number': phoneNumber,
+      },
       where: 'id = ?',
       whereArgs: [id],
     );

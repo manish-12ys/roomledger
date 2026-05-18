@@ -1,8 +1,14 @@
 class Friend {
-  const Friend({required this.id, required this.name, required this.createdAt});
+  const Friend({
+    required this.id, 
+    required this.name, 
+    this.phoneNumber,
+    required this.createdAt,
+  });
 
   final int id;
   final String name;
+  final String? phoneNumber;
   final DateTime createdAt;
 }
 
@@ -10,6 +16,7 @@ class FriendSummary {
   const FriendSummary({
     required this.id,
     required this.name,
+    this.phoneNumber,
     required this.totalDebt,
     required this.repaidAmount,
     required this.createdAt,
@@ -17,6 +24,7 @@ class FriendSummary {
 
   final int id;
   final String name;
+  final String? phoneNumber;
   final int totalDebt;
   final int repaidAmount;
   final DateTime createdAt;

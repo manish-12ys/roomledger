@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
@@ -6,6 +7,10 @@ import '../../core/widgets/app_components.dart';
 import '../../core/widgets/app_states.dart';
 import 'domain/friends_models.dart';
 import 'friends_providers.dart';
+import '../reminders/reminders_providers.dart';
+import '../reminders/domain/reminder_models.dart';
+import '../reminders/widgets/auto_reminder_settings_card.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class FriendsScreen extends ConsumerWidget {
   const FriendsScreen({super.key});
@@ -37,7 +42,7 @@ class FriendsScreen extends ConsumerWidget {
             slivers: [
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 60, 20, 24),
+                  padding: const EdgeInsets.fromLTRB(20, 60, 20, 16),
                   child: const Text(
                     'Roommates',
                     style: TextStyle(
@@ -47,6 +52,12 @@ class FriendsScreen extends ConsumerWidget {
                       letterSpacing: -0.5,
                     ),
                   ),
+                ),
+              ),
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: _AutoReminderSettingsSection(),
                 ),
               ),
               if (friends.isEmpty)
@@ -154,6 +165,93 @@ class _FriendCard extends ConsumerWidget {
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                   ),
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    _QuickActionButton(
+                      icon: Icons.bolt_outlined,
+                      label: 'Direct',
+                      color: AppTheme.warning,
+                      onTap: () {
+                        if (friend.phoneNumber == null || friend.phoneNumber!.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text('No phone number — tap ⋮ › Edit to add one'),
+                              backgroundColor: AppTheme.surfaceElevated,
+                              action: SnackBarAction(
+                                label: 'Edit',
+                                textColor: AppTheme.secondary,
+                                onPressed: () => _openEditFriendSheet(context, ref),
+                              ),
+                            ),
+                          );
+                        } else {
+                          _sendDirectSms(context, friend);
+                        }
+                      },
+                    ),
+                    _QuickActionButton(
+                      icon: Icons.sms_outlined,
+                      label: 'SMS App',
+                      color: AppTheme.info,
+                      onTap: () {
+                        if (friend.phoneNumber == null || friend.phoneNumber!.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text('No phone number — tap ⋮ › Edit to add one'),
+                              backgroundColor: AppTheme.surfaceElevated,
+                              action: SnackBarAction(
+                                label: 'Edit',
+                                textColor: AppTheme.secondary,
+                                onPressed: () => _openEditFriendSheet(context, ref),
+                              ),
+                            ),
+                          );
+                        } else {
+                          _launchSms(friend);
+                        }
+                      },
+                    ),
+                    _QuickActionButton(
+                      icon: Icons.chat_outlined,
+                      label: 'WhatsApp',
+                      color: const Color(0xFF25D366),
+                      onTap: () {
+                        if (friend.phoneNumber == null || friend.phoneNumber!.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text('No phone number — tap ⋮ › Edit to add one'),
+                              backgroundColor: AppTheme.surfaceElevated,
+                              action: SnackBarAction(
+                                label: 'Edit',
+                                textColor: AppTheme.secondary,
+                                onPressed: () => _openEditFriendSheet(context, ref),
+                              ),
+                            ),
+                          );
+                        } else {
+                          _launchWhatsApp(friend);
+                        }
+                      },
+                    ),
+                    if (friend.phoneNumber == null || friend.phoneNumber!.isEmpty) ...[
+                      const Tooltip(
+                        message: 'Add phone number via Edit',
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 4),
+                          child: Icon(
+                            Icons.phone_missed_outlined,
+                            size: 14,
+                            color: AppTheme.muted,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ],
             ),
@@ -274,17 +372,20 @@ class _AddFriendSheet extends ConsumerStatefulWidget {
 }
 
 class _AddFriendSheetState extends ConsumerState<_AddFriendSheet> {
-  final _controller = TextEditingController();
+  final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
   bool _submitting = false;
 
   @override
   void dispose() {
-    _controller.dispose();
+    _nameController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
-    final name = _controller.text.trim();
+    final name = _nameController.text.trim();
+    final phone = _phoneController.text.trim();
     if (name.isEmpty) {
       ScaffoldMessenger.of(
         context,
@@ -296,7 +397,7 @@ class _AddFriendSheetState extends ConsumerState<_AddFriendSheet> {
 
     try {
       final repository = ref.read(friendsRepositoryProvider);
-      await repository.addFriend(name: name);
+      await repository.addFriend(name: name, phoneNumber: phone.isEmpty ? null : phone);
 
       if (mounted) {
         Navigator.pop(context);
@@ -353,7 +454,7 @@ class _AddFriendSheetState extends ConsumerState<_AddFriendSheet> {
           ),
           const SizedBox(height: 24),
           TextField(
-            controller: _controller,
+            controller: _nameController,
             enabled: !_submitting,
             autofocus: true,
             style: const TextStyle(
@@ -362,6 +463,26 @@ class _AddFriendSheetState extends ConsumerState<_AddFriendSheet> {
             ),
             decoration: InputDecoration(
               hintText: 'Enter name...',
+              hintStyle: const TextStyle(color: AppTheme.onSurfaceVariant),
+              filled: true,
+              fillColor: AppTheme.onSurface.withValues(alpha: 0.05),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _phoneController,
+            enabled: !_submitting,
+            keyboardType: TextInputType.phone,
+            style: const TextStyle(
+              color: AppTheme.onSurface,
+              fontWeight: FontWeight.w700,
+            ),
+            decoration: InputDecoration(
+              hintText: 'Enter phone number (optional)...',
               hintStyle: const TextStyle(color: AppTheme.onSurfaceVariant),
               filled: true,
               fillColor: AppTheme.onSurface.withValues(alpha: 0.05),
@@ -402,23 +523,27 @@ class _EditFriendSheet extends ConsumerStatefulWidget {
 }
 
 class _EditFriendSheetState extends ConsumerState<_EditFriendSheet> {
-  late final TextEditingController _controller;
+  late final TextEditingController _nameController;
+  late final TextEditingController _phoneController;
   bool _submitting = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.friend.name);
+    _nameController = TextEditingController(text: widget.friend.name);
+    _phoneController = TextEditingController(text: widget.friend.phoneNumber ?? '');
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _nameController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
-    final name = _controller.text.trim();
+    final name = _nameController.text.trim();
+    final phone = _phoneController.text.trim();
     if (name.isEmpty) {
       ScaffoldMessenger.of(
         context,
@@ -426,7 +551,7 @@ class _EditFriendSheetState extends ConsumerState<_EditFriendSheet> {
       return;
     }
 
-    if (name == widget.friend.name) {
+    if (name == widget.friend.name && phone == (widget.friend.phoneNumber ?? '')) {
       Navigator.pop(context);
       return;
     }
@@ -435,7 +560,11 @@ class _EditFriendSheetState extends ConsumerState<_EditFriendSheet> {
 
     try {
       final repository = ref.read(friendsRepositoryProvider);
-      await repository.updateFriend(id: widget.friend.id, name: name);
+      await repository.updateFriend(
+        id: widget.friend.id, 
+        name: name,
+        phoneNumber: phone.isEmpty ? null : phone,
+      );
 
       if (mounted) {
         Navigator.pop(context);
@@ -492,7 +621,7 @@ class _EditFriendSheetState extends ConsumerState<_EditFriendSheet> {
           ),
           const SizedBox(height: 24),
           TextField(
-            controller: _controller,
+            controller: _nameController,
             enabled: !_submitting,
             autofocus: true,
             style: const TextStyle(
@@ -501,6 +630,26 @@ class _EditFriendSheetState extends ConsumerState<_EditFriendSheet> {
             ),
             decoration: InputDecoration(
               hintText: 'Enter name...',
+              hintStyle: const TextStyle(color: AppTheme.onSurfaceVariant),
+              filled: true,
+              fillColor: AppTheme.onSurface.withValues(alpha: 0.05),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _phoneController,
+            enabled: !_submitting,
+            keyboardType: TextInputType.phone,
+            style: const TextStyle(
+              color: AppTheme.onSurface,
+              fontWeight: FontWeight.w700,
+            ),
+            decoration: InputDecoration(
+              hintText: 'Enter phone number (optional)...',
               hintStyle: const TextStyle(color: AppTheme.onSurfaceVariant),
               filled: true,
               fillColor: AppTheme.onSurface.withValues(alpha: 0.05),
@@ -541,5 +690,177 @@ class _EmptyState extends StatelessWidget {
         style: TextStyle(color: AppTheme.muted),
       ),
     );
+  }
+}
+
+class _AutoReminderSettingsSection extends ConsumerWidget {
+  const _AutoReminderSettingsSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settingsAsync = ref.watch(reminderSettingsProvider);
+
+    return settingsAsync.when(
+      data: (settings) {
+        return AutoReminderSettingsCard(
+          isEnabled: settings.autoSendEnabled == 1,
+          intervalDays: settings.dispatchIntervalDays,
+          senderName: settings.senderName,
+          onToggle: (val) {
+            final updated = ReminderSettings(
+              id: settings.id,
+              autoSendEnabled: val ? 1 : 0,
+              dispatchIntervalDays: settings.dispatchIntervalDays,
+              senderName: settings.senderName,
+            );
+            ref.read(remindersControllerProvider.notifier).updateReminderSettings(updated);
+          },
+          onIntervalChanged: (val) {
+            final updated = ReminderSettings(
+              id: settings.id,
+              autoSendEnabled: settings.autoSendEnabled,
+              dispatchIntervalDays: val,
+              senderName: settings.senderName,
+            );
+            ref.read(remindersControllerProvider.notifier).updateReminderSettings(updated);
+          },
+          onSenderNameChanged: (val) {
+            final updated = ReminderSettings(
+              id: settings.id,
+              autoSendEnabled: settings.autoSendEnabled,
+              dispatchIntervalDays: settings.dispatchIntervalDays,
+              senderName: val,
+            );
+            ref.read(remindersControllerProvider.notifier).updateReminderSettings(updated);
+          },
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (e, st) => const SizedBox.shrink(),
+    );
+  }
+}
+
+class _QuickActionButton extends StatelessWidget {
+  const _QuickActionButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: color),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+String _formatPhoneNumber(String raw) {
+  String clean = raw.replaceAll(RegExp(r'[^\d]'), '');
+  if (clean.startsWith('0') && clean.length == 11) {
+    clean = clean.substring(1);
+  }
+  if (clean.length == 10) {
+    clean = '91$clean'; // Automatically prepend India's +91 country code
+  }
+  return clean;
+}
+
+Future<void> _sendDirectSms(BuildContext context, FriendSummary friend) async {
+  if (friend.phoneNumber == null) return;
+  final formattedPhone = _formatPhoneNumber(friend.phoneNumber!);
+  final message = 'Hey ${friend.name}! You have a pending split balance of ₹${friend.remainingDebt} outstanding. Please pay when possible! Thank you! 😊';
+  try {
+    const smsChannel = MethodChannel('roomledger/sms');
+    await smsChannel.invokeMethod('sendSms', {
+      'recipient': formattedPhone,
+      'message': message,
+    });
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Direct SMS sent successfully to ${friend.name}! ⚡'),
+          backgroundColor: AppTheme.success,
+        ),
+      );
+    }
+  } catch (e) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to send Direct SMS: $e'),
+          backgroundColor: AppTheme.error,
+        ),
+      );
+    }
+  }
+}
+
+Future<void> _launchSms(FriendSummary friend) async {
+  if (friend.phoneNumber == null) return;
+  final formattedPhone = _formatPhoneNumber(friend.phoneNumber!);
+  final message = Uri.encodeComponent('Hey ${friend.name}! You have a pending split balance of ₹${friend.remainingDebt} outstanding. Please pay when possible! Thank you! 😊');
+  final url = Uri.parse('sms:$formattedPhone?body=$message');
+  try {
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url);
+    } else {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    }
+  } catch (e) {
+    await launchUrl(url, mode: LaunchMode.platformDefault);
+  }
+}
+
+Future<void> _launchWhatsApp(FriendSummary friend) async {
+  if (friend.phoneNumber == null) return;
+  
+  final formattedPhone = _formatPhoneNumber(friend.phoneNumber!);
+  final message = Uri.encodeComponent('Hey ${friend.name}! You have a pending split balance of ₹${friend.remainingDebt} outstanding. Please pay when possible! Thank you! 😊');
+  
+  final whatsappUrl = Uri.parse('whatsapp://send?phone=$formattedPhone&text=$message');
+  final webUrl = Uri.parse('https://wa.me/$formattedPhone?text=$message');
+  
+  try {
+    if (await canLaunchUrl(whatsappUrl)) {
+      await launchUrl(whatsappUrl);
+    } else if (await canLaunchUrl(webUrl)) {
+      await launchUrl(webUrl, mode: LaunchMode.externalNonBrowserApplication);
+    } else {
+      await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+    }
+  } catch (e) {
+    await launchUrl(webUrl, mode: LaunchMode.platformDefault);
   }
 }

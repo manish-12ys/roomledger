@@ -89,26 +89,20 @@ class RoomLedgerDatabase {
               'ALTER TABLE friends ADD COLUMN phone_number TEXT',
             );
           } catch (e) {
-            // Column might already exist
+            // Ignore if exists
           }
-          try {
-            await db.execute('''
-              CREATE TABLE IF NOT EXISTS reminder_settings (
-                id INTEGER PRIMARY KEY,
-                auto_send_enabled INTEGER NOT NULL DEFAULT 1,
-                dispatch_interval_days INTEGER NOT NULL DEFAULT 5,
-                sender_name TEXT NOT NULL DEFAULT 'User'
-              )
-            ''');
-            await db.insert('reminder_settings', {
-              'id': 1,
-              'auto_send_enabled': 1,
-              'dispatch_interval_days': 5,
-              'sender_name': 'User',
-            });
-          } catch (e) {
-            // Table/Row might already exist
-          }
+          await db.execute('''
+            CREATE TABLE IF NOT EXISTS reminder_settings (
+              id INTEGER PRIMARY KEY,
+              auto_send_enabled INTEGER DEFAULT 1,
+              dispatch_interval_days INTEGER DEFAULT 5,
+              sender_name TEXT DEFAULT 'User'
+            )
+          ''');
+          await db.execute('''
+            INSERT OR IGNORE INTO reminder_settings (id, auto_send_enabled, dispatch_interval_days, sender_name) 
+            VALUES (1, 1, 5, 'User')
+          ''');
         }
       },
       onOpen: (db) async {
@@ -272,6 +266,20 @@ class RoomLedgerDatabase {
         category TEXT NOT NULL,
         created_at TEXT NOT NULL
       )
+    ''');
+
+    await database.execute('''
+      CREATE TABLE IF NOT EXISTS reminder_settings (
+        id INTEGER PRIMARY KEY,
+        auto_send_enabled INTEGER DEFAULT 1,
+        dispatch_interval_days INTEGER DEFAULT 5,
+        sender_name TEXT DEFAULT 'User'
+      )
+    ''');
+
+    await database.execute('''
+      INSERT OR IGNORE INTO reminder_settings (id, auto_send_enabled, dispatch_interval_days, sender_name) 
+      VALUES (1, 1, 5, 'User')
     ''');
 
   }
