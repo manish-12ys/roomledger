@@ -18,22 +18,24 @@ void callbackDispatcher() {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  Workmanager().initialize(callbackDispatcher);
-
-  // Initialize notification service early to prevent crashes
-  final notificationService = NotificationService();
-  await notificationService.initialize();
-
-  // Initialize global UI error boundaries
+  // Initialize global UI error boundaries (fast, no I/O)
   GlobalErrorCatch.initialize();
 
+  // Run the app immediately — do NOT await heavy inits here.
+  // WorkManager and NotificationService (which loads the full timezone
+  // database via tz.initializeTimeZones) are deferred so the native
+  // splash → Flutter splash transition is instant.
   runApp(
     ProviderScope(
-      overrides: [
-        // If we had a way to override the provider here, we would.
-        // But we'll just let the provider return the same instance.
-      ],
+      overrides: [],
       child: const RoomLedgerApp(),
     ),
   );
+
+  // Kick off heavy background inits AFTER the first frame is on screen.
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    Workmanager().initialize(callbackDispatcher);
+    final notificationService = NotificationService();
+    await notificationService.initialize();
+  });
 }
